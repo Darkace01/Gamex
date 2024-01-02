@@ -1,0 +1,6 @@
+@Gamex_HostAddress = http://localhost:5022
+
+GET {{Gamex_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
