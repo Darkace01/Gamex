@@ -5,6 +5,10 @@ VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gamex", "Gamex\Gamex.csproj", "{49C2F288-6E4B-4582-A64C-9702093B2DDF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gamex.Data", "Gamex.Data\Gamex.Data.csproj", "{B05A226A-26FA-4800-8AAC-DFAD56AE66E0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gamex.Models", "Gamex.Models\Gamex.Models.csproj", "{D1BDC8F0-7806-4855-AFDB-A27EBE63514C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{49C2F288-6E4B-4582-A64C-9702093B2DDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{49C2F288-6E4B-4582-A64C-9702093B2DDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{49C2F288-6E4B-4582-A64C-9702093B2DDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B05A226A-26FA-4800-8AAC-DFAD56AE66E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B05A226A-26FA-4800-8AAC-DFAD56AE66E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B05A226A-26FA-4800-8AAC-DFAD56AE66E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B05A226A-26FA-4800-8AAC-DFAD56AE66E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1BDC8F0-7806-4855-AFDB-A27EBE63514C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1BDC8F0-7806-4855-AFDB-A27EBE63514C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1BDC8F0-7806-4855-AFDB-A27EBE63514C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1BDC8F0-7806-4855-AFDB-A27EBE63514C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
