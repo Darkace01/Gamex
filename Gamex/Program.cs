@@ -1,7 +1,4 @@
-using Gamex.Data;
-using Gamex.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using Gamex.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuthorization();
@@ -26,6 +23,8 @@ builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddEntityFrameworkStores<GamexDbContext>()
     .AddApiEndpoints();
 
+//builder.Services.ConfigureRepository();
+
 var app = builder.Build();
 app.MapIdentityApi<ApplicationUser>();
 
@@ -35,6 +34,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.ConfigureExceptionHandler(app.Logger, app.Configuration);
 
 app.UseHttpsRedirection();
 

@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gamex.Data", "Gamex.Data\Ga
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gamex.Models", "Gamex.Models\Gamex.Models.csproj", "{D1BDC8F0-7806-4855-AFDB-A27EBE63514C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gamex.DTO", "Gamex.DTO\Gamex.DTO.csproj", "{3A241BD7-F2CA-4AAF-B34B-1F1A9DAF378C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{D1BDC8F0-7806-4855-AFDB-A27EBE63514C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1BDC8F0-7806-4855-AFDB-A27EBE63514C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1BDC8F0-7806-4855-AFDB-A27EBE63514C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A241BD7-F2CA-4AAF-B34B-1F1A9DAF378C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A241BD7-F2CA-4AAF-B34B-1F1A9DAF378C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A241BD7-F2CA-4AAF-B34B-1F1A9DAF378C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A241BD7-F2CA-4AAF-B34B-1F1A9DAF378C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
