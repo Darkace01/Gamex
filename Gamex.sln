@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gamex.Service", "Gamex.Serv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gamex.Common", "Gamex.Common\Gamex.Common.csproj", "{0DA0C871-695F-4E1B-BEA6-4423BA066437}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gamex.Test", "Gamex.Test\Gamex.Test.csproj", "{DBF47218-B111-42A9-89F2-DA1537E8C11E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{0DA0C871-695F-4E1B-BEA6-4423BA066437}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0DA0C871-695F-4E1B-BEA6-4423BA066437}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0DA0C871-695F-4E1B-BEA6-4423BA066437}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBF47218-B111-42A9-89F2-DA1537E8C11E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBF47218-B111-42A9-89F2-DA1537E8C11E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBF47218-B111-42A9-89F2-DA1537E8C11E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBF47218-B111-42A9-89F2-DA1537E8C11E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

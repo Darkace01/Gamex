@@ -127,6 +127,52 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             throw;
         }
     }
+    /// <summary>
+    /// Create a new tournament with the user without using SQL transaction for in-memory database
+    /// </summary>
+    /// <param name="tournament"></param>
+    /// <param name="user"></param>
+    /// <returns></returns>
+    public async Task CreateTournamentMock(TournamentCreateDTO tournament, ApplicationUser user)
+    {
+        //using var transaction = _context.Database.BeginTransaction();
+        //bool hasSaved = false;
+        try
+        {
+            Tournament newTournament = new()
+            {
+                Name = tournament.Name,
+                Description = tournament.Description,
+                IsFeatured = tournament.IsFeatured,
+                StartDate = tournament.StartDate,
+                EndDate = tournament.EndDate,
+                Location = tournament.Location,
+                Time = tournament.Time,
+                EntryFee = tournament.EntryFee,
+                Rules = tournament.Rules,
+                PictureId = tournament.PictureId,
+            };
+
+            await _context.Tournaments.AddAsync(newTournament);
+            await _context.SaveChangesAsync();
+            //hasSaved = true;
+            UserTournament userTournament = new()
+            {
+                UserId = user.Id,
+                TournamentId = newTournament.Id,
+            };
+            await _context.UserTournaments.AddAsync(userTournament);
+            await _context.SaveChangesAsync();
+            //hasSaved = true;
+            //transaction.Commit();
+        }
+        catch (Exception)
+        {
+            //if (hasSaved)
+            //    transaction.Rollback();
+            throw;
+        }
+    }
 
     /// <summary>
     /// Update a tournament with the user
@@ -134,11 +180,8 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     /// <param name="tournament"></param>
     /// <param name="user"></param>
     /// <returns></returns>
-
     public async Task UpdateTournament(TournamentUpdateDTO tournament, ApplicationUser user)
     {
-        using var transaction = _context.Database.BeginTransaction();
-        bool hasSaved = false;
         try
         {
             Tournament? existingTournament = await _context.Tournaments
@@ -158,13 +201,9 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             existingTournament.PictureId = tournament.PictureId;
             _context.Tournaments.Update(existingTournament);
             await _context.SaveChangesAsync();
-            hasSaved = true;
-            transaction.Commit();
         }
         catch (Exception)
         {
-            if (hasSaved)
-                transaction.Rollback();
             throw;
         }
     }
@@ -177,8 +216,6 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     /// <returns></returns>
     public async Task DeleteTournament(Guid id, ApplicationUser user)
     {
-        using var transaction = _context.Database.BeginTransaction();
-        bool hasSaved = false;
         try
         {
             Tournament? existingTournament = await _context.Tournaments
@@ -188,13 +225,10 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 throw new Exception("You are not authorized to delete this tournament");
             _context.Tournaments.Remove(existingTournament);
             await _context.SaveChangesAsync();
-            hasSaved = true;
-            transaction.Commit();
+
         }
         catch (Exception)
         {
-            if (hasSaved)
-                transaction.Rollback();
             throw;
         }
     }
