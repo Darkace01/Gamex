@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gamex.Models", "Gamex.Model
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gamex.DTO", "Gamex.DTO\Gamex.DTO.csproj", "{3A241BD7-F2CA-4AAF-B34B-1F1A9DAF378C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gamex.Service", "Gamex.Service\Gamex.Service.csproj", "{2F85A5C7-FC46-43D1-92A4-E7D6F2FAF399}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gamex.Common", "Gamex.Common\Gamex.Common.csproj", "{0DA0C871-695F-4E1B-BEA6-4423BA066437}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{3A241BD7-F2CA-4AAF-B34B-1F1A9DAF378C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3A241BD7-F2CA-4AAF-B34B-1F1A9DAF378C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3A241BD7-F2CA-4AAF-B34B-1F1A9DAF378C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F85A5C7-FC46-43D1-92A4-E7D6F2FAF399}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F85A5C7-FC46-43D1-92A4-E7D6F2FAF399}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F85A5C7-FC46-43D1-92A4-E7D6F2FAF399}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F85A5C7-FC46-43D1-92A4-E7D6F2FAF399}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DA0C871-695F-4E1B-BEA6-4423BA066437}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DA0C871-695F-4E1B-BEA6-4423BA066437}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DA0C871-695F-4E1B-BEA6-4423BA066437}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DA0C871-695F-4E1B-BEA6-4423BA066437}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

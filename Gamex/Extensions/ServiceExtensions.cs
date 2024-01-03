@@ -1,4 +1,7 @@
-﻿namespace Gamex.Extensions;
+﻿using Gamex.Service.Contract;
+using Gamex.Service.Implementation;
+
+namespace Gamex.Extensions;
 
 public static class ServiceExtensions
 {
@@ -36,6 +39,7 @@ public static class ServiceExtensions
     /// <param name="services"></param>
     public static void ConfigureRepository(this IServiceCollection services)
     {
+        services.AddScoped<IRepositoryServiceManager, RepositoryServiceManager>();
     }
 
     /// <summary>

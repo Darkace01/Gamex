@@ -31,6 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Gamex.Data\Gamex.Data.csproj" />
     <ProjectReference Include="..\Gamex.DTO\Gamex.DTO.csproj" />
+    <ProjectReference Include="..\Gamex.Service\Gamex.Service.csproj" />
   </ItemGroup>
 
   <ItemGroup>

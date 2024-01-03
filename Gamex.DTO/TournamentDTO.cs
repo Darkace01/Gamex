@@ -1,0 +1,106 @@
+﻿using Gamex.Common;
+
+namespace Gamex.DTO;
+
+public class TournamentDTO
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public bool IsFeatured { get; set; } = false;
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    public string StartDateFormatted { get { return StartDate?.ToString("dd/MM/yyyy"); } }
+    public string EndDateFormatted { get { return EndDate?.ToString("dd/MM/yyyy"); } }
+    public string Location { get; set; } = string.Empty;
+    public DateTime? Time { get; set; }
+    public string TimeFormatted { get { return Time?.ToString("HH:mm"); } }
+    public decimal EntryFee { get; set; }
+    public string Rules { get; set; } = string.Empty;
+    public string PictureUrl { get; set; } = string.Empty;
+    public string PicturePublicId { get; set; } = string.Empty;
+    public List<TournamentUserDTO> TournamentUsers { get; set; } = new();
+}
+
+public class TournamentCreateDTO
+{
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public bool IsFeatured { get; set; } = false;
+    public DateTime? StartDate
+    {
+        get
+        {
+            return string.IsNullOrEmpty(StartDateString)
+                ? null
+                : StartDateString.Contains("/") ? CommonHelpers.ConvertToDate(StartDateString) : null;
+        }
+    }
+    public string StartDateString { get; set; } = string.Empty;
+    public DateTime? EndDate
+    {
+        get
+        {
+            return string.IsNullOrEmpty(EndDateString)
+                ? null
+                : EndDateString.Contains("/") ? CommonHelpers.ConvertToDate(EndDateString) : null;
+        }
+    }
+    public string EndDateString { get; set; } = string.Empty;
+    public string Location { get; set; } = string.Empty;
+    public DateTime? Time
+    {
+        get
+        {
+            return string.IsNullOrEmpty(TimeString)
+                ? null
+                : TimeString.Contains(":") ? CommonHelpers.ConvertToTime(TimeString) : null;
+        }
+    }
+    public string TimeString { get; set; } = string.Empty;
+    public decimal EntryFee { get; set; }
+    public string Rules { get; set; } = string.Empty;
+    public Guid? PictureId { get; set; }
+}
+
+public class TournamentUpdateDTO
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public bool IsFeatured { get; set; } = false;
+    public DateTime? StartDate
+    {
+        get
+        {
+            return string.IsNullOrEmpty(StartDateString)
+                ? null
+                : StartDateString.Contains("/") ? CommonHelpers.ConvertToDate(StartDateString) : null;
+        }
+    }
+    public string StartDateString { get; set; } = string.Empty;
+    public DateTime? EndDate
+    {
+        get
+        {
+            return string.IsNullOrEmpty(EndDateString)
+                ? null
+                : EndDateString.Contains("/") ? CommonHelpers.ConvertToDate(EndDateString) : null;
+        }
+    }
+    public string EndDateString { get; set; } = string.Empty;
+    public string Location { get; set; } = string.Empty;
+    public DateTime? Time
+    {
+        get
+        {
+            return string.IsNullOrEmpty(TimeString)
+                ? null
+                : TimeString.Contains(":") ? CommonHelpers.ConvertToTime(TimeString) : null;
+        }
+    }
+    public string TimeString { get; set; } = string.Empty;
+    public decimal EntryFee { get; set; }
+    public string Rules { get; set; } = string.Empty;
+    public Guid? PictureId { get; set; }
+}

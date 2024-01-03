@@ -3,10 +3,12 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Gamex.Common\Gamex.Common.csproj" />
+    <ProjectReference Include="..\Gamex.Data\Gamex.Data.csproj" />
+    <ProjectReference Include="..\Gamex.DTO\Gamex.DTO.csproj" />
   </ItemGroup>
 
 </Project>
