@@ -1,4 +1,5 @@
 using Gamex.Extensions;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuthorization();
@@ -22,12 +23,17 @@ builder.Services.ConfigureRepository();
 builder.Services.ConfigureSwagger();
 builder.Services.ConfigureVersioning();
 
+//Add support to logging with SERILOG
+builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
+
 builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddEntityFrameworkStores<GamexDbContext>()
     .AddApiEndpoints();
 
 
 var app = builder.Build();
+app.UseSerilogRequestLogging();
 app.MapIdentityApi<ApplicationUser>();
 
 // Configure the HTTP request pipeline.
@@ -36,6 +42,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 
 app.ConfigureExceptionHandler(app.Logger);
 

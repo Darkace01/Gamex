@@ -1,5 +1,4 @@
-﻿using Gamex.Service.Contract;
-using Gamex.Service.Implementation;
+﻿using Serilog;
 
 namespace Gamex.Extensions;
 
@@ -90,5 +89,11 @@ public static class ServiceExtensions
                 });
             swagger.OperationFilter<SwaggerFileOperationFilter>();
         });
+    }
+
+    public static void ConfigureSerilog(this IHostBuilder hostBuilder)
+    {
+        hostBuilder.UseSerilog((context, configuration) =>
+            configuration.ReadFrom.Configuration(context.Configuration));
     }
 }

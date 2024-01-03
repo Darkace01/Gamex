@@ -9,3 +9,5 @@ global using Gamex.DTO;
 global using Microsoft.AspNetCore.Diagnostics;
 global using System.Net;
 global using System.Text.Json;
+global using Gamex.Service.Contract;
+global using Gamex.Service.Implementation;
