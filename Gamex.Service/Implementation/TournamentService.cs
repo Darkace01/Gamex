@@ -49,15 +49,13 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     /// Get all tournaments
     /// </summary>
     /// <returns></returns>
-    public async Task<List<TournamentDTO>> GetAllTournaments()
+    public IQueryable<TournamentDTO> GetAllTournaments()
     {
-        List<Tournament> tournaments = await _context.Tournaments
-                            .AsNoTracking()
-                            .Include(t => t.Picture)
-                            .Include(t => t.UserTournaments)
-                            .ThenInclude(ut => ut.User)
-                            .AsNoTracking()
-                            .ToListAsync();
+        var tournaments = _context.Tournaments
+                             .AsNoTracking()
+                             .Include(t => t.Picture)
+                             .Include(t => t.UserTournaments)
+                             .ThenInclude(ut => ut.User);
 
         return tournaments.Select(t => new TournamentDTO
         {
@@ -71,16 +69,16 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             Time = t.Time,
             EntryFee = t.EntryFee,
             Rules = t.Rules,
-            PicturePublicId = t.Picture?.PublicId,
-            PictureUrl = t.Picture?.FileUrl,
+            PicturePublicId = t.Picture == null ? "" : t.Picture.PublicId,
+            PictureUrl = t.Picture == null ? "" : t.Picture.FileUrl,
 
             TournamentUsers = t.UserTournaments.Select(ut => new TournamentUserDTO
             {
                 UserId = ut.UserId,
                 DisplayName = ut.User.DisplayName,
-                PictureUrl = ut.User.Picture?.FileUrl,
-            }).ToList()
-        }).ToList();
+                PictureUrl = ut.User.Picture == null ? "" : ut.User.Picture.FileUrl,
+            })
+        });
     }
 
     /// <summary>

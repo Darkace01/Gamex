@@ -19,7 +19,7 @@ public class TournamentDTO
     public string Rules { get; set; } = string.Empty;
     public string PictureUrl { get; set; } = string.Empty;
     public string PicturePublicId { get; set; } = string.Empty;
-    public List<TournamentUserDTO> TournamentUsers { get; set; } = new();
+    public IEnumerable<TournamentUserDTO> TournamentUsers { get; set; }
 }
 
 public class TournamentCreateDTO
