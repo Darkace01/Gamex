@@ -17,13 +17,15 @@ builder.Services.AddDbContext<GamexDbContext>(options =>
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.ConfigureCors();
+builder.Services.ConfigureRepository();
+builder.Services.ConfigureSwagger();
+builder.Services.ConfigureVersioning();
 
 builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
     .AddEntityFrameworkStores<GamexDbContext>()
     .AddApiEndpoints();
 
-//builder.Services.ConfigureRepository();
 
 var app = builder.Build();
 app.MapIdentityApi<ApplicationUser>();
@@ -35,7 +37,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.ConfigureExceptionHandler(app.Logger, app.Configuration);
+app.ConfigureExceptionHandler(app.Logger);
 
 app.UseHttpsRedirection();
 

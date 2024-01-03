@@ -1,9 +1,4 @@
-﻿using Gamex.DTO;
-using Microsoft.AspNetCore.Diagnostics;
-using System.Net;
-using System.Text.Json;
-
-namespace Gamex.Extensions;
+﻿namespace Gamex.Extensions;
 
 public static class ExceptionMiddlewareExtensions
 {
@@ -13,7 +8,7 @@ public static class ExceptionMiddlewareExtensions
     /// <param name="app"></param>
     /// <param name="logger"></param>
     /// <param name="configuration"></param>
-    public static void ConfigureExceptionHandler(this IApplicationBuilder app, ILogger logger, IConfiguration configuration)
+    public static void ConfigureExceptionHandler(this IApplicationBuilder app, ILogger logger)
     {
         _ = app.UseExceptionHandler(appError =>
         {
@@ -22,7 +17,7 @@ public static class ExceptionMiddlewareExtensions
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 context.Response.ContentType = "application/json";
                 var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
-                var config = context.Features.Get<IConfiguration>();
+                //var config = context.Features.Get<IConfiguration>();
                 var loggedInUser = string.IsNullOrWhiteSpace(context?.Request?.HttpContext?.User?.Identity?.Name) ? "Anonymous" : context.Request.HttpContext.User.Identity.Name;
                 if (contextFeature != null)
                 {
