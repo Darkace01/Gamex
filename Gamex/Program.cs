@@ -27,14 +27,14 @@ builder.Services.ConfigureVersioning();
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
-builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
-    .AddEntityFrameworkStores<GamexDbContext>()
-    .AddApiEndpoints();
+//builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
+//    .AddEntityFrameworkStores<GamexDbContext>()
+//    .AddApiEndpoints();
 
 
 var app = builder.Build();
 app.UseSerilogRequestLogging();
-app.MapIdentityApi<ApplicationUser>();
+//app.MapIdentityApi<ApplicationUser>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
