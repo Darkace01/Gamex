@@ -8,4 +8,6 @@ public class ApplicationUser: IdentityUser
     public Guid PictureId { get; set; }
     public Picture? Picture { get; set; } 
     public List<UserTournament> UserTournaments { get; set; } = new();
+    public string? RefreshToken { get; set; }
+    public DateTime? RefreshTokenExpiryTime { get; set; }
 }
