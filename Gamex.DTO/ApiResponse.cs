@@ -18,4 +18,11 @@ public class ApiResponse<T>
         Message = message;
         HasError = false;
     }
+
+    public ApiResponse(int statusCode, string message)
+    {
+        StatusCode = statusCode;
+        Message = message;
+        HasError = true;
+    }
 }

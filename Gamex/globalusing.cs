@@ -11,3 +11,6 @@ global using System.Net;
 global using System.Text.Json;
 global using Gamex.Service.Contract;
 global using Gamex.Service.Implementation;
+global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Http;
+global using Microsoft.AspNetCore.Mvc;
