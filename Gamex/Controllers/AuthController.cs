@@ -5,16 +5,10 @@ namespace Gamex.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{v:apiversion}/auth")]
 [ApiController]
-public class AuthController : ControllerBase
+public class AuthController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager) : ControllerBase
 {
-    private readonly IRepositoryServiceManager _repo;
-    private readonly UserManager<ApplicationUser> _userManager;
-
-    public AuthController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager)
-    {
-        _repo = repo;
-        _userManager = userManager;
-    }
+    private readonly IRepositoryServiceManager _repo = repo;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
 
     [HttpPost("login")]
     [ProducesResponseType(StatusCodes.Status200OK)]

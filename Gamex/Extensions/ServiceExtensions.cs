@@ -1,4 +1,6 @@
-﻿using Serilog;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using Serilog;
 
 namespace Gamex.Extensions;
 
@@ -142,4 +144,17 @@ public static class ServiceExtensions
                                 })
                                 .AddEntityFrameworkStores<GamexDbContext>()
                                 .AddDefaultTokenProviders();
+
+    public static void ConfigureJsonSerializer(this IServiceCollection services)
+    {
+        //JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+        //{
+        //    ContractResolver = new CamelCasePropertyNamesContractResolver()
+        //};
+        //services.AddControllers().AddJsonOptions(options =>
+        //{
+        //    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        //    options.JsonSerializerOptions.WriteIndented = true;
+        //});
+    }
 }

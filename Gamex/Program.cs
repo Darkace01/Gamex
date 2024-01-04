@@ -1,6 +1,10 @@
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//Configure Json Serializer
+builder.Services.ConfigureJsonSerializer();
+
 builder.Services.AddAuthorization();
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -55,7 +59,7 @@ if (app.Environment.IsDevelopment())
 }
 
 
-app.ConfigureExceptionHandler(app.Logger);
+app.ConfigureExceptionHandler(app.Logger,app.Configuration);
 
 app.UseHealthChecks("/app/health");
 
