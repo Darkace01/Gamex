@@ -1,4 +1,3 @@
-using Gamex.Extensions;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,9 +18,21 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.ConfigureCors();
+
+//Identity
+builder.Services.AddScoped<UserManager<ApplicationUser>, UserManager<ApplicationUser>>();
+builder.Services.ConfigureIdentity();
+
+// Dependency Injection for repositories
 builder.Services.ConfigureRepository();
+
+//JWT
+builder.Services.ConfigureAuthenticationWithJWT(builder.Configuration);
+
 builder.Services.ConfigureSwagger();
 builder.Services.ConfigureVersioning();
+
+builder.Services.AddHealthChecks();
 
 //Add support to logging with SERILOG
 builder.Host.UseSerilog((context, configuration) =>
@@ -45,6 +56,8 @@ if (app.Environment.IsDevelopment())
 
 
 app.ConfigureExceptionHandler(app.Logger);
+
+app.UseHealthChecks("/app/health");
 
 app.UseHttpsRedirection();
 

@@ -91,9 +91,55 @@ public static class ServiceExtensions
         });
     }
 
+    /// <summary>
+    /// Configure Serilog logger
+    /// </summary>
+    /// <param name="hostBuilder"></param>
     public static void ConfigureSerilog(this IHostBuilder hostBuilder)
     {
         hostBuilder.UseSerilog((context, configuration) =>
             configuration.ReadFrom.Configuration(context.Configuration));
     }
+
+    /// <summary>
+    /// Configure JWT Authentication
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="configuration"></param>
+    public static void ConfigureAuthenticationWithJWT(this IServiceCollection services, IConfiguration configuration) => services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+        // Adding Jwt Bearer  
+        .AddJwtBearer(options =>
+        {
+            options.SaveToken = true;
+            options.RequireHttpsMetadata = false;
+            options.TokenValidationParameters = new TokenValidationParameters()
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ClockSkew = TimeSpan.Zero,
+                ValidAudience = configuration["JWT:ValidAudience"],
+                ValidIssuer = configuration["JWT:ValidIssuer"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]))
+            };
+        });
+
+    /// <summary>
+    /// Configure Identity
+    /// </summary>
+    /// <param name="services"></param>
+    public static void ConfigureIdentity(this IServiceCollection services) => services.AddIdentity<ApplicationUser, IdentityRole>(
+                                options =>
+                                {
+                                    options.User.RequireUniqueEmail = true;
+                                    options.Password.RequiredLength = 6;
+                                })
+                                .AddEntityFrameworkStores<GamexDbContext>()
+                                .AddDefaultTokenProviders();
 }
