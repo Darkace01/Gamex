@@ -54,12 +54,12 @@ app.UseSerilogRequestLogging();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
+app.UseSwagger();
+app.UseSwaggerUI();
 
 
-app.ConfigureExceptionHandler(app.Logger,app.Configuration);
+app.ConfigureExceptionHandler(app.Logger, app.Configuration);
 
 app.UseHealthChecks("/app/health");
 
