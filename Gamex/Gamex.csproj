@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="web.config" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Asp.Versioning.Mvc" Version="8.0.0" />
     <PackageReference Include="Azure.Identity" Version="1.10.2" />
     <PackageReference Include="Google.Apis.Auth.AspNetCore3" Version="1.64.0" />
@@ -26,6 +30,7 @@
 
   <ItemGroup>
     <None Include="..\Gamex\.editorconfig" />
+    <None Include="web.config" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,6 +41,10 @@
 
   <ItemGroup>
     <EditorConfigFiles Remove="..\Gamex\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="web.config" />
   </ItemGroup>
 
 </Project>
