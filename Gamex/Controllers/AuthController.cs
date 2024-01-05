@@ -53,6 +53,8 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         if (user == null) return BadRequest(new ApiResponse<LoginResponseDTO>(400, "Invalid refresh token request"));
 
+        if (user == null || user.RefreshToken != model.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.Now) return BadRequest(new ApiResponse<LoginResponseDTO>(400, "Invalid refresh token request"));
+
         return Ok(await GenerateLoginTokenandResponseForUser(user));
     }
 
@@ -100,7 +102,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(typeof(ApiResponse<LoginResponseDTO>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ExternalRegisterOrLoginWithGoogle([FromBody] ExternalAuthDTO model)
     {
-        if(model is null) return BadRequest(new ApiResponse<LoginResponseDTO>(400, "Invalid external authentication request"));
+        if (model is null) return BadRequest(new ApiResponse<LoginResponseDTO>(400, "Invalid external authentication request"));
 
         if (!ModelState.IsValid) return BadRequest(new ApiResponse<LoginResponseDTO>(400, "Invalid external authentication request"));
 
@@ -111,7 +113,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         var userExist = await _userManager.FindByEmailAsync(response.Data?.Email);
         userExist ??= await _userManager.FindByNameAsync(response.Data?.Email);
 
-        if(userExist is not null)
+        if (userExist is not null)
         {
             // Return a token for the user
             if (userExist.ExternalAuthInWithGoogle == false)
