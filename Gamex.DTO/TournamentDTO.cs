@@ -60,7 +60,7 @@ public class TournamentCreateDTO
     public string TimeString { get; set; } = string.Empty;
     public decimal EntryFee { get; set; }
     public string Rules { get; set; } = string.Empty;
-    public Guid? PictureId { get; set; }
+    public string PictureId { get; set; } = string.Empty;
 }
 
 public class TournamentUpdateDTO

@@ -89,43 +89,48 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     /// <returns></returns>
     public async Task CreateTournament(TournamentCreateDTO tournament, ApplicationUser user)
     {
-        using var transaction = _context.Database.BeginTransaction();
-        bool hasSaved = false;
-        try
-        {
-            Tournament newTournament = new()
+        var executionStrategy = _context.Database.CreateExecutionStrategy();
+        await executionStrategy.Execute(
+            async () =>
             {
-                Name = tournament.Name,
-                Description = tournament.Description,
-                IsFeatured = tournament.IsFeatured,
-                StartDate = tournament.StartDate,
-                EndDate = tournament.EndDate,
-                Location = tournament.Location,
-                Time = tournament.Time,
-                EntryFee = tournament.EntryFee,
-                Rules = tournament.Rules,
-                PictureId = tournament.PictureId,
-            };
+                using var transaction = _context.Database.BeginTransaction();
+                bool hasSaved = false;
+                try
+                {
+                    Tournament newTournament = new()
+                    {
+                        Name = tournament.Name,
+                        Description = tournament.Description,
+                        IsFeatured = tournament.IsFeatured,
+                        StartDate = tournament.StartDate,
+                        EndDate = tournament.EndDate,
+                        Location = tournament.Location,
+                        Time = tournament.Time,
+                        EntryFee = tournament.EntryFee,
+                        Rules = tournament.Rules,
+                        PictureId = string.IsNullOrWhiteSpace(tournament.PictureId) ? null : Guid.Parse(tournament.PictureId),
+                    };
 
-            await _context.Tournaments.AddAsync(newTournament);
-            await _context.SaveChangesAsync();
-            hasSaved = true;
-            UserTournament userTournament = new()
-            {
-                UserId = user.Id,
-                TournamentId = newTournament.Id,
-            };
-            await _context.UserTournaments.AddAsync(userTournament);
-            await _context.SaveChangesAsync();
-            hasSaved = true;
-            transaction.Commit();
-        }
-        catch (Exception)
-        {
-            if (hasSaved)
-                transaction.Rollback();
-            throw;
-        }
+                    await _context.Tournaments.AddAsync(newTournament);
+                    await _context.SaveChangesAsync();
+                    hasSaved = true;
+                    UserTournament userTournament = new()
+                    {
+                        UserId = user.Id,
+                        TournamentId = newTournament.Id,
+                    };
+                    await _context.UserTournaments.AddAsync(userTournament);
+                    await _context.SaveChangesAsync();
+                    hasSaved = true;
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    if (hasSaved)
+                        transaction.Rollback();
+                    throw;
+                }
+        });
     }
     /// <summary>
     /// Create a new tournament with the user without using SQL transaction for in-memory database
@@ -150,7 +155,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 Time = tournament.Time,
                 EntryFee = tournament.EntryFee,
                 Rules = tournament.Rules,
-                PictureId = tournament.PictureId,
+                PictureId = string.IsNullOrWhiteSpace(tournament.PictureId) ? null : Guid.Parse(tournament.PictureId),
             };
 
             await _context.Tournaments.AddAsync(newTournament);
