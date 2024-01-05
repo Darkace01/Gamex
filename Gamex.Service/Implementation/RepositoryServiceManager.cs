@@ -7,6 +7,7 @@ public class RepositoryServiceManager(GamexDbContext context, IConfiguration con
 
     private ITournamentService _tournamentService;
     private IJWTHelper _jwtHelper;
+    private ISMTPMailService _smtpMailService;
 
     public ITournamentService TournamentService
     {
@@ -23,6 +24,15 @@ public class RepositoryServiceManager(GamexDbContext context, IConfiguration con
         {
             _jwtHelper ??= new JWTHelper(_configuration);
             return _jwtHelper;
+        }
+    }
+
+    public ISMTPMailService SMTPMailService
+    {
+        get
+        {
+            _smtpMailService ??= new SMTPMailService(_configuration);
+            return _smtpMailService;
         }
     }
 }
