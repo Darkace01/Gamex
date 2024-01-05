@@ -72,6 +72,6 @@ jobs:
           # Ftp password
           password: ${{ secrets.FTP_PASSWORD }}
           # The remote folder location of your FTP server
-          server-dir: /public_html
+          server-dir: public_html/
           local-dir: ${{ env.WEBAPP_PACKAGE_PATH }}
           dry-run: true
