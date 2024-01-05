@@ -47,3 +47,9 @@ public class RegisterDTO
     [Required]
     public string PhoneNumber { get; set; }
 }
+
+public class ExternalAuthDTO
+{
+    [Required]
+    public string Token { get; set; }
+}

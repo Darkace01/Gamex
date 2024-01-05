@@ -1,4 +1,5 @@
 ﻿using Gamex.Common;
+using Google.Apis.Auth;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace Gamex.Controllers;
@@ -96,7 +97,100 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         return Ok(new ApiResponse<string>(200, "User created successfully!"));
     }
 
+    [HttpPost("external/google")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<LoginResponseDTO>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ExternalRegisterOrLoginWithGoogle([FromBody] ExternalAuthDTO model)
+    {
+        if(model is null) return BadRequest(new ApiResponse<LoginResponseDTO>(400, "Invalid external authentication request"));
+
+        if (!ModelState.IsValid) return BadRequest(new ApiResponse<LoginResponseDTO>(400, "Invalid external authentication request"));
+
+        var response = await ValidateUserTokenForGoogle(model.Token);
+
+        if (response.HasError) return BadRequest(new ApiResponse<LoginResponseDTO>(400, response.Message));
+
+        var userExist = await _userManager.FindByEmailAsync(response.Data?.Email);
+        userExist ??= await _userManager.FindByNameAsync(response.Data?.Email);
+
+        if(userExist is not null)
+        {
+            // Return a token for the user
+            if (userExist.ExternalAuthInWithGoogle == false)
+            {
+                userExist.ExternalAuthInWithGoogle = true;
+                userExist.EmailConfirmed = true;
+                await _userManager.UpdateAsync(userExist);
+            }
+
+            return Ok(await GenerateLoginTokenandResponseForUser(userExist));
+        }
+
+        // Create a new user
+        ApplicationUser user = new()
+        {
+            Email = response.Data.Email,
+            EmailConfirmed = true,
+            //FirstName = response.data.GivenName,
+            //LastName = response.data.FamilyName,
+            SecurityStamp = Guid.NewGuid().ToString(),
+            UserName = response.Data.Email,
+            ExternalAuthInWithGoogle = true,
+            //TODO: Save profile picture url for user
+            //ProfilePictureUrl = response.data.Picture,
+            //ReceivePushNotification = true
+        };
+
+        if (!await _roleManager.RoleExistsAsync(AppConstant.PublicUserRole))
+        {
+            await _roleManager.CreateAsync(new IdentityRole(AppConstant.PublicUserRole));
+        }
+
+        var result = await _userManager.CreateAsync(user);
+
+        if (!result.Succeeded) return BadRequest(new ApiResponse<string>(400, $"User creation failed! Please check user details and try again. {result?.Errors?.FirstOrDefault()?.Description}"));
+
+        await _userManager.AddToRoleAsync(user, AppConstant.PublicUserRole);
+
+        return Ok(await GenerateLoginTokenandResponseForUser(user));
+
+    }
+
     #region Private Methods
+    private async Task<ApiResponse<GoogleJsonWebSignature.Payload>> ValidateUserTokenForGoogle(string token)
+    {
+        var mobileClientId = _configuration["Authentication:Google:MobileClientId"];
+        var webClientId = _configuration["Authentication:Google:ClientId"];
+        var settings = new GoogleJsonWebSignature.ValidationSettings()
+        {
+            ExpirationTimeClockTolerance = TimeSpan.FromHours(1)
+        };
+        GoogleJsonWebSignature.Payload payload = null;
+        bool isValidToken = false;
+        var message = string.Empty;
+        try
+        {
+            payload = await GoogleJsonWebSignature.ValidateAsync(token, settings);
+            if (payload != null && ((string?)payload?.Audience == mobileClientId || (string?)payload?.Audience == webClientId))
+            {
+                isValidToken = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            message = ex.Message;
+        }
+
+        var response = new ApiResponse<GoogleJsonWebSignature.Payload>()
+        {
+            HasError = !isValidToken,
+            Data = payload,
+            Message = message
+        };
+        return response;
+    }
     private async Task<ApiResponse<LoginResponseDTO>> GenerateLoginTokenandResponseForUser(ApplicationUser user)
     {
         var userRoles = await _userManager.GetRolesAsync(user);

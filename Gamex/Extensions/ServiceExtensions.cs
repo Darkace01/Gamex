@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using Serilog;
+﻿using Serilog;
 
 namespace Gamex.Extensions;
 
@@ -156,5 +154,24 @@ public static class ServiceExtensions
         //    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         //    options.JsonSerializerOptions.WriteIndented = true;
         //});
+    }
+
+    /// <summary>
+    /// Configure External Authentication. Like google, facebook, etc.
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="configuration"></param>
+    public static void ConfigureExternalAuthentication(this IServiceCollection services, IConfiguration configuration)
+    {
+        //services.AddAuthentication().AddGoogle(googleOptions =>
+        //{
+        //    googleOptions.ClientId = configuration["Authentication:Google:ClientId"];
+        //    googleOptions.ClientSecret = configuration["Authentication:Google:ClientSecret"];
+        //});
+        services.AddAuthentication().AddGoogleOpenIdConnect(googleOptions =>
+        {
+            googleOptions.ClientId = configuration["Authentication:Google:ClientId"];
+            googleOptions.ClientSecret = configuration["Authentication:Google:ClientSecret"];
+        });
     }
 }
