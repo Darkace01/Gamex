@@ -66,12 +66,12 @@ jobs:
       - name: 📂 Sync files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          server: ftp://66.23.234.6/
+          server: 66.23.234.6
           # Ftp username
           username: ${{ secrets.FTP_USERNAME }}
           # Ftp password
           password: ${{ secrets.FTP_PASSWORD }}
           # The remote folder location of your FTP server
-          server-dir: public_html/
+          server-dir: /
           local-dir: ${{ env.WEBAPP_PACKAGE_PATH }}/
           dry-run: true
