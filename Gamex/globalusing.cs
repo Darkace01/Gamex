@@ -18,3 +18,6 @@ global using Microsoft.AspNetCore.Authentication.JwtBearer;
 global using Microsoft.IdentityModel.Tokens;
 global using System.Text;
 global using Gamex.Extensions;
+global using Gamex.Common;
+global using Google.Apis.Auth;
+global using System.IdentityModel.Tokens.Jwt;

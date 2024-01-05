@@ -1,8 +1,4 @@
-﻿using Gamex.Common;
-using Google.Apis.Auth;
-using System.IdentityModel.Tokens.Jwt;
-
-namespace Gamex.Controllers;
+﻿namespace Gamex.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{v:apiversion}/auth")]
 [ApiController]
@@ -128,18 +124,23 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
             return Ok(await GenerateLoginTokenandResponseForUser(userExist));
         }
 
+        var picture = await _repo.PictureService.CreatePicture(new PictureCreateDTO()
+        {
+            FileUrl = response.Data?.Picture
+        });
+
         // Create a new user
         ApplicationUser user = new()
         {
-            Email = response.Data.Email,
+            Email = response?.Data?.Email,
             EmailConfirmed = true,
             //FirstName = response.data.GivenName,
             //LastName = response.data.FamilyName,
             SecurityStamp = Guid.NewGuid().ToString(),
-            UserName = response.Data.Email,
+            UserName = response?.Data?.Email,
             ExternalAuthInWithGoogle = true,
             //TODO: Save profile picture url for user
-            //ProfilePictureUrl = response.data.Picture,
+            PictureId = picture.Id,
             //ReceivePushNotification = true
         };
 
