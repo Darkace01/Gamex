@@ -1,13 +1,8 @@
 ﻿namespace Gamex.Service.Implementation;
 
-public class PostService : IPostService
+public class PostService(GamexDbContext context) : IPostService
 {
-    private readonly GamexDbContext _context;
-
-    public PostService(GamexDbContext context)
-    {
-        _context = context;
-    }
+    private readonly GamexDbContext _context = context;
 
     public async Task<PostDTO> GetPost(Guid postId)
     {

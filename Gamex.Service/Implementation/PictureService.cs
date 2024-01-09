@@ -1,13 +1,8 @@
 ﻿namespace Gamex.Service.Implementation;
 
-public class PictureService : IPictureService
+public class PictureService(GamexDbContext context) : IPictureService
 {
-    private readonly GamexDbContext _context;
-
-    public PictureService(GamexDbContext context)
-    {
-        _context = context;
-    }
+    private readonly GamexDbContext _context = context;
 
     public async Task<PictureDTO> GetPicture(Guid pictureId)
     {

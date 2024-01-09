@@ -12,6 +12,7 @@ public class RepositoryServiceManager : IRepositoryServiceManager
     private IPictureService _pictureService;
     private IFileStorageService _fileStorageService;
     private IPostService _postService;
+    private ICommentService _commentService;
 
     public RepositoryServiceManager(GamexDbContext context, IConfiguration config)
     {
@@ -71,6 +72,15 @@ public class RepositoryServiceManager : IRepositoryServiceManager
         {
             _postService ??= new PostService(_context);
             return _postService;
+        }
+    }
+
+    public ICommentService CommentService
+    {
+        get
+        {
+            _commentService ??= new CommentService(_context);
+            return _commentService;
         }
     }
 }
