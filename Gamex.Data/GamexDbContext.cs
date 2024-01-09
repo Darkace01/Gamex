@@ -50,6 +50,18 @@ public class GamexDbContext : IdentityDbContext<ApplicationUser>
             .Property(t => t.Name)
             .HasMaxLength(300);
 
+        builder.Entity<Comment>()
+            .HasOne(c => c.Post)
+            .WithMany(p => p.Comments)
+            .HasForeignKey(c => c.PostId)
+            .OnDelete(DeleteBehavior.Cascade); // Added new foreign key constraint
+            
+        builder.Entity<Post>()
+            .HasOne(p => p.User)
+            .WithMany(u => u.Posts)
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.NoAction); // Added new foreign key constraint
+
         builder.Entity<ApplicationUser>()
             .HasOne(u => u.Picture);
 
