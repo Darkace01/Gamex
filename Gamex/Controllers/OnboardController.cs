@@ -35,7 +35,7 @@ public class OnboardController : ControllerBase
             var deleteResult = _repo.FileStorageService.DeleteFile(user.Picture.PublicId);
         }
 
-        if (string.IsNullOrWhiteSpace(user.Picture?.FileUrl))
+        if (!string.IsNullOrWhiteSpace(user.Picture?.FileUrl))
         {
             var uploadResult = await _repo.FileStorageService.SaveFile(model.ProfilePicture, "profile-picture");
             if (uploadResult is not null)
@@ -46,11 +46,11 @@ public class OnboardController : ControllerBase
         else
         {
             var uploadResult = await _repo.FileStorageService.SaveFile(model.ProfilePicture, "profile-picture");
-            var savePicture = await _repo.PictureService.CreatePicture(new PictureCreateDTO(uploadResult.FileUrl,uploadResult.PublicId));
+            var savePicture = await _repo.PictureService.CreatePictureForUser(new PictureCreateDTO(uploadResult.FileUrl,uploadResult.PublicId),user.Id);
 
             user.PictureId = savePicture.Id;
         }
-        var existingDisplayName = await _userManager.Users.FirstOrDefaultAsync(u => u.DisplayName.CompareTo(model.DisplayName) == 0);
+        var existingDisplayName = await _userManager.Users.FirstOrDefaultAsync(u => u.DisplayName.CompareTo(model.DisplayName) == 0 && u.Id != user.Id);
         if (existingDisplayName != null)
         {
             return BadRequest(new ApiResponse<UserProfileDTO>(400, "Display name already exists"));
@@ -72,6 +72,28 @@ public class OnboardController : ControllerBase
         {
             return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<UserProfileDTO>(500, "Internal server error"));
         }
+        user  = await GetUser();
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<UserProfileDTO>(new UserProfileDTO()
+        {
+            DisplayName = user.DisplayName,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+            ProfilePictureUrl = user.Picture?.FileUrl ?? string.Empty,
+            ProfilePicturePublicId = user.Picture?.PublicId ?? string.Empty
+        }));
+    }
+
+    [HttpGet]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<UserProfileDTO>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetUserProfile()
+    {
+        var user = await GetUser();
+
+        if (user == null)
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<UserProfileDTO>(401, "Unauthorized"));
 
         return StatusCode(StatusCodes.Status200OK, new ApiResponse<UserProfileDTO>(new UserProfileDTO()
         {

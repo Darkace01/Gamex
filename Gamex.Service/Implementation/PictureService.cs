@@ -36,6 +36,24 @@ public class PictureService(GamexDbContext context) : IPictureService
         return new PictureDTO(picture.Id, picture.FileUrl, picture.PublicId);
     }
 
+    public async Task<PictureDTO> CreatePictureForUser(PictureCreateDTO pictureCreateDTO, string userId)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+        {
+            return null;
+        }
+        var picture = new Picture()
+        {
+            FileUrl = pictureCreateDTO.FileUrl,
+            PublicId = pictureCreateDTO.PublicId,
+            UserId = userId
+        };
+        await _context.Pictures.AddAsync(picture);
+        await _context.SaveChangesAsync();
+        return new PictureDTO(picture.Id, picture.FileUrl, picture.PublicId);
+    }
+
     public async Task<PictureDTO> UpdatePicture(PictureUpdateDTO pictureUpdateDTO)
     {
         var picture = await _context.Pictures.FirstOrDefaultAsync(p => p.Id == pictureUpdateDTO.Id);
