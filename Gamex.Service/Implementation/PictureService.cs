@@ -14,6 +14,16 @@ public class PictureService(GamexDbContext context) : IPictureService
         return new PictureDTO(picture.Id, picture.FileUrl, picture.PublicId);
     }
 
+    public async Task<PictureDTO> GetPictureByPublicId(string publicId)
+    {
+        var picture = await _context.Pictures.AsNoTracking().FirstOrDefaultAsync(p => p.PublicId == publicId);
+        if (picture == null)
+        {
+            return null;
+        }
+        return new PictureDTO(picture.Id, picture.FileUrl, picture.PublicId);
+    }
+
     public async Task<PictureDTO> CreatePicture(PictureCreateDTO pictureCreateDTO)
     {
         var picture = new Picture()
