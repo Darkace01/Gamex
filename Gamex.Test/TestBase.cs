@@ -29,8 +29,8 @@ public class TestBase
 
 
         // tournament
-        List<Tournament> tournaments = new()
-        {
+        List<Tournament> tournaments =
+        [
             new Tournament {
                 Name = "Tournament 1",
                 Description = "Description 1",
@@ -61,7 +61,7 @@ public class TestBase
                 Location = "Location 3",
                 Rules = "Rules 3",
             },
-        };
+        ];
 
         dbContext.Tournaments.AddRange(tournaments);
         dbContext.SaveChanges();
@@ -78,7 +78,7 @@ public class TestBase
         }
 
         // picture
-        List<Picture> pictures = new(){
+        List<Picture> pictures = [
             new Picture {
                 Name = "Picture 1",
                 PublicId = "PublicId 1",
@@ -94,14 +94,14 @@ public class TestBase
                 PublicId = "PublicId 3",
                 FileUrl = "https://res.cloudinary.com/dzqhcj3km/image/upload/v1629780569/3.jpg",
             },
-        };
+        ];
 
         dbContext.Pictures.AddRange(pictures);
         dbContext.SaveChanges();
 
         // Post
-        List<Post> posts = new()
-        {
+        List<Post> posts =
+        [
             new Post {
                Title = "Post 1",
                Content = "Post Content 1",
@@ -115,9 +115,30 @@ public class TestBase
                PictureId = dbContext.Pictures.AsNoTracking().FirstOrDefault()?.Id,
                UserId = dbContext.Users.AsNoTracking().FirstOrDefault()?.Id
             }
-        };
+        ];
 
         dbContext.Posts.AddRange(posts);
+        dbContext.SaveChanges();
+
+        //Comment
+        List<Comment> comments =
+        [
+            new Comment
+            {
+                Title = "Comment 1",
+                Content = "Comment Content 1",
+                UserId =  dbContext.Users.AsNoTracking().FirstOrDefault()?.Id,
+                PostId = posts.First().Id
+            },
+            new Comment
+            {
+                Title = "Comment 2",
+                Content = "Comment Content 2",
+                UserId =  dbContext.Users.AsNoTracking().FirstOrDefault()?.Id,
+                PostId = posts.First().Id
+            }
+        ];
+        dbContext.Comments.AddRange(comments);
 
         dbContext.SaveChanges();
 
