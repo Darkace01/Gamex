@@ -11,6 +11,7 @@ public class RepositoryServiceManager : IRepositoryServiceManager
     private ISMTPMailService _smtpMailService;
     private IPictureService _pictureService;
     private IFileStorageService _fileStorageService;
+    private IPostService _postService;
 
     public RepositoryServiceManager(GamexDbContext context, IConfiguration config)
     {
@@ -61,6 +62,15 @@ public class RepositoryServiceManager : IRepositoryServiceManager
         {
             _fileStorageService ??= new FileStorageService(_cloudinary);
             return _fileStorageService;
+        }
+    }
+
+    public IPostService PostService
+    {
+        get
+        {
+            _postService ??= new PostService(_context);
+            return _postService;
         }
     }
 }

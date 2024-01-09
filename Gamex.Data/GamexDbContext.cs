@@ -9,6 +9,8 @@ public class GamexDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Tournament> Tournaments { get; set; }
     public DbSet<Picture> Pictures { get; set; }
     public DbSet<UserTournament> UserTournaments { get; set; }
+    public DbSet<Post> Posts { get; set; }
+    public DbSet<Comment> Comments { get; set; }
 
     public GamexDbContext(DbContextOptions<GamexDbContext> options) : base(options)
     {

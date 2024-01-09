@@ -16,4 +16,17 @@ public class UserProfileDTO
     public string PhoneNumber { get; set; } = string.Empty;
     public string ProfilePictureUrl { get; set; } = string.Empty;
     public string ProfilePicturePublicId { get; set; } = string.Empty;
+
+    public UserProfileDTO()
+    {
+    }
+
+    public UserProfileDTO(string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId)
+    {
+        DisplayName = displayName;
+        Email = email;
+        PhoneNumber = phoneNumber;
+        ProfilePictureUrl = profilePictureUrl;
+        ProfilePicturePublicId = profilePicturePublicId;
+    }
 }
