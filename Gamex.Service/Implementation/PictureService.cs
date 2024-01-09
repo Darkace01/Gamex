@@ -11,7 +11,7 @@ public class PictureService : IPictureService
 
     public async Task<PictureDTO> GetPicture(Guid pictureId)
     {
-        var picture = await _context.Pictures.FirstOrDefaultAsync(p => p.Id == pictureId);
+        var picture = await _context.Pictures.AsNoTracking().FirstOrDefaultAsync(p => p.Id == pictureId);
         if (picture == null)
         {
             return null;

@@ -36,9 +36,6 @@ public class TournamentServiceTest : TestBase
         Assert.NotNull(userTournamentInDb);
     }
 
-    // write various test case, to test for different scenarios like invalid input, etc.
-    // write test case for UpdateTournament, DeleteTournament, GetTournament, GetTournaments, etc.
-    // write test case for other methods in TournamentService
 
     [Fact]
     public async Task UpdateTournament_ShouldUpdateTournament()
@@ -59,6 +56,7 @@ public class TournamentServiceTest : TestBase
             StartDateString = "02/02/2024",
             EndDateString = "02/02/2024",
             TimeString = "02:00",
+            Id = tournamentToUpdate.Id
         };
 
         // Act
@@ -76,7 +74,7 @@ public class TournamentServiceTest : TestBase
         var dbContext = GetSampleData(nameof(DeleteTournament_ShouldDeleteTournament));
         var tournamentService = MockTournamentService(dbContext);
         var tournamentToDelete = dbContext.Tournaments.FirstOrDefault();
-        var testUser = dbContext.Users.FirstOrDefault();
+        var testUser = tournamentToDelete?.UserTournaments.FirstOrDefault()?.User;
 
         // Act
         await tournamentService.DeleteTournament(tournamentToDelete.Id, testUser);

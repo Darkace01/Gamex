@@ -27,13 +27,13 @@ public class GamexDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(ut => ut.User)
             .WithMany(u => u.UserTournaments)
             .HasForeignKey(ut => ut.UserId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.Cascade); // Changed from NoAction to Cascade
 
         builder.Entity<UserTournament>()
             .HasOne(ut => ut.Tournament)
             .WithMany(t => t.UserTournaments)
             .HasForeignKey(ut => ut.TournamentId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.Cascade); // Changed from NoAction to Cascade
 
         builder.Entity<Tournament>()
             .HasOne(t => t.Picture);
@@ -57,6 +57,6 @@ public class GamexDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(u => u.Picture)
             .WithOne(p => p.User)
             .HasForeignKey<Picture>(p => p.UserId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.Cascade); // Changed from NoAction to Cascade
     }
 }

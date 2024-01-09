@@ -43,7 +43,7 @@ public class PostCreateDTO
     {
     }
 
-    public PostCreateDTO(string title, string content, bool? isArchived, Guid? pictureId, IFormFile picture, string userId)
+    public PostCreateDTO(string title, string content, bool? isArchived, Guid? pictureId, IFormFile? picture, string userId)
     {
         Title = title;
         Content = content;

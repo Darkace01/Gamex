@@ -39,7 +39,7 @@ public class TestBase
                 EntryFee = 100,
                 IsFeatured = true,
                 Location = "Location 1",
-                Rules = "Rules 1",
+                Rules = "Rules 1",                
             },
             new Tournament {
                 Name = "Tournament 2",
@@ -64,6 +64,18 @@ public class TestBase
         };
 
         dbContext.Tournaments.AddRange(tournaments);
+        dbContext.SaveChanges();
+
+        // user tournament
+        var savedTournaments = dbContext.Tournaments.AsNoTracking().ToList();
+        foreach (var tournament in savedTournaments)
+        {
+            dbContext.UserTournaments.Add(new UserTournament
+            {
+                TournamentId = tournament.Id,
+                UserId = user1.Id,
+            });
+        }
 
         // picture
         List<Picture> pictures = new(){
@@ -85,6 +97,27 @@ public class TestBase
         };
 
         dbContext.Pictures.AddRange(pictures);
+        dbContext.SaveChanges();
+
+        // Post
+        List<Post> posts = new()
+        {
+            new Post {
+               Title = "Post 1",
+               Content = "Post Content 1",
+               PictureId = dbContext.Pictures.AsNoTracking().FirstOrDefault()?.Id,
+               UserId = dbContext.Users.AsNoTracking().FirstOrDefault()?.Id
+             },
+            new Post
+            {
+               Title = "Post 2",
+               Content = "Post Content 2",
+               PictureId = dbContext.Pictures.AsNoTracking().FirstOrDefault()?.Id,
+               UserId = dbContext.Users.AsNoTracking().FirstOrDefault()?.Id
+            }
+        };
+
+        dbContext.Posts.AddRange(posts);
 
         dbContext.SaveChanges();
 
