@@ -16,12 +16,7 @@ public class PictureService : IPictureService
         {
             return null;
         }
-        return new PictureDTO()
-        {
-            Id = picture.Id,
-            FileUrl = picture.FileUrl,
-            PublicId = picture.PublicId
-        };
+        return new PictureDTO(picture.Id, picture.FileUrl, picture.PublicId);
     }
 
     public async Task<PictureDTO> CreatePicture(PictureCreateDTO pictureCreateDTO)
@@ -33,12 +28,7 @@ public class PictureService : IPictureService
         };
         await _context.Pictures.AddAsync(picture);
         await _context.SaveChangesAsync();
-        return new PictureDTO()
-        {
-            Id = picture.Id,
-            FileUrl = picture.FileUrl,
-            PublicId = picture.PublicId
-        };
+        return new PictureDTO(picture.Id, picture.FileUrl, picture.PublicId);
     }
 
     public async Task<PictureDTO> UpdatePicture(PictureUpdateDTO pictureUpdateDTO)
@@ -51,12 +41,7 @@ public class PictureService : IPictureService
         picture.FileUrl = pictureUpdateDTO.FileUrl;
         picture.PublicId = pictureUpdateDTO.PublicId;
         await _context.SaveChangesAsync();
-        return new PictureDTO()
-        {
-            Id = picture.Id,
-            FileUrl = picture.FileUrl,
-            PublicId = picture.PublicId
-        };
+        return new PictureDTO(picture.Id, picture.FileUrl, picture.PublicId);
     }
 
     public async Task<bool> DeletePicture(Guid pictureId)

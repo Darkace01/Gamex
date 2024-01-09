@@ -11,7 +11,7 @@ public class ApplicationUser: IdentityUser
     /// <summary>
     /// Profile Picture Id
     /// </summary>
-    public Guid PictureId { get; set; }
+    public Guid PictureId { get; set; } 
     /// <summary>
     /// Profile Picture for user
     /// </summary>

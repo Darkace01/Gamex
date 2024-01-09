@@ -1,14 +1,23 @@
 ﻿namespace Gamex.Service.Implementation;
 
-public class RepositoryServiceManager(GamexDbContext context, IConfiguration configuration) : IRepositoryServiceManager
+public class RepositoryServiceManager : IRepositoryServiceManager
 {
-    private readonly GamexDbContext _context = context;
-    private readonly IConfiguration _configuration = configuration;
+    private readonly GamexDbContext _context;
+    private readonly IConfiguration _configuration;
+    private readonly Cloudinary _cloudinary;
 
     private ITournamentService _tournamentService;
     private IJWTHelper _jwtHelper;
     private ISMTPMailService _smtpMailService;
     private IPictureService _pictureService;
+    private IFileStorageService _fileStorageService;
+
+    public RepositoryServiceManager(GamexDbContext context, IConfiguration config)
+    {
+        _context = context;
+        _configuration = config;
+        _cloudinary = new Cloudinary(_configuration["Cloudinary:Url"]);
+    }
 
     public ITournamentService TournamentService
     {
@@ -43,6 +52,15 @@ public class RepositoryServiceManager(GamexDbContext context, IConfiguration con
         {
             _pictureService ??= new PictureService(_context);
             return _pictureService;
+        }
+    }
+
+    public IFileStorageService FileStorageService
+    {
+        get
+        {
+            _fileStorageService ??= new FileStorageService(_cloudinary);
+            return _fileStorageService;
         }
     }
 }

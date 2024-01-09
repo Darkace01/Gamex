@@ -27,11 +27,8 @@ public class PictureServiceTest : TestBase
         var dbContext = GetSampleData(nameof(CreatePicture_ShouldCreatePicture));
         var pictureService = MockPictureService(dbContext);
 
-        PictureCreateDTO newPicture = new()
-        {
-            FileUrl = "https://res.cloudinary.com/dx3vxwusq/image/upload/v1629788239/Default%20Images/Default%20Profile%20Picture.png",
-            PublicId = "Default Profile Picture"
-        };
+        PictureCreateDTO newPicture = new("https://res.cloudinary.com/dx3vxwusq/image/upload/v1629788239/Default%20Images/Default%20Profile%20Picture.png", "Default Profile Picture"
+        );
 
         // Act
         var picture = await pictureService.CreatePicture(newPicture);
@@ -50,10 +47,7 @@ public class PictureServiceTest : TestBase
         var pictureService = MockPictureService(dbContext);
         var pictureToUpdate = dbContext.Pictures.FirstOrDefault();
 
-        PictureUpdateDTO updatedPicture = new()
-        {
-            // Fill in the properties for the updated picture
-        };
+        PictureUpdateDTO updatedPicture = new(new Guid(),"","");
 
         // Act
         await pictureService.UpdatePicture(updatedPicture);

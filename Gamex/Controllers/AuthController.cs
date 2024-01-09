@@ -126,10 +126,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
             return Ok(await GenerateLoginTokenandResponseForUser(userExist));
         }
 
-        var picture = await _repo.PictureService.CreatePicture(new PictureCreateDTO()
-        {
-            FileUrl = response.Data?.Picture
-        });
+        var picture = await _repo.PictureService.CreatePicture(new PictureCreateDTO(response.Data?.Picture, ""));
 
         // Create a new user
         ApplicationUser user = new()
