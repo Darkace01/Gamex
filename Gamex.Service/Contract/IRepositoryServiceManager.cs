@@ -9,5 +9,6 @@
         IFileStorageService FileStorageService { get; }
         IPostService PostService { get; }
         ICommentService CommentService { get; }
+        IExtendedUserService ExtendedUserService { get; }
     }
 }

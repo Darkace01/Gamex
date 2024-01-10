@@ -56,7 +56,7 @@ public class OnboardController : ControllerBase
             return BadRequest(new ApiResponse<UserProfileDTO>(400, "Display name already exists"));
         }
 
-        var existingPhoneNumber = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber.CompareTo(model.PhoneNumber) == 0);
+        var existingPhoneNumber = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber.CompareTo(model.PhoneNumber) == 0 && u.Id != user.Id);
 
         if (existingPhoneNumber != null)
         {
@@ -109,7 +109,7 @@ public class OnboardController : ControllerBase
     private async Task<ApplicationUser?> GetUser()
     {
         var username = User?.Identity?.Name;
-        var user = await _userManager.FindByNameAsync(username);
+        var user = _repo.ExtendedUserService.GetUserByName(username);
         return user;
     }
     #endregion
