@@ -12,17 +12,21 @@ public class LoginDTO
 
 public class LoginResponseDTO
 {
+    public string Id { get; set; }
     public string AccessToken { get; set; }
     public string RefreshToken { get; set; }
     public long ExpiresIn { get; set; }
     public string TokenType { get; set; }
+    public string Email { get; set; }
 
-    public LoginResponseDTO(string accessToken, string refreshToken, long expiresIn, string tokenType)
+    public LoginResponseDTO(string id, string accessToken, string refreshToken, long expiresIn, string tokenType, string email)
     {
+        Id = id;
         AccessToken = accessToken;
         RefreshToken = refreshToken;
         ExpiresIn = expiresIn;
         TokenType = tokenType;
+        Email = email;
     }
 }
 
