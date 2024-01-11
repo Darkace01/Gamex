@@ -17,16 +17,30 @@ public class LoginResponseDTO
     public string RefreshToken { get; set; }
     public long ExpiresIn { get; set; }
     public string TokenType { get; set; }
-    public string Email { get; set; }
+    public UserMiniDTO User { get; set; }
 
-    public LoginResponseDTO(string id, string accessToken, string refreshToken, long expiresIn, string tokenType, string email)
+    public LoginResponseDTO(string id, string accessToken, string refreshToken, long expiresIn, string tokenType, UserMiniDTO user)
     {
         Id = id;
         AccessToken = accessToken;
         RefreshToken = refreshToken;
         ExpiresIn = expiresIn;
         TokenType = tokenType;
+        User = user;
+    }
+}
+
+public class UserMiniDTO
+{
+    public string Email { get; set; }
+    public string Image { get; set; }
+    public string Name { get; set; }
+
+    public UserMiniDTO(string email, string image, string name)
+    {
         Email = email;
+        Image = image;
+        Name = name;
     }
 }
 

@@ -207,7 +207,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         await _userManager.UpdateAsync(user);
 
-        ApiResponse<LoginResponseDTO> loginResponse = new(new LoginResponseDTO(user.Id,accessToken, refreshToken, authToken.ValidTo.Ticks, "Bearer",user.Email));
+        ApiResponse<LoginResponseDTO> loginResponse = new(new LoginResponseDTO(user.Id,accessToken, refreshToken, authToken.ValidTo.Ticks, "Bearer",new UserMiniDTO(user.Email,user.Picture?.FileUrl,user.Email)));
         return loginResponse;
     }
     #endregion
