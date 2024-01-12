@@ -4,6 +4,8 @@ namespace Gamex.DTO;
 
 public class UserProfileUpdateDTO
 {
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
     public IFormFile ProfilePicture { get; set; } = null;
@@ -11,6 +13,8 @@ public class UserProfileUpdateDTO
 
 public class UserProfileDTO
 {
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
@@ -21,8 +25,10 @@ public class UserProfileDTO
     {
     }
 
-    public UserProfileDTO(string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId)
+    public UserProfileDTO(string firstName,string lastName,string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId)
     {
+        FirstName = firstName;
+        LastName = lastName;
         DisplayName = displayName;
         Email = email;
         PhoneNumber = phoneNumber;

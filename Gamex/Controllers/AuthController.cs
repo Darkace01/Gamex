@@ -133,12 +133,11 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         {
             Email = response?.Data?.Email,
             EmailConfirmed = true,
-            //FirstName = response.data.GivenName,
-            //LastName = response.data.FamilyName,
+            FirstName = response.Data?.GivenName,
+            LastName = response.Data?.FamilyName,
             SecurityStamp = Guid.NewGuid().ToString(),
             UserName = response?.Data?.Email,
             ExternalAuthInWithGoogle = true,
-            //TODO: Save profile picture url for user
             PictureId = picture.Id,
             //ReceivePushNotification = true
         };
@@ -207,7 +206,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         await _userManager.UpdateAsync(user);
 
-        ApiResponse<LoginResponseDTO> loginResponse = new(new LoginResponseDTO(user.Id,accessToken, refreshToken, authToken.ValidTo.Ticks, "Bearer",new UserMiniDTO(user.Email,user.Picture?.FileUrl,user.Email)));
+        ApiResponse<LoginResponseDTO> loginResponse = new(new LoginResponseDTO(user.Id,accessToken, refreshToken, authToken.ValidTo.Ticks, "Bearer",new UserMiniDTO(user.Email,user.Picture?.FileUrl,user.FirstName,user.LastName)));
         return loginResponse;
     }
     #endregion

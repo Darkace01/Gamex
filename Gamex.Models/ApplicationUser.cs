@@ -5,6 +5,14 @@ namespace Gamex.Models;
 public class ApplicationUser: IdentityUser
 {
     /// <summary>
+    /// User first name
+    /// </summary>
+    public string FirstName { get; set; } = string.Empty;
+    /// <summary>
+    /// User last name
+    /// </summary>
+    public string LastName { get; set; } = string.Empty;
+    /// <summary>
     /// User display name
     /// </summary>
     public string DisplayName { get; set; } = string.Empty;

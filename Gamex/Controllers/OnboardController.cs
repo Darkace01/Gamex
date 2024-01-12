@@ -65,6 +65,8 @@ public class OnboardController : ControllerBase
 
         user.DisplayName = model.DisplayName;
         user.PhoneNumber = model.PhoneNumber;
+        user.FirstName = model.FirstName;
+        user.LastName = model.LastName;
 
         var result = await _userManager.UpdateAsync(user);
 
@@ -73,14 +75,7 @@ public class OnboardController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<UserProfileDTO>(500, "Internal server error"));
         }
         user  = await GetUser();
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<UserProfileDTO>(new UserProfileDTO()
-        {
-            DisplayName = user.DisplayName,
-            Email = user.Email,
-            PhoneNumber = user.PhoneNumber,
-            ProfilePictureUrl = user.Picture?.FileUrl ?? string.Empty,
-            ProfilePicturePublicId = user.Picture?.PublicId ?? string.Empty
-        }));
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<UserProfileDTO>(GetUserProfileDTO(user)));
     }
 
     [HttpGet]
@@ -95,14 +90,7 @@ public class OnboardController : ControllerBase
         if (user == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<UserProfileDTO>(401, "Unauthorized"));
 
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<UserProfileDTO>(new UserProfileDTO()
-        {
-            DisplayName = user.DisplayName,
-            Email = user.Email,
-            PhoneNumber = user.PhoneNumber,
-            ProfilePictureUrl = user.Picture?.FileUrl ?? string.Empty,
-            ProfilePicturePublicId = user.Picture?.PublicId ?? string.Empty
-        }));
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<UserProfileDTO>(GetUserProfileDTO(user)));
     }
 
     #region Helpers
@@ -111,6 +99,11 @@ public class OnboardController : ControllerBase
         var username = User?.Identity?.Name;
         var user = _repo.ExtendedUserService.GetUserByName(username);
         return user;
+    }
+
+    private UserProfileDTO GetUserProfileDTO(ApplicationUser user)
+    {
+        return new UserProfileDTO(user.FirstName, user.LastName, user.DisplayName, user.Email, user.PhoneNumber, user.Picture?.FileUrl ?? string.Empty, user.Picture?.PublicId ?? string.Empty);
     }
     #endregion
 }
