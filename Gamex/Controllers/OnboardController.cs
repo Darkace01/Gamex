@@ -35,20 +35,23 @@ public class OnboardController : ControllerBase
             var deleteResult = _repo.FileStorageService.DeleteFile(user.Picture.PublicId);
         }
 
-        if (!string.IsNullOrWhiteSpace(user.Picture?.FileUrl))
+        if (model.ProfilePicture is not null)
         {
-            var uploadResult = await _repo.FileStorageService.SaveFile(model.ProfilePicture, "profile-picture");
-            if (uploadResult is not null)
+            if (!string.IsNullOrWhiteSpace(user.Picture?.FileUrl))
             {
-                var updatePiture = await _repo.PictureService.UpdatePicture(new PictureUpdateDTO(user.PictureId, uploadResult.FileUrl, uploadResult.PublicId));
+                var uploadResult = await _repo.FileStorageService.SaveFile(model.ProfilePicture, "profile-picture");
+                if (uploadResult is not null)
+                {
+                    var updatePiture = await _repo.PictureService.UpdatePicture(new PictureUpdateDTO(user.PictureId, uploadResult.FileUrl, uploadResult.PublicId));
+                }
             }
-        }
-        else
-        {
-            var uploadResult = await _repo.FileStorageService.SaveFile(model.ProfilePicture, "profile-picture");
-            var savePicture = await _repo.PictureService.CreatePictureForUser(new PictureCreateDTO(uploadResult.FileUrl,uploadResult.PublicId),user.Id);
+            else
+            {
+                var uploadResult = await _repo.FileStorageService.SaveFile(model.ProfilePicture, "profile-picture");
+                var savePicture = await _repo.PictureService.CreatePictureForUser(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId), user.Id);
 
-            user.PictureId = savePicture.Id;
+                user.PictureId = savePicture.Id;
+            }
         }
         var existingDisplayName = await _userManager.Users.FirstOrDefaultAsync(u => u.DisplayName.CompareTo(model.DisplayName) == 0 && u.Id != user.Id);
         if (existingDisplayName != null)
