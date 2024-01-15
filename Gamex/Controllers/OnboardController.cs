@@ -23,17 +23,37 @@ public class OnboardController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<UserProfileDTO>), StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateUserProfile([FromForm] UserProfileUpdateDTO model)
     {
-        if (model is null) return BadRequest(new ApiResponse<UserProfileDTO>(400, "Invalid model object"));
+        if (model is null)
+        {
+            return BadRequest(new ApiResponse<UserProfileDTO>(400, "Invalid model object"));
+        }
 
-        var user = await GetUser();
+        var user = GetUser();
 
         if (user == null)
-            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<UserProfileDTO>(401, "Unauthorized"));
+        {
+            return Unauthorized(new ApiResponse<UserProfileDTO>(401, "Unauthorized"));
+        }
 
         if (!string.IsNullOrWhiteSpace(user.Picture?.PublicId))
         {
-            var deleteResult = _repo.FileStorageService.DeleteFile(user.Picture.PublicId);
+            _repo.FileStorageService.DeleteFile(user.Picture.PublicId);
         }
+
+        var existingDisplayName = await _userManager.Users.AsNoTracking().AnyAsync(u => u.DisplayName == model.DisplayName && u.Id != user.Id);
+        if (existingDisplayName)
+        {
+            return BadRequest(new ApiResponse<UserProfileDTO>(400, "Display name already exists"));
+        }
+
+        var existingPhoneNumber = await _userManager.Users.AsNoTracking().AnyAsync(u => u.PhoneNumber == model.PhoneNumber && u.Id != user.Id);
+
+        if (existingPhoneNumber)
+        {
+            return BadRequest(new ApiResponse<UserProfileDTO>(400, "Phone number already exists"));
+        }
+
+        var trackedUser = await GetUserWithTracking();
 
         if (model.ProfilePicture is not null)
         {
@@ -42,7 +62,7 @@ public class OnboardController : ControllerBase
                 var uploadResult = await _repo.FileStorageService.SaveFile(model.ProfilePicture, "profile-picture");
                 if (uploadResult is not null)
                 {
-                    var updatePiture = await _repo.PictureService.UpdatePicture(new PictureUpdateDTO(user.PictureId, uploadResult.FileUrl, uploadResult.PublicId));
+                    await _repo.PictureService.UpdatePicture(new PictureUpdateDTO(user.PictureId, uploadResult.FileUrl, uploadResult.PublicId));
                 }
             }
             else
@@ -50,35 +70,24 @@ public class OnboardController : ControllerBase
                 var uploadResult = await _repo.FileStorageService.SaveFile(model.ProfilePicture, "profile-picture");
                 var savePicture = await _repo.PictureService.CreatePictureForUser(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId), user.Id);
 
-                user.PictureId = savePicture.Id;
+                trackedUser.PictureId = savePicture.Id;
             }
         }
-        var existingDisplayName = await _userManager.Users.FirstOrDefaultAsync(u => u.DisplayName.CompareTo(model.DisplayName) == 0 && u.Id != user.Id);
-        if (existingDisplayName != null)
-        {
-            return BadRequest(new ApiResponse<UserProfileDTO>(400, "Display name already exists"));
-        }
 
-        var existingPhoneNumber = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber.CompareTo(model.PhoneNumber) == 0 && u.Id != user.Id);
+        trackedUser.DisplayName = model.DisplayName;
+        trackedUser.PhoneNumber = model.PhoneNumber;
+        trackedUser.FirstName = model.FirstName;
+        trackedUser.LastName = model.LastName;
 
-        if (existingPhoneNumber != null)
-        {
-            return BadRequest(new ApiResponse<UserProfileDTO>(400, "Phone number already exists"));
-        }
-
-        user.DisplayName = model.DisplayName;
-        user.PhoneNumber = model.PhoneNumber;
-        user.FirstName = model.FirstName;
-        user.LastName = model.LastName;
-
-        var result = await _userManager.UpdateAsync(user);
+        var result = await _userManager.UpdateAsync(trackedUser);
 
         if (!result.Succeeded)
         {
             return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<UserProfileDTO>(500, "Internal server error"));
         }
-        user  = await GetUser();
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<UserProfileDTO>(GetUserProfileDTO(user)));
+
+        user = GetUser();
+        return Ok(new ApiResponse<UserProfileDTO>(GetUserProfileDTO(user)));
     }
 
     [HttpGet]
@@ -86,25 +95,42 @@ public class OnboardController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<UserProfileDTO>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetUserProfile()
+    public IActionResult GetUserProfile()
     {
-        var user = await GetUser();
+        var user = GetUser();
 
         if (user == null)
-            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<UserProfileDTO>(401, "Unauthorized"));
+        {
+            return Unauthorized(new ApiResponse<UserProfileDTO>(401, "Unauthorized"));
+        }
 
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<UserProfileDTO>(GetUserProfileDTO(user)));
+        return Ok(new ApiResponse<UserProfileDTO>(GetUserProfileDTO(user)));
     }
 
     #region Helpers
-    private async Task<ApplicationUser?> GetUser()
+    private ApplicationUser? GetUser()
     {
         var username = User?.Identity?.Name;
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return null;
+        }
         var user = _repo.ExtendedUserService.GetUserByName(username);
         return user;
     }
 
-    private UserProfileDTO GetUserProfileDTO(ApplicationUser user)
+    private async Task<ApplicationUser?> GetUserWithTracking()
+    {
+        var username = User?.Identity?.Name;
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return null;
+        }
+        var user = await _userManager.FindByNameAsync(username);
+        return user;
+    }
+
+    private static UserProfileDTO GetUserProfileDTO(ApplicationUser user)
     {
         return new UserProfileDTO(user.FirstName, user.LastName, user.DisplayName, user.Email, user.PhoneNumber, user.Picture?.FileUrl ?? string.Empty, user.Picture?.PublicId ?? string.Empty);
     }
