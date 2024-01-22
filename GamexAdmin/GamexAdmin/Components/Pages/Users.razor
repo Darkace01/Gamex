@@ -1,0 +1,47 @@
+﻿@page "/users"
+@inject UserManager<ApplicationUser> UserManager
+@attribute [StreamRendering]
+
+<PageTitle>Users</PageTitle>
+
+@if (users.Count > 0)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Roles</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.UserName</td>
+                    <td>@user.Email</td>
+                    @* <td>@string.Join(", ", GetCurrentUserRoles(user))</td> *@
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No users found.</p>
+}
+
+@code {
+    private List<ApplicationUser> users = new List<ApplicationUser>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await UserManager.Users.ToListAsync();
+    }
+
+    private List<string> GetCurrentUserRoles(ApplicationUser user)
+    {
+        var roles = UserManager.GetRolesAsync(user).Result;
+        return roles.ToList();
+    }
+}
