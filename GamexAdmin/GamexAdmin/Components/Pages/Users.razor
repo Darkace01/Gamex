@@ -1,34 +1,51 @@
 ﻿@page "/users"
 @inject UserManager<ApplicationUser> UserManager
 @attribute [StreamRendering]
+@* @rendermode InteractiveAuto *@
+@rendermode @(new InteractiveServerRenderMode(prerender: true))
 
 <PageTitle>Users</PageTitle>
 
 @if (users.Count > 0)
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Roles</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in users)
-            {
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>@user.UserName</td>
-                    <td>@user.Email</td>
-                    @* <td>@string.Join(", ", GetCurrentUserRoles(user))</td> *@
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var user in users)
+                {
+                    <tr>
+                        <td>@user.UserName</td>
+                        <td>@user.Email</td>
+                        <td>
+                            @{
+                                if (user.LockoutEnabled == false)
+                                {
+                                    <button class="btn btn-danger" @onclick="(() => LockUser(user))">Lock User</button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-success" @onclick="(() => UnLockUser(user))">Unlock User</button>
+                                }
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 else
 {
-    <p>No users found.</p>
+    <div class="alert alert-primary" role="alert">
+        No users found.
+    </div>
 }
 
 @code {
@@ -43,5 +60,21 @@ else
     {
         var roles = UserManager.GetRolesAsync(user).Result;
         return roles.ToList();
+    }
+
+    private async Task LockUser(ApplicationUser user)
+    {
+        await UserManager.SetLockoutEnabledAsync(user, true);
+        await UserManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
+        await UserManager.UpdateAsync(user);
+        await OnInitializedAsync();
+    }
+
+    private async Task UnLockUser(ApplicationUser user)
+    {
+        await UserManager.SetLockoutEnabledAsync(user, false);
+        await UserManager.SetLockoutEndDateAsync(user, null);
+        await UserManager.UpdateAsync(user);
+        await OnInitializedAsync();
     }
 }

@@ -27,6 +27,9 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
         if (!isPasswordValid) return BadRequest(new ApiResponse<LoginDTO>(400, "Invalid username or password."));
 
+        var isUserActive = user.LockoutEnabled;
+        if (!isUserActive) return BadRequest(new ApiResponse<LoginDTO>(400, "User is not active. Please contact administrator."));
+
         return Ok(await GenerateLoginTokenandResponseForUser(user));
     }
 
@@ -54,6 +57,9 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         if (user == null) return BadRequest(new ApiResponse<LoginResponseDTO>(400, "Invalid refresh token request"));
 
         if (user == null || user.RefreshToken != model.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.Now) return BadRequest(new ApiResponse<LoginResponseDTO>(400, "Invalid refresh token request"));
+
+        var isUserActive = user.LockoutEnabled;
+        if (!isUserActive) return BadRequest(new ApiResponse<LoginDTO>(400, "User is not active. Please contact administrator."));
 
         return Ok(await GenerateLoginTokenandResponseForUser(user));
     }
@@ -122,6 +128,9 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
                 userExist.EmailConfirmed = true;
                 await _userManager.UpdateAsync(userExist);
             }
+
+            var isUserActive = userExist.LockoutEnabled;
+            if (!isUserActive) return BadRequest(new ApiResponse<LoginDTO>(400, "User is not active. Please contact administrator."));
 
             return Ok(await GenerateLoginTokenandResponseForUser(userExist));
         }
