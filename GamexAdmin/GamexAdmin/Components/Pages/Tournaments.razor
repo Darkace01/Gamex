@@ -1,0 +1,11 @@
+﻿@attribute [StreamRendering]
+@inject ITournamentService TournamentService
+
+@code {
+    private List<TournamentDTO> TournamentList = new List<TournamentDTO>();
+
+    protected override void OnInitialized()
+    {
+        TournamentList = TournamentService.GetAllTournaments().ToList();
+    }
+}

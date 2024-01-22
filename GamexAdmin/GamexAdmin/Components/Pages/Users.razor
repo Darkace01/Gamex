@@ -1,4 +1,5 @@
 ﻿@page "/users"
+
 @inject UserManager<ApplicationUser> UserManager
 @attribute [StreamRendering]
 @* @rendermode InteractiveAuto *@
@@ -6,7 +7,7 @@
 
 <PageTitle>Users</PageTitle>
 
-@if (users.Count > 0)
+@if (users.Count() > 0)
 {
     <div class="table-responsive">
         <table class="table">
@@ -48,13 +49,24 @@ else
     </div>
 }
 
-@code {
-    private List<ApplicationUser> users = new List<ApplicationUser>();
+<QuickGrid Items="@users" Pagination="@pagination">
+    <PropertyColumn Property="@(p => p.UserName)" Sortable="true" />
+    <PropertyColumn Property="@(p => p.Email)" Sortable="true" />
+    @* <PropertyColumn Property="@(p => p.Posts.Count)" Format="yyyy-MM-dd" Sortable="true" /> *@
+</QuickGrid>
 
-    protected override async Task OnInitializedAsync()
+<Paginator State="@pagination" />
+
+@code {
+    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+    private IQueryable<ApplicationUser> users = null;
+
+    protected override void OnInitialized()
     {
-        users = await UserManager.Users.ToListAsync();
+        users = UserManager.Users;
+        pagination.TotalItemCountChanged += (sender, eventArgs) => StateHasChanged();
     }
+
 
     private List<string> GetCurrentUserRoles(ApplicationUser user)
     {
@@ -67,7 +79,7 @@ else
         await UserManager.SetLockoutEnabledAsync(user, true);
         await UserManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
         await UserManager.UpdateAsync(user);
-        await OnInitializedAsync();
+        OnInitialized();
     }
 
     private async Task UnLockUser(ApplicationUser user)
@@ -75,6 +87,6 @@ else
         await UserManager.SetLockoutEnabledAsync(user, false);
         await UserManager.SetLockoutEndDateAsync(user, null);
         await UserManager.UpdateAsync(user);
-        await OnInitializedAsync();
+        OnInitialized();
     }
 }

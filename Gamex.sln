@@ -17,9 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gamex.Common", "Gamex.Commo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gamex.Test", "Gamex.Test\Gamex.Test.csproj", "{DBF47218-B111-42A9-89F2-DA1537E8C11E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GamexAdmin", "GamexAdmin\GamexAdmin\GamexAdmin.csproj", "{DBD7E8B7-B0B2-438F-970F-4340D49FCF72}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GamexAdmin", "GamexAdmin\GamexAdmin\GamexAdmin.csproj", "{DBD7E8B7-B0B2-438F-970F-4340D49FCF72}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GamexAdmin.Client", "GamexAdmin\GamexAdmin.Client\GamexAdmin.Client.csproj", "{E37855ED-9327-4639-B1A2-C1E9B3EE0FC3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GamexAdmin.Client", "GamexAdmin\GamexAdmin.Client\GamexAdmin.Client.csproj", "{E37855ED-9327-4639-B1A2-C1E9B3EE0FC3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
