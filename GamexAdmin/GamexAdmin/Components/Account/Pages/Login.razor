@@ -1,13 +1,17 @@
 ﻿@page "/Account/Login"
 
 @using System.ComponentModel.DataAnnotations
+@using Gamex.Common
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
 
 @inject SignInManager<ApplicationUser> SignInManager
+@inject RoleManager<IdentityRole> RoleManager
+@inject UserManager<ApplicationUser> UserManager
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject IConfiguration Configuration
 
 <PageTitle>Log in</PageTitle>
 
@@ -88,10 +92,46 @@
     {
         // This doesn't count login failures towards account lockout
         // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        if (!await RoleManager.RoleExistsAsync(AppConstant.AdminUserRole))
+            await RoleManager.CreateAsync(new IdentityRole(AppConstant.AdminUserRole));
+
+        var isAdmin = false;
+        var userRole = await RoleManager.FindByNameAsync(AppConstant.AdminUserRole);
+        if (userRole != null)
+        {
+            var user = await UserManager.FindByEmailAsync(Input.Email);
+            if (user != null)
+            {
+                var userRoles = await UserManager.GetRolesAsync(user);
+                if (!userRoles.Contains(AppConstant.AdminUserRole))
+                {
+                    var adminUsersEmails = Configuration.GetValue<string>("AdminUsersEmails");
+                    if (!string.IsNullOrWhiteSpace(adminUsersEmails))
+                    {
+                        var adminUsersEmailsList = adminUsersEmails.Split(';');
+                        if (adminUsersEmailsList.Contains(user.Email))
+                        {
+                            await UserManager.AddToRoleAsync(user, AppConstant.AdminUserRole);
+                            isAdmin = true;
+                        }
+                    }
+                }
+                else
+                {
+                    isAdmin = true;
+                }
+            }
+        }
+        if (!isAdmin)
+        {
+            errorMessage = "Error: Invalid login attempt.";
+            return;
+        }
+        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
         if (result.Succeeded)
         {
             Logger.LogInformation("User logged in.");
+
             RedirectManager.RedirectTo(ReturnUrl);
         }
         else if (result.RequiresTwoFactor)
