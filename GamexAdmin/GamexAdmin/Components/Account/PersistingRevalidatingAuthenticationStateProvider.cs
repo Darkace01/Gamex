@@ -85,6 +85,7 @@ internal sealed class PersistingRevalidatingAuthenticationStateProvider : Revali
         {
             var userId = principal.FindFirst(options.ClaimsIdentity.UserIdClaimType)?.Value;
             var email = principal.FindFirst(options.ClaimsIdentity.EmailClaimType)?.Value;
+            var roles = principal.FindFirst(options.ClaimsIdentity.RoleClaimType)?.Value;
 
             if (userId != null && email != null)
             {
@@ -92,6 +93,7 @@ internal sealed class PersistingRevalidatingAuthenticationStateProvider : Revali
                 {
                     UserId = userId,
                     Email = email,
+                    Roles = roles
                 });
             }
         }

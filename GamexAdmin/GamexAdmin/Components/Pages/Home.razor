@@ -1,4 +1,6 @@
-﻿@page "/"
+﻿@attribute [Authorize(Roles = AppConstant.AdminUserRole)]
+@page "/"
+
 
 <PageTitle>Home</PageTitle>
 

@@ -1,5 +1,6 @@
 using Gamex.Service.Contract;
 using Gamex.Service.Implementation;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,9 +30,10 @@ builder.Services.AddDbContext<GamexDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<GamexDbContext>()
     .AddSignInManager()
-    .AddRoleManager<IdentityRole>()
+    //.AddRoleManager<IdentityRole>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();

@@ -1,4 +1,5 @@
-﻿@attribute [StreamRendering]
+﻿@attribute [Authorize(Roles = AppConstant.AdminUserRole)]
+@attribute [StreamRendering]
 @inject ITournamentService TournamentService
 
 @code {
