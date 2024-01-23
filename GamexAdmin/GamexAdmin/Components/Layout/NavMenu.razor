@@ -32,15 +32,21 @@
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="users">
-                <span class="bi bi-people-fill-nav-menu" aria-hidden="true"></span> Users
+                <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Users
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="tournaments">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Tournaments
             </NavLink>
         </div>
 
         <AuthorizeView>
             <Authorized>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Manage">
-                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
+                    <NavLink class="nav-link text-truncate" href="Account/Manage">
+                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
@@ -55,9 +61,9 @@
             </Authorized>
             <NotAuthorized>
                 @* <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="Account/Register">
-                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
-                    </NavLink>
+                <NavLink class="nav-link" href="Account/Register">
+                <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
+                </NavLink>
                 </div> *@
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Login">
