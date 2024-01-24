@@ -36,6 +36,7 @@ public class TournamentCreateDTO
                 : StartDateString.Contains("/") ? CommonHelpers.ConvertToDate(StartDateString) : null;
         }
     }
+    public DateTime? StartDateForm { get; set; }
     public string StartDateString { get; set; } = string.Empty;
     public DateTime? EndDate
     {
@@ -46,6 +47,7 @@ public class TournamentCreateDTO
                 : EndDateString.Contains("/") ? CommonHelpers.ConvertToDate(EndDateString) : null;
         }
     }
+    public DateTime? EndDateForm { get; set; }
     public string EndDateString { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;
     public DateTime? Time
@@ -57,6 +59,7 @@ public class TournamentCreateDTO
                 : TimeString.Contains(":") ? CommonHelpers.ConvertToTime(TimeString) : null;
         }
     }
+    public DateTime? TimeForm { get; set; }
     public string TimeString { get; set; } = string.Empty;
     public decimal EntryFee { get; set; }
     public string Rules { get; set; } = string.Empty;
