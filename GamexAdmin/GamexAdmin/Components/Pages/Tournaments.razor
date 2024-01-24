@@ -12,7 +12,7 @@
     </div>
     <div class="col-md-6">
         <div class="d-flex justify-content-end">
-            <a href="/tournament/create" class="btn btn-primary">Create Tournament</a>
+            <a href="/tournaments/create" class="btn btn-primary">Create Tournament</a>
         </div>
     </div>
 </div>
@@ -38,7 +38,7 @@
             </TemplateColumn>
             <PropertyColumn Property="@(p => p.Location)" Sortable="true" />
             <TemplateColumn Title="Actions">
-                <a href="/tournament/edit/@context.Id" class="btn btn-primary">Edit</a>
+                <a href="/tournaments/edit/@context.Id" class="btn btn-primary">Edit</a>
             </TemplateColumn>
         </QuickGrid>
         <Paginator State="@pagination" />

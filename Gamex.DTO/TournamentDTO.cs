@@ -81,6 +81,7 @@ public class TournamentUpdateDTO
                 : StartDateString.Contains("/") ? CommonHelpers.ConvertToDate(StartDateString) : null;
         }
     }
+    public DateTime? StartDateForm { get; set; }
     public string StartDateString { get; set; } = string.Empty;
     public DateTime? EndDate
     {
@@ -91,6 +92,7 @@ public class TournamentUpdateDTO
                 : EndDateString.Contains("/") ? CommonHelpers.ConvertToDate(EndDateString) : null;
         }
     }
+    public DateTime? EndDateForm { get; set; }
     public string EndDateString { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;
     public DateTime? Time
