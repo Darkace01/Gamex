@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+builder.Services.AddScoped<ISMTPMailService, SMTPMailService>();
 builder.Services.AddScoped<ITournamentService, TournamentService>();
 
 builder.Services.AddQuickGridEntityFrameworkAdapter();
@@ -35,7 +36,6 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddSignInManager()
     //.AddRoleManager<IdentityRole>()
     .AddDefaultTokenProviders();
-
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 var app = builder.Build();
