@@ -3,6 +3,8 @@
 @attribute [StreamRendering]
 @rendermode @(new InteractiveServerRenderMode(prerender: true))
 @inject ITournamentService TournamentService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
 
 <PageTitle>Tournaments</PageTitle>
 
@@ -18,7 +20,7 @@
 </div>
 <div class="card">
     <div class="card-body">
-        <QuickGrid Items="@TournamentFiltered" Pagination="@pagination" Virtualize="true">
+        <QuickGrid Items="@TournamentFiltered" Pagination="@pagination" Virtualize="true" @ref="TournamentGrid">
             <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
             <PropertyColumn Property="@(p => p.StartDate)" Format="yyyy-MM-dd" Sortable="true" />
             <PropertyColumn Property="@(p => p.EndDate)" Format="yyyy-MM-dd" Sortable="true" />
@@ -39,6 +41,7 @@
             <PropertyColumn Property="@(p => p.Location)" Sortable="true" />
             <TemplateColumn Title="Actions">
                 <a href="/tournaments/edit/@context.Id" class="btn btn-primary">Edit</a>
+                <button class="btn btn-danger" @onclick="(() => HandleDelete(context))">Delete</button>
             </TemplateColumn>
         </QuickGrid>
         <Paginator State="@pagination" />
@@ -46,6 +49,7 @@
 </div>
 @code {
     private IQueryable<TournamentDTO> TournamentList = null;
+    QuickGrid<TournamentDTO> TournamentGrid;
     PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
 
     protected override void OnInitialized()
@@ -61,5 +65,21 @@
             return TournamentList;
         }
 
+    }
+
+    private async Task HandleDelete(TournamentDTO tournament)
+    {
+        var currentUser = await GetCurrentUser();
+        await TournamentService.DeleteTournament(tournament.Id, currentUser);
+        await TournamentGrid.RefreshDataAsync();
+        OnInitialized();
+    }
+
+    private async Task<ApplicationUser> GetCurrentUser()
+    {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userClaim = authenticationState.User;
+        var user = await UserManager.GetUserAsync(userClaim);
+        return user;
     }
 }

@@ -1,7 +1,7 @@
 ﻿@page "/tournaments/create"
 @inject ITournamentService TournamentService
 @inject UserManager<ApplicationUser> UserManager
-@inject IdentityUserAccessor UserAccessor
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 
 <div class="row">
@@ -19,7 +19,7 @@
     <div class="card-body">
         <EditForm Model="@Model" OnValidSubmit="HandleSubmit" FormName="CreateTournament">
             <DataAnnotationsValidator />
-            <ValidationSummary />
+            <ValidationSummary class="alert alert-danger" role="alert" />
 
             <div class="form-floating mb-3">
                 <InputText @bind-Value="@Model.Name" class="form-control" autocomplete="name" aria-required="true" placeholder="Please enter tournament name." />
@@ -43,10 +43,21 @@
                 </div>
             </div>
 
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="@Model.Location" class="form-control" autocomplete="location" aria-required="true" placeholder="Please enter tournament location." />
-                <label for="location" class="form-label">Location</label>
-                <ValidationMessage For="@(() => Model.Location)" class="text-danger" />
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="@Model.Location" class="form-control" autocomplete="location" aria-required="true" placeholder="Please enter tournament location." />
+                        <label for="location" class="form-label">Location</label>
+                        <ValidationMessage For="@(() => Model.Location)" class="text-danger" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <InputCheckbox @bind-Value="@Model.IsFeatured" class="form-check-input" autocomplete="isfeatured" aria-required="true" placeholder="Please enter tournament isfeatured." />
+                        <label for="isfeatured" class="form-check-label">Is Featured</label>
+                        <ValidationMessage For="@(() => Model.IsFeatured)" class="text-danger" />
+                    </div>
+                </div>
             </div>
 
             <div class="form-floating mb-3">
@@ -75,9 +86,6 @@
     [SupplyParameterFromForm]
     public TournamentCreateDTO? Model { get; set; }
 
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
-
     protected override void OnInitialized() => Model ??= new();
 
     private async Task HandleSubmit()
@@ -97,7 +105,9 @@
 
     private async Task<ApplicationUser> GetCurrentUser()
     {
-        var user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userClaim = authenticationState.User;
+        var user = await UserManager.GetUserAsync(userClaim);
         return user;
     }
 }

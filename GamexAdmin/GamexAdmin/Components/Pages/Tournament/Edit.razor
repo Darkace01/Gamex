@@ -1,7 +1,7 @@
 ﻿@page "/tournaments/edit/{Id}"
 @inject ITournamentService TournamentService
 @inject UserManager<ApplicationUser> UserManager
-@inject IdentityUserAccessor UserAccessor
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 
 <div class="row">
@@ -17,9 +17,10 @@
 
 <div class="card">
     <div class="card-body">
-        <EditForm Model="@Model" OnValidSubmit="HandleSubmit" FormName="CreateTournament">
+        <EditForm Model="@Model" OnValidSubmit="HandleSubmit" FormName="EditTournament">
             <DataAnnotationsValidator />
-            <ValidationSummary />
+            <ValidationSummary class="alert alert-danger" role="alert" />
+
             @* <InputText @bind-Value="Model.Id.ToString()" hidden /> *@
             <div class="form-floating mb-3">
                 <InputText @bind-Value="@Model.Name" class="form-control" autocomplete="name" aria-required="true" placeholder="Please enter tournament name." />
@@ -42,13 +43,22 @@
                     </div>
                 </div>
             </div>
-
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="@Model.Location" class="form-control" autocomplete="location" aria-required="true" placeholder="Please enter tournament location." />
-                <label for="location" class="form-label">Location</label>
-                <ValidationMessage For="@(() => Model.Location)" class="text-danger" />
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="@Model.Location" class="form-control" autocomplete="location" aria-required="true" placeholder="Please enter tournament location." />
+                        <label for="location" class="form-label">Location</label>
+                        <ValidationMessage For="@(() => Model.Location)" class="text-danger" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <InputCheckbox @bind-Value="@Model.IsFeatured" class="form-check-input" autocomplete="isfeatured" aria-required="true" placeholder="Please enter tournament isfeatured." />
+                        <label for="isfeatured" class="form-check-label">Is Featured</label>
+                        <ValidationMessage For="@(() => Model.IsFeatured)" class="text-danger" />
+                    </div>
+                </div>
             </div>
-
             <div class="form-floating mb-3">
                 <InputTextArea @bind-Value="@Model.Description" class="form-control" autocomplete="description" aria-required="true" placeholder="Please enter tournament description." />
                 <label for="description" class="form-label">Description</label>
@@ -75,12 +85,13 @@
     [Parameter]
     public string Id { get; set; }
 
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
 
-    private TournamentUpdateDTO Model = new();
+    [SupplyParameterFromForm]
+    public TournamentUpdateDTO? Model { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
+        Model ??= new();
         _ = Guid.TryParse(Id, out Guid tournamentId);
         var tournament = await TournamentService.GetTournamentById(tournamentId);
         if (tournament is not null)
@@ -94,7 +105,8 @@
                     Location = tournament.Location,
                     Description = tournament.Description,
                     Rules = tournament.Rules,
-                    IsFeatured = tournament.IsFeatured
+                    IsFeatured = tournament.IsFeatured,
+                    EntryFee = tournament.EntryFee,
                 };
         }
     }
@@ -109,8 +121,8 @@
 
             Model.StartDateString = startDateStr;
             Model.EndDateString = endDateStr;
-            _ = Guid.TryParse(Id, out Guid tournamentId);
-            Model.Id = tournamentId;
+            // _ = Guid.TryParse(Id, out Guid tournamentId);
+            // Model.Id = tournamentId;
             await TournamentService.UpdateTournament(Model, currentUser);
             NavigationManager.NavigateTo("/tournaments");
         }
@@ -118,7 +130,9 @@
 
     private async Task<ApplicationUser> GetCurrentUser()
     {
-        var user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userClaim = authenticationState.User;
+        var user = await UserManager.GetUserAsync(userClaim);
         return user;
     }
 }
