@@ -30,7 +30,7 @@ public class FileStorageService(Cloudinary cloudinary) : IFileStorageService
         return fileStorage;
     }
 
-    public async Task<FileStorageDTO> SaveFileForBlazor(IBrowserFile file, string tag)
+    public async Task<FileStorageDTO> SaveFile(IBrowserFile file, string tag)
     {
         var uploadParams = new ImageUploadParams()
         {

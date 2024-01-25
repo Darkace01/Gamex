@@ -47,4 +47,24 @@ public static class CommonHelpers
         }
         return (true, "File size is valid");
     }
+
+    public static (bool, string) CheckFileExtension(IFormFile file, string[] validExtensions)
+    {
+        var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (string.IsNullOrEmpty(fileExtension) || !validExtensions.Contains(fileExtension))
+        {
+            return (false, "File extension is not valid");
+        }
+        return (true, "File extension is valid");
+    }
+
+    public static (bool, string) CheckFileExtension(IBrowserFile file, string[] validExtensions)
+    {
+        var fileExtension = Path.GetExtension(file.Name).ToLowerInvariant();
+        if (string.IsNullOrEmpty(fileExtension) || !validExtensions.Contains(fileExtension))
+        {
+            return (false, "File extension is not valid");
+        }
+        return (true, "File extension is valid");
+    }
 }

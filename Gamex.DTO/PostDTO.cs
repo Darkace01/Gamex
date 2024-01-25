@@ -36,22 +36,8 @@ public class PostCreateDTO
     public string Content { get; set; } = string.Empty;
     public bool? IsArchived { get; set; } = false;
     public Guid? PictureId { get; set; }
-    public IFormFile Picture { get; set; }
+    public IFormFile? Picture { get; set; }
     public string UserId { get; set; }
-
-    public PostCreateDTO()
-    {
-    }
-
-    public PostCreateDTO(string title, string content, bool? isArchived, Guid? pictureId, IFormFile? picture, string userId)
-    {
-        Title = title;
-        Content = content;
-        IsArchived = isArchived;
-        PictureId = pictureId;
-        Picture = picture;
-        UserId = userId;
-    }
 }
 
 public class PostUpdateDTO
@@ -63,19 +49,4 @@ public class PostUpdateDTO
     public Guid? PictureId { get; set; }
     public IFormFile Picture { get; set; }
     public string UserId { get; set; }
-
-    public PostUpdateDTO()
-    {
-    }
-
-    public PostUpdateDTO(Guid id, string title, string content, bool? isArchived, Guid? pictureId, IFormFile picture, string userId)
-    {
-        Id = id;
-        Title = title;
-        Content = content;
-        IsArchived = isArchived;
-        PictureId = pictureId;
-        Picture = picture;
-        UserId = userId;
-    }
 }

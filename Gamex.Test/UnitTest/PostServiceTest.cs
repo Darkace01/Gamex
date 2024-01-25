@@ -27,7 +27,16 @@ public class PostServiceTest: TestBase
 
         var testUser = dbContext.Users.FirstOrDefault();
 
-        PostCreateDTO newPost = new("Test Post", "Test Post Content",false,null,null,testUser.Id);
+        //PostCreateDTO newPost = new("Test Post", "Test Post Content",false,null,null,testUser.Id);
+        PostCreateDTO newPost = new()
+        {
+            Title = "Test Post",
+            Content = "Test Post Content",
+            IsArchived = false,
+            PictureId = null,
+            Picture = null,
+            UserId = testUser.Id
+        };
 
         // Act
         var saved = await postService.CreatePost(newPost,testUser);
@@ -46,7 +55,17 @@ public class PostServiceTest: TestBase
         var postToUpdate = dbContext.Posts.FirstOrDefault();
         var testUser = dbContext.Users.FirstOrDefault();
 
-        PostUpdateDTO updatedPost = new(postToUpdate.Id,"Test Post", "Test Post Content",false,null,null,testUser.Id);
+        PostUpdateDTO updatedPost = new()
+        {
+            Id = postToUpdate.Id,
+            Title = "Test Post",
+            Content = "Test Post Content",
+            IsArchived = false,
+            PictureId = null,
+            Picture = null,
+            UserId = testUser.Id
+        };
+        //PostUpdateDTO updatedPost = new(postToUpdate.Id,"Test Post", "Test Post Content",false,null,null,testUser.Id);
 
         // Act
         var updated = await postService.UpdatePost(updatedPost,testUser);

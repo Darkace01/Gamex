@@ -6,6 +6,6 @@ namespace Gamex.Service.Contract
     {
         Task<bool> DeleteFile(string publicId);
         Task<FileStorageDTO> SaveFile(IFormFile file, string tag);
-        Task<FileStorageDTO> SaveFileForBlazor(IBrowserFile file, string tag);
+        Task<FileStorageDTO> SaveFile(IBrowserFile file, string tag);
     }
 }

@@ -6,6 +6,7 @@
 @inject IRepositoryServiceManager RepositoryServiceManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
 
 <PageTitle>Posts</PageTitle>
 
@@ -27,8 +28,19 @@
             <PropertyColumn Property="@(p => p.Content.Substring(0, Math.Min(p.Content.Length, 50)))" />
 
             <PropertyColumn Property="@(p => p.User.DisplayName)" Sortable="true" />
+            <TemplateColumn Title="Archieved" Sortable="true">
+                @if (context.IsArchived == true)
+                {
+                    <span class="badge bg-success">Yes</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">No</span>
+                }
+            </TemplateColumn>
             <TemplateColumn Title="Actions">
                 <a href="/posts/edit@context.Id" class="btn btn-primary">Edit</a>
+                <button class="btn btn-danger" @onclick="(() => HandleDelete(context))">Delete</button>
             </TemplateColumn>
         </QuickGrid>
         <Paginator State="@pagination" />
@@ -51,5 +63,22 @@
         {
             return PostList ?? Enumerable.Empty<PostDTO>().AsQueryable();
         }
+    }
+
+    private async Task HandleDelete(PostDTO post)
+    {
+        NavigationManager.NavigateTo("/posts");
+        var currentUser = await GetCurrentUser();
+        await RepositoryServiceManager.PostService.DeletePost(post.Id, currentUser);
+        await PostGrid.RefreshDataAsync();
+
+    }
+
+    private async Task<ApplicationUser> GetCurrentUser()
+    {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userClaim = authenticationState.User;
+        var user = await UserManager.GetUserAsync(userClaim);
+        return user;
     }
 }
