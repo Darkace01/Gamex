@@ -17,6 +17,7 @@ public class TournamentDTO
     public string TimeFormatted { get { return Time?.ToString("HH:mm"); } }
     public decimal EntryFee { get; set; }
     public string Rules { get; set; } = string.Empty;
+    public Guid? PictureId { get; set; }
     public string PictureUrl { get; set; } = string.Empty;
     public string PicturePublicId { get; set; } = string.Empty;
     public IEnumerable<TournamentUserDTO> TournamentUsers { get; set; }
@@ -63,7 +64,7 @@ public class TournamentCreateDTO
     public string TimeString { get; set; } = string.Empty;
     public decimal EntryFee { get; set; }
     public string Rules { get; set; } = string.Empty;
-    public string PictureId { get; set; } = string.Empty;
+    public Guid? PictureId { get; set; }
 }
 
 public class TournamentUpdateDTO

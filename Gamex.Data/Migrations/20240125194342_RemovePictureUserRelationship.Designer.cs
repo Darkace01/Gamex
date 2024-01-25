@@ -4,6 +4,7 @@ using Gamex.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Gamex.Data.Migrations
 {
     [DbContext(typeof(GamexDbContext))]
-    partial class GamexDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240125194342_RemovePictureUserRelationship")]
+    partial class RemovePictureUserRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -149,7 +152,7 @@ namespace Gamex.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comments", (string)null);
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("Gamex.Models.Picture", b =>
@@ -178,7 +181,7 @@ namespace Gamex.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Pictures", (string)null);
+                    b.ToTable("Pictures");
                 });
 
             modelBuilder.Entity("Gamex.Models.Post", b =>
@@ -217,7 +220,7 @@ namespace Gamex.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Posts", (string)null);
+                    b.ToTable("Posts");
                 });
 
             modelBuilder.Entity("Gamex.Models.Tournament", b =>
@@ -272,7 +275,7 @@ namespace Gamex.Data.Migrations
 
                     b.HasIndex("PictureId");
 
-                    b.ToTable("Tournaments", (string)null);
+                    b.ToTable("Tournaments");
                 });
 
             modelBuilder.Entity("Gamex.Models.UserTournament", b =>
@@ -287,7 +290,7 @@ namespace Gamex.Data.Migrations
 
                     b.HasIndex("TournamentId");
 
-                    b.ToTable("UserTournaments", (string)null);
+                    b.ToTable("UserTournaments");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
