@@ -2,7 +2,8 @@
 @attribute [Authorize(Roles = AppConstant.AdminUserRole)]
 @attribute [StreamRendering]
 @rendermode @(new InteractiveServerRenderMode(prerender: true))
-@inject ITournamentService TournamentService
+@* @rendermode InteractiveAuto *@
+@inject IRepositoryServiceManager RepositoryServiceManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<ApplicationUser> UserManager
 
@@ -54,7 +55,7 @@
 
     protected override void OnInitialized()
     {
-        TournamentList = TournamentService.GetAllTournaments().ToList().AsQueryable();
+        TournamentList = RepositoryServiceManager.TournamentService.GetAllTournaments().ToList().AsQueryable();
     }
 
     IQueryable<TournamentDTO> TournamentFiltered
@@ -70,7 +71,7 @@
     private async Task HandleDelete(TournamentDTO tournament)
     {
         var currentUser = await GetCurrentUser();
-        await TournamentService.DeleteTournament(tournament.Id, currentUser);
+        await RepositoryServiceManager.TournamentService.DeleteTournament(tournament.Id, currentUser);
         await TournamentGrid.RefreshDataAsync();
         OnInitialized();
     }

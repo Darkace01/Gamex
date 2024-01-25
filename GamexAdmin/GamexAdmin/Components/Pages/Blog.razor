@@ -1,0 +1,55 @@
+﻿@page "/posts"
+@attribute [Authorize(Roles = AppConstant.AdminUserRole)]
+@attribute [StreamRendering]
+@rendermode @(new InteractiveServerRenderMode(prerender: true))
+@* @rendermode InteractiveAuto *@
+@inject IRepositoryServiceManager RepositoryServiceManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+
+<PageTitle>Posts</PageTitle>
+
+<div class="row">
+    <div class="col-md-6">
+        <h1>Posts</h1>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex justify-content-end">
+            <a href="/posts/create" class="btn btn-primary">Create Post</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <QuickGrid Items="@PostFiltered" Pagination="@pagination" Virtualize="true" @ref="PostGrid">
+            <PropertyColumn Property="@(p => p.Title)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.Content.Substring(0, Math.Min(p.Content.Length, 50)))" />
+
+            <PropertyColumn Property="@(p => p.User.DisplayName)" Sortable="true" />
+            <TemplateColumn Title="Actions">
+                <a href="/posts/edit@context.Id" class="btn btn-primary">Edit</a>
+            </TemplateColumn>
+        </QuickGrid>
+        <Paginator State="@pagination" />
+    </div>
+</div>
+
+@code {
+    QuickGrid<PostDTO>? PostGrid;
+    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+    private IQueryable<PostDTO>? PostList = null;
+
+    protected override void OnInitialized()
+    {
+        PostList = RepositoryServiceManager.PostService.GetAllPosts().ToList().AsQueryable();
+    }
+
+    IQueryable<PostDTO> PostFiltered
+    {
+        get
+        {
+            return PostList ?? Enumerable.Empty<PostDTO>().AsQueryable();
+        }
+    }
+}
