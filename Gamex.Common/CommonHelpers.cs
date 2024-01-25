@@ -1,4 +1,7 @@
-﻿namespace Gamex.Common;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Http;
+
+namespace Gamex.Common;
 
 public static class CommonHelpers
 {
@@ -25,5 +28,23 @@ public static class CommonHelpers
         var splittedTime = time.Split(':');
         DateTime convertedTime = new(1, 1, 1, int.Parse(splittedTime[0]), int.Parse(splittedTime[1]), 0);
         return convertedTime;
+    }
+
+    public static (bool, string) CheckFileSize(IFormFile file, long maxSize)
+    {
+        if (file.Length > maxSize)
+        {
+            return (false, "File size is too large");
+        }
+        return (true, "File size is valid");
+    }
+
+    public static (bool, string) CheckFileSize(IBrowserFile file, long maxSize)
+    {
+        if (file.Size > maxSize)
+        {
+            return (false, "File size is too large");
+        }
+        return (true, "File size is valid");
     }
 }

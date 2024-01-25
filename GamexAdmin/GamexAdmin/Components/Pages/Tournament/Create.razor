@@ -111,6 +111,15 @@
             {
                 var currentUser = await GetCurrentUser();
 
+                var (isValid, error) = CommonHelpers.CheckFileSize(file, maxFileSize);
+
+                if (!isValid)
+                {
+                    errorMessage = error;
+                    IsLoading = false;
+                    return;
+                }
+
                 var formFile = new FormFile(file.OpenReadStream(file.Size), 0, file.Size, file.Name, file.Name);
                 var fileResult = await RepositoryServiceManager.FileStorageService.SaveFileForBlazor(file, "tournament-file");
                 if (fileResult is not null)

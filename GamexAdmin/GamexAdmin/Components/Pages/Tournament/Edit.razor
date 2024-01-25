@@ -145,6 +145,14 @@
             var file = e.File;
             if (file is not null)
             {
+                var (isValid, error) = CommonHelpers.CheckFileSize(file, maxFileSize);
+
+                if (!isValid)
+                {
+                    errorMessage = error;
+                    IsLoading = false;
+                    return;
+                }
                 var currentUser = await GetCurrentUser();
                 var tournamentId = Guid.Parse(Id);
 
