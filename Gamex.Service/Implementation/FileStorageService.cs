@@ -1,4 +1,6 @@
-﻿namespace Gamex.Service.Implementation;
+﻿using Microsoft.AspNetCore.Components.Forms;
+
+namespace Gamex.Service.Implementation;
 
 public class FileStorageService(Cloudinary cloudinary) : IFileStorageService
 {
@@ -6,9 +8,10 @@ public class FileStorageService(Cloudinary cloudinary) : IFileStorageService
 
     public async Task<FileStorageDTO> SaveFile(IFormFile file, string tag)
     {
+        using var stream = file.OpenReadStream();
         var uploadParams = new ImageUploadParams()
         {
-            File = new FileDescription(file.FileName, file.OpenReadStream()),
+            File = new FileDescription(file.FileName, stream),
             UniqueFilename = true,
             Tags = tag
         };
@@ -18,6 +21,29 @@ public class FileStorageService(Cloudinary cloudinary) : IFileStorageService
         {
             throw new Exception(
                 $"Error uploading file to cloudinary. Status code: {uploadResult.StatusCode}. Error message: {uploadResult.Error.Message}");
+        }
+        FileStorageDTO fileStorage = new()
+        {
+            FileUrl = uploadResult.SecureUrl?.AbsoluteUri,
+            PublicId = uploadResult.PublicId
+        };
+        return fileStorage;
+    }
+
+    public async Task<FileStorageDTO> SaveFileForBlazor(IBrowserFile file, string tag)
+    {
+        var uploadParams = new ImageUploadParams()
+        {
+            File = new FileDescription(file.Name, file.OpenReadStream()),
+            UniqueFilename = true,
+            Tags = tag
+        };
+        var uploadResult = await _cloudinary.UploadAsync(uploadParams).ConfigureAwait(false);
+
+        if (uploadResult.StatusCode != HttpStatusCode.OK)
+        {
+            throw new Exception(
+                               $"Error uploading file to cloudinary. Status code: {uploadResult.StatusCode}. Error message: {uploadResult.Error.Message}");
         }
         FileStorageDTO fileStorage = new()
         {

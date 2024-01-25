@@ -3,6 +3,8 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+@inject IRepositoryServiceManager RepositoryServiceManager
+@rendermode InteractiveServer
 
 <div class="row">
     <div class="col-md-6">
@@ -20,6 +22,7 @@
         <EditForm Model="@Model" OnValidSubmit="HandleSubmit" FormName="EditTournament">
             <DataAnnotationsValidator />
             <ValidationSummary class="alert alert-danger" role="alert" />
+             <StatusMessage Message="@errorMessage" class="alert alert-danger" role="alert" />
 
             @* <InputText @bind-Value="Model.Id.ToString()" hidden /> *@
             <div class="form-floating mb-3">
@@ -55,7 +58,7 @@
                     <div class="mb-3">
                         <InputCheckbox @bind-Value="@Model.IsFeatured" class="form-check-input" autocomplete="isfeatured" aria-required="true" placeholder="Please enter tournament isfeatured." />
                         <label for="isfeatured" class="form-check-label">Is Featured</label>
-                        <ValidationMessage For="@(() => Model.IsFeatured)" class="text-danger" />
+                        <ValidationMessage For="@(() => Model!.IsFeatured)" class="text-danger" />
                     </div>
                 </div>
             </div>
@@ -70,13 +73,23 @@
                 <label for="rules" class="form-label">Rules</label>
                 <ValidationMessage For="@(() => Model.Rules)" class="text-danger" />
             </div>
-            <div class="form-floating mb-3">
-                <InputNumber @bind-Value="@Model.EntryFee" class="form-control" autocomplete="entry fee" aria-required="true" placeholder="Please enter tournament Entry Fee." />
-                <label for="entryFee" class="form-label">Entry Fee</label>
-                <ValidationMessage For="@(() => Model.EntryFee)" class="text-danger" />
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <InputNumber @bind-Value="@Model.EntryFee" class="form-control" autocomplete="entry fee" aria-required="true" placeholder="Please enter tournament Entry Fee." />
+                        <label for="entryFee" class="form-label">Entry Fee</label>
+                        <ValidationMessage For="@(() => Model.EntryFee)" class="text-danger" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <InputFile class="form-control" OnChange="HandleFileUpload" />
+                    </div>
+                </div>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100">Submit</button>
+
+            <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">Submit</button>
         </EditForm>
     </div>
 </div>
@@ -85,9 +98,15 @@
     [Parameter]
     public string Id { get; set; }
 
+    public string errorMessage { get; set; } = "";
+
 
     [SupplyParameterFromForm]
     public TournamentUpdateDTO? Model { get; set; }
+
+    private string PublicId { get; set; } = "";
+    private bool IsLoading { get; set; } = false;
+    long maxFileSize = 1024 * 1024 * 10;
 
     protected override async Task OnInitializedAsync()
     {
@@ -111,8 +130,38 @@
         }
     }
 
+    private async Task HandleFileUpload(InputFileChangeEventArgs e)
+    {
+        IsLoading = true;
+        try
+        {
+            var file = e.File;
+            if (file is not null)
+            {
+                var currentUser = await GetCurrentUser();
+                var tournamentId = Guid.Parse(Id);
+
+                var formFile = new FormFile(file.OpenReadStream(file.Size), 0, file.Size, file.Name, file.Name);
+                var fileResult = await RepositoryServiceManager.FileStorageService.SaveFileForBlazor(file, "tournament-file");
+                if (fileResult is not null)
+                {
+                    var pictureFile = await RepositoryServiceManager.PictureService.CreatePictureForUser(new PictureCreateDTO(fileResult.FileUrl, fileResult.PublicId),currentUser.Id);
+                    Model!.PictureId = pictureFile.Id;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            IsLoading = false;
+            errorMessage = ex?.Message;
+        }
+
+    }
+
     private async Task HandleSubmit()
     {
+        if (IsLoading == true) return;
+        IsLoading = true;
         var currentUser = await GetCurrentUser();
         if (Model is not null)
         {
@@ -126,6 +175,7 @@
             await TournamentService.UpdateTournament(Model, currentUser);
             NavigationManager.NavigateTo("/tournaments");
         }
+        IsLoading = false;
     }
 
     private async Task<ApplicationUser> GetCurrentUser()

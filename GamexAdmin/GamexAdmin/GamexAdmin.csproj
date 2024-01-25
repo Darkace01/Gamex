@@ -13,6 +13,7 @@
     <ProjectReference Include="..\..\Gamex.DTO\Gamex.DTO.csproj" />
     <ProjectReference Include="..\..\Gamex.Models\Gamex.Models.csproj" />
     <ProjectReference Include="..\..\Gamex.Service\Gamex.Service.csproj" />
+    <ProjectReference Include="..\..\Gamex\Gamex.csproj" />
     <ProjectReference Include="..\GamexAdmin.Client\GamexAdmin.Client.csproj" />
     <PackageReference Include="Azure.Identity" Version="1.10.2" />
     <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="8.0.1" />

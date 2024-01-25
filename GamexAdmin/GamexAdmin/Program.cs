@@ -1,6 +1,4 @@
-using Gamex.Service.Contract;
-using Gamex.Service.Implementation;
-using Microsoft.Extensions.DependencyInjection;
+using GamexAdmin.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,8 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
-builder.Services.AddScoped<ISMTPMailService, SMTPMailService>();
-builder.Services.AddScoped<ITournamentService, TournamentService>();
+
+builder.Services.ConfigureRepository();
 
 builder.Services.AddQuickGridEntityFrameworkAdapter();
 
@@ -37,7 +35,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     //.AddRoleManager<IdentityRole>()
     .AddDefaultTokenProviders();
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
-
+builder.Services.AddHttpClient();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
