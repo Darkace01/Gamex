@@ -67,9 +67,10 @@
 
     private async Task HandleDelete(PostDTO post)
     {
-        NavigationManager.NavigateTo("/posts");
+        // NavigationManager.NavigateTo("/posts");
         var currentUser = await GetCurrentUser();
         await RepositoryServiceManager.PostService.DeletePost(post.Id, currentUser);
+        OnInitialized();
         await PostGrid.RefreshDataAsync();
 
     }

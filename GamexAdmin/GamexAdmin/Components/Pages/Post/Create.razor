@@ -3,6 +3,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+@rendermode @(new InteractiveServerRenderMode(prerender: true))
 
 <div class="row">
     <div class="col-md-6">
@@ -17,7 +18,7 @@
 
 <div class="card">
     <div class="card-body">
-        <EditForm Model="@Model" OnValidSubmit="HandleSubmit" FormName="CreatePost">
+        <EditForm Model="@Model" OnValidSubmit="HandleSubmit" FormName="CreatePost" Enhance>
             <DataAnnotationsValidator />
             <ValidationSummary class="alert alert-danger" role="alert" />
             @if (!string.IsNullOrEmpty(errorMessage))
@@ -70,18 +71,17 @@
 
         try
         {
-            var currentUser = await GetCurrentUser();
-            var post = await RepositoryServiceManager.PostService.CreatePost(Model!, currentUser);
-            NavigationManager.NavigateTo("/posts");
+            // var currentUser = await GetCurrentUser();
+            // var post = await RepositoryServiceManager.PostService.CreatePost(Model!, currentUser);
+            IsLoading = false;
+            NavigationManager.NavigateTo("/posts",
+                    new NavigationOptions() { HistoryEntryState = "leave" });
         }
         catch (Exception ex)
         {
             errorMessage = "An error has occurred, please contact your administrator for help";
-        }
-        finally
-        {
             IsLoading = false;
-        }
+        }        
     }
 
     private async Task<ApplicationUser> GetCurrentUser()

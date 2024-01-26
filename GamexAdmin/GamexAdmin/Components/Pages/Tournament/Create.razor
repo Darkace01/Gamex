@@ -3,7 +3,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
-
+@rendermode InteractiveAuto
 <div class="row">
     <div class="col-md-6">
         <h1>Create Tournament</h1>
@@ -17,7 +17,7 @@
 
 <div class="card">
     <div class="card-body">
-        <EditForm Model="@Model" OnValidSubmit="HandleSubmit" FormName="CreateTournament">
+        <EditForm Model="@Model" OnValidSubmit="HandleSubmit" FormName="CreateTournament" Enhance>
             <DataAnnotationsValidator />
             <ValidationSummary class="alert alert-danger" role="alert" />
             @if (!string.IsNullOrEmpty(errorMessage))
