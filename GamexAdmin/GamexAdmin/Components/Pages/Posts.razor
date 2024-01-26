@@ -25,10 +25,10 @@
     <div class="card-body">
         <QuickGrid Items="@PostFiltered" Pagination="@pagination" Virtualize="true" @ref="PostGrid">
             <PropertyColumn Property="@(p => p.Title)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.Content.Substring(0, Math.Min(p.Content.Length, 50)))" />
+            <PropertyColumn Property="@(p => p.Content.Substring(0, Math.Min(p.Content.Length, 50)))" Title="Summary" />
 
-            <PropertyColumn Property="@(p => p.User.DisplayName)" Sortable="true" />
-            <TemplateColumn Title="Archieved" Sortable="true">
+            <PropertyColumn Property="@(p => p.User.DisplayName)" Sortable="true" Title="Author"/>
+            <TemplateColumn Title="Archived" Sortable="true">
                 @if (context.IsArchived == true)
                 {
                     <span class="badge bg-success">Yes</span>
@@ -39,8 +39,36 @@
                 }
             </TemplateColumn>
             <TemplateColumn Title="Actions">
-                <a href="/posts/edit@context.Id" class="btn btn-primary">Edit</a>
-                <button class="btn btn-danger" @onclick="(() => HandleDelete(context))">Delete</button>
+                <div class="d-flex justify-content-between">
+                    <a href="/posts/edit/@context.Id" class="btn btn-primary">Edit</a>
+                    @if (context.IsArchived == false)
+                    {
+                        <button class="btn btn-warning" @onclick="(() => ArchievePost(context))" disabled="@IsLoading">
+                            @if (IsLoading == true)
+                            {
+                                <Loading />
+                            }
+                            Archieve
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-secondary" @onclick="(() => UnArchievePost(context))" disabled="@IsLoading">
+                            @if (IsLoading == true)
+                            {
+                                <Loading />
+                            }
+                            UnArchieve
+                        </button>
+                    }
+                    <button class="btn btn-danger" @onclick="(() => HandleDelete(context))" disabled="@IsLoading">
+                        @if (IsLoading == true)
+                        {
+                            <Loading />
+                        }
+                        Delete
+                    </button>
+                </div>
             </TemplateColumn>
         </QuickGrid>
         <Paginator State="@pagination" />
@@ -51,6 +79,7 @@
     QuickGrid<PostDTO>? PostGrid;
     PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
     private IQueryable<PostDTO>? PostList = null;
+    bool IsLoading = false;
 
     protected override void OnInitialized()
     {
@@ -67,12 +96,59 @@
 
     private async Task HandleDelete(PostDTO post)
     {
-        // NavigationManager.NavigateTo("/posts");
-        var currentUser = await GetCurrentUser();
-        await RepositoryServiceManager.PostService.DeletePost(post.Id, currentUser);
-        OnInitialized();
-        await PostGrid.RefreshDataAsync();
+        try
+        {
+            IsLoading = true;
+            var currentUser = await GetCurrentUser();
+            await RepositoryServiceManager.PostService.DeletePost(post.Id, currentUser);
+            OnInitialized();
+            await PostGrid.RefreshDataAsync();
+        }
+        catch (Exception)
+        {
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
 
+    private async Task ArchievePost(PostDTO post)
+    {
+        try
+        {
+            IsLoading = true;
+            var currentUser = await GetCurrentUser();
+            await RepositoryServiceManager.PostService.ArchivePost(post.Id);
+            OnInitialized();
+            await PostGrid.RefreshDataAsync();
+        }
+        catch (Exception)
+        {
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task UnArchievePost(PostDTO post)
+    {
+        try
+        {
+            IsLoading = true;
+            var currentUser = await GetCurrentUser();
+            await RepositoryServiceManager.PostService.UnArchivePost(post.Id);
+            OnInitialized();
+            await PostGrid.RefreshDataAsync();
+        }
+        catch (Exception)
+        {
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     private async Task<ApplicationUser> GetCurrentUser()

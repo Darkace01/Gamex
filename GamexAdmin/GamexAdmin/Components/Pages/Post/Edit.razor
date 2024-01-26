@@ -1,4 +1,4 @@
-﻿@page "/posts/create"
+﻿@page "/posts/edit/{Id}"
 @inject IRepositoryServiceManager RepositoryServiceManager
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -53,8 +53,11 @@
 </div>
 
 @code {
+    [Parameter]
+    public string Id { get; set; }
+
     [SupplyParameterFromForm]
-    private PostCreateDTO? Model { get; set; }
+    private PostUpdateDTO? Model { get; set; }
 
     public string errorMessage { get; set; } = "";
 
@@ -62,7 +65,22 @@
     long maxFileSize = 1024 * 1024 * 10;
     string[] imageFileExtension = { ".jpg", ".jpeg", ".png", ".gif" };
 
-    protected override void OnInitialized() => Model ??= new();
+    protected override async Task OnInitializedAsync()
+    {
+        Model ??= new();
+        _ = Guid.TryParse(Id, out Guid postId);
+        var post = await RepositoryServiceManager.PostService.GetPost(postId);
+        if (post is not null)
+        {
+            Model = new PostUpdateDTO
+                {
+                    Id = post.Id,
+                    Title = post.Title,
+                    Content = post.Content,
+                    PictureId = post.PictureId
+                };
+        }
+    }
 
     private async Task HandleSubmit()
     {
@@ -72,7 +90,7 @@
         try
         {
             var currentUser = await GetCurrentUser();
-            var post = await RepositoryServiceManager.PostService.CreatePost(Model!, currentUser);
+            var post = await RepositoryServiceManager.PostService.UpdatePost(Model!, currentUser);
             IsLoading = false;
             NavigationManager.NavigateTo("/posts");
         }
@@ -80,7 +98,7 @@
         {
             errorMessage = "An error has occurred, please contact your administrator for help";
             IsLoading = false;
-        }        
+        }
     }
 
     private async Task<ApplicationUser> GetCurrentUser()
@@ -127,7 +145,7 @@
                     Model!.PictureId = pictureFile.Id;
                 }
             }
-            
+
         }
         catch (Exception ex)
         {

@@ -116,8 +116,6 @@
             var file = e.File;
             if (file is not null)
             {
-                var currentUser = await GetCurrentUser();
-
                 var (isValid, error) = CommonHelpers.CheckFileSize(file, maxFileSize);
 
                 if (!isValid)
@@ -139,7 +137,7 @@
                 var fileResult = await RepositoryServiceManager.FileStorageService.SaveFile(file, "tournament-picture");
                 if (fileResult is not null)
                 {
-                    var pictureFile = await RepositoryServiceManager.PictureService.CreatePictureForUser(new PictureCreateDTO(fileResult.FileUrl, fileResult.PublicId), currentUser.Id);
+                    var pictureFile = await RepositoryServiceManager.PictureService.CreatePicture(new PictureCreateDTO(fileResult.FileUrl, fileResult.PublicId));
                     Model!.PictureId = pictureFile.Id;
                 }
             }
