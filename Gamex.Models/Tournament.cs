@@ -13,5 +13,6 @@ public class Tournament : Entity
     public string Rules { get; set; } = string.Empty;
     public Guid? PictureId { get; set; }
     public Picture? Picture { get; set; }
-    public List<UserTournament> UserTournaments { get; set; } = new();
+    public List<UserTournament> UserTournaments { get; set; } = [];
+    public ICollection<TournamentCategory> Categories { get; set; } = new List<TournamentCategory>();
 }

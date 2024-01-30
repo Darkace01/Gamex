@@ -165,7 +165,7 @@
                 }
                 var tournamentId = Guid.Parse(Id);
 
-                var formFile = new FormFile(file.OpenReadStream(file.Size), 0, file.Size, file.Name, file.Name);
+                // var formFile = new FormFile(file.OpenReadStream(file.Size), 0, file.Size, file.Name, file.Name);
                 var fileResult = await RepositoryServiceManager.FileStorageService.SaveFile(file, "tournament-picture");
                 if (fileResult is not null)
                 {

@@ -21,7 +21,7 @@ builder.Services.AddDbContext<GamexDbContext>(options =>
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.ConfigureCors();
+builder.Services.ConfigureCors(builder.Configuration);
 
 //Identity
 builder.Services.AddScoped<UserManager<ApplicationUser>, UserManager<ApplicationUser>>();

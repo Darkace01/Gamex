@@ -11,6 +11,7 @@ public class GamexDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<UserTournament> UserTournaments { get; set; }
     public DbSet<Post> Posts { get; set; }
     public DbSet<Comment> Comments { get; set; }
+    public DbSet<TournamentCategory> TournamentCategories { get; set; }
 
     public GamexDbContext(DbContextOptions<GamexDbContext> options) : base(options)
     {
@@ -34,6 +35,10 @@ public class GamexDbContext : IdentityDbContext<ApplicationUser>
             .WithMany(t => t.UserTournaments)
             .HasForeignKey(ut => ut.TournamentId)
             .OnDelete(DeleteBehavior.Cascade); // Changed from NoAction to Cascade
+
+        builder.Entity<UserTournament>()
+            .Property(ut => ut.Amount)
+            .HasColumnType("decimal(18,2)");
 
         builder.Entity<Tournament>()
             .HasOne(t => t.Picture);
@@ -64,6 +69,6 @@ public class GamexDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<ApplicationUser>()
             .HasOne(u => u.Picture);
-
+        
     }
 }

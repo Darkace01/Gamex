@@ -23,6 +23,15 @@ public class TournamentDTO
     public IEnumerable<TournamentUserDTO> TournamentUsers { get; set; }
 }
 
+public class PaginatedTournamentDTO
+{
+    public IEnumerable<TournamentDTO> Tournaments { get; set; }
+    public decimal TotalPages { get; set; }
+    public int CurrentPage { get; set; }
+    public int PageSize { get; set; }
+    public int TotalCount { get; set; }
+}
+
 public class TournamentCreateDTO
 {
     public string Name { get; set; } = string.Empty;
