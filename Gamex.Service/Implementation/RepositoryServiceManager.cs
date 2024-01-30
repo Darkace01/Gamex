@@ -8,7 +8,7 @@ public class RepositoryServiceManager : IRepositoryServiceManager
 
     private ITournamentService _tournamentService;
     private IJWTHelper _jwtHelper;
-    private ISMTPMailService _smtpMailService;
+    //private ISMTPMailService _smtpMailService;
     private IPictureService _pictureService;
     private IFileStorageService _fileStorageService;
     private IPostService _postService;
@@ -40,14 +40,14 @@ public class RepositoryServiceManager : IRepositoryServiceManager
         }
     }
 
-    public ISMTPMailService SMTPMailService
-    {
-        get
-        {
-            _smtpMailService ??= new SMTPMailService(_configuration);
-            return _smtpMailService;
-        }
-    }
+    //public ISMTPMailService SMTPMailService
+    //{
+    //    get
+    //    {
+    //        _smtpMailService ??= new SMTPMailService(_configuration);
+    //        return _smtpMailService;
+    //    }
+    //}
 
     public IPictureService PictureService
     {

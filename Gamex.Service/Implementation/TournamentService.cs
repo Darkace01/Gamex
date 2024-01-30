@@ -33,6 +33,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             Time = tournament.Time,
             EntryFee = tournament.EntryFee,
             Rules = tournament.Rules,
+            PictureId = tournament.Picture?.Id,
             PicturePublicId = tournament.Picture?.PublicId,
             PictureUrl = tournament.Picture?.FileUrl,
 
@@ -108,7 +109,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                         Time = tournament.Time,
                         EntryFee = tournament.EntryFee,
                         Rules = tournament.Rules,
-                        PictureId = string.IsNullOrWhiteSpace(tournament.PictureId) ? null : Guid.Parse(tournament.PictureId),
+                        PictureId = tournament.PictureId,
                     };
 
                     await _context.Tournaments.AddAsync(newTournament);
@@ -155,7 +156,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 Time = tournament.Time,
                 EntryFee = tournament.EntryFee,
                 Rules = tournament.Rules,
-                PictureId = string.IsNullOrWhiteSpace(tournament.PictureId) ? null : Guid.Parse(tournament.PictureId),
+                PictureId = tournament.PictureId,
             };
 
             await _context.Tournaments.AddAsync(newTournament);

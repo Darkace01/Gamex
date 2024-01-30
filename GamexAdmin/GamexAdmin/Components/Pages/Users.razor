@@ -1,0 +1,130 @@
+﻿@page "/users"
+@attribute [Authorize(Roles = AppConstant.AdminUserRole)]
+@inject UserManager<ApplicationUser> UserManager
+@attribute [StreamRendering]
+@* @rendermode InteractiveAuto *@
+@rendermode @(new InteractiveServerRenderMode(prerender: true))
+
+<PageTitle>Users</PageTitle>
+<div class="row">
+    <div class="col-md-6">
+        <h1>Users</h1>
+    </div>
+    <div class="col-md-6">
+    </div>
+</div>
+<div class="card">
+    <div class="card-body">
+        <QuickGrid Items="@UsersFiltered" Pagination="@pagination" Virtualize="true" @ref="UserGrid">
+            <PropertyColumn Property="@(p => p.UserName)" Sortable="true">
+                <ColumnOptions>
+                    <div class="search-box">
+                        <input type="search" autofocus @bind="userNameFilter" @bind:event="oninput" placeholder="Username..." @bind:after="()=>UserGrid.RefreshDataAsync()" />
+                    </div>
+                </ColumnOptions>
+            </PropertyColumn>
+            <PropertyColumn Property="@(p => p.Email)" Sortable="true">
+                <ColumnOptions>
+                    <div class="search-box">
+                        <input type="search" autofocus @bind="emailFilter" @bind:event="oninput" placeholder="Email Address..." @bind:after="()=>UserGrid.RefreshDataAsync()" />
+                    </div>
+                </ColumnOptions>
+            </PropertyColumn>
+            @* <PropertyColumn Property="@(p => p.Email)" Sortable="true" /> *@
+            <TemplateColumn Title="Actions">
+                <div class="d-flex justify-content-between">
+                    @{
+                        if (context.LockoutEnabled == false)
+                        {
+                            <button class="btn btn-danger" @onclick="(() => LockUser(context.Id))">Lock User</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-success" @onclick="(() => UnLockUser(context.Id))">Unlock User</button>
+                        }
+
+                        <button class="btn btn-primary" @onclick="(() => MakeUserAdmin(context.Id))">Make Admin</button>
+                    }
+                </div>
+            </TemplateColumn>
+        </QuickGrid>
+        @* <PropertyColumn Property="@(p => p.Posts.Count)" Format="yyyy-MM-dd" Sortable="true" /> *@
+
+        <Paginator State="@pagination" />
+    </div>
+</div>
+
+@code {
+    QuickGrid<ApplicationUser> UserGrid;
+    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+    private IQueryable<ApplicationUser> users;
+
+    string emailFilter = string.Empty;
+    string userNameFilter = string.Empty;
+    IQueryable<ApplicationUser> UsersFiltered
+    {
+        get
+        {
+            // wait for some seconds to simulate a slow query
+            // Task.Delay(5000).Wait();
+            var filteredUsers = users;
+            if (!string.IsNullOrEmpty(emailFilter))
+            {
+                var lowercaseEmailFilter = emailFilter.ToLower();
+                filteredUsers = filteredUsers.Where(c => c.Email.ToLower().Contains(lowercaseEmailFilter));
+            }
+
+            if (!string.IsNullOrEmpty(userNameFilter))
+            {
+                var lowercaseUserNameFilter = userNameFilter.ToLower();
+                filteredUsers = filteredUsers.Where(c => c.UserName.ToLower().Contains(lowercaseUserNameFilter));
+            }
+            return filteredUsers;
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        users = UserManager.Users.AsNoTracking().ToList().AsQueryable();
+
+        pagination.TotalItemCountChanged += (sender, eventArgs) => StateHasChanged();
+    }
+
+
+    private List<string> GetCurrentUserRoles(ApplicationUser user)
+    {
+        var roles = UserManager.GetRolesAsync(user).Result;
+        return roles.ToList();
+    }
+
+    private async Task LockUser(string userId)
+    {
+        var user = await UserManager.FindByIdAsync(userId);
+        await UserManager.SetLockoutEnabledAsync(user, true);
+        await UserManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
+        await UserManager.UpdateAsync(user);
+        await UserGrid.RefreshDataAsync();
+    }
+
+    private async Task UnLockUser(string userId)
+    {
+        var user = await UserManager.FindByIdAsync(userId);
+        await UserManager.SetLockoutEnabledAsync(user, false);
+        await UserManager.SetLockoutEndDateAsync(user, null);
+        await UserManager.UpdateAsync(user);
+        await UserGrid.RefreshDataAsync();
+    }
+
+    private async Task MakeUserAdmin(string userId)
+    {
+        var user = await UserManager.FindByIdAsync(userId);
+        await UserManager.AddToRoleAsync(user, AppConstant.AdminUserRole);
+        await UserGrid.RefreshDataAsync();
+    }
+
+    // private async Task<bool> IsAdmin(ApplicationUser user)
+    // {
+    //     var isAdmin = await UserManager.IsInRoleAsync(user, AppConstant.AdminUserRole);
+    //     return isAdmin;
+    // }
+}

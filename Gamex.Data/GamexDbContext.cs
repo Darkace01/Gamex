@@ -65,10 +65,5 @@ public class GamexDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<ApplicationUser>()
             .HasOne(u => u.Picture);
 
-        builder.Entity<ApplicationUser>()
-            .HasOne(u => u.Picture)
-            .WithOne(p => p.User)
-            .HasForeignKey<Picture>(p => p.UserId)
-            .OnDelete(DeleteBehavior.Cascade); // Changed from NoAction to Cascade
     }
 }

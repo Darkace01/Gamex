@@ -3,4 +3,5 @@
 public class AppConstant
 {
     public const string PublicUserRole = "User";
+    public const string AdminUserRole = "Admin";
 }

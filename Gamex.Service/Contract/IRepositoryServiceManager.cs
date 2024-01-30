@@ -4,7 +4,7 @@
     {
         ITournamentService TournamentService { get; }
         IJWTHelper JWTHelper { get; }
-        ISMTPMailService SMTPMailService { get; }
+        //ISMTPMailService SMTPMailService { get; }
         IPictureService PictureService { get; }
         IFileStorageService FileStorageService { get; }
         IPostService PostService { get; }

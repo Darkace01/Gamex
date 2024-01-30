@@ -46,8 +46,7 @@ public class PictureService(GamexDbContext context) : IPictureService
         var picture = new Picture()
         {
             FileUrl = pictureCreateDTO.FileUrl,
-            PublicId = pictureCreateDTO.PublicId,
-            UserId = userId
+            PublicId = pictureCreateDTO.PublicId
         };
         await _context.Pictures.AddAsync(picture);
         await _context.SaveChangesAsync();

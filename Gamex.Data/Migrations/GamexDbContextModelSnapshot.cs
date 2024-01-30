@@ -108,6 +108,8 @@ namespace Gamex.Data.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
+                    b.HasIndex("PictureId");
+
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
@@ -147,7 +149,7 @@ namespace Gamex.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
                 });
 
             modelBuilder.Entity("Gamex.Models.Picture", b =>
@@ -174,16 +176,9 @@ namespace Gamex.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId")
-                        .IsUnique()
-                        .HasFilter("[UserId] IS NOT NULL");
-
-                    b.ToTable("Pictures");
+                    b.ToTable("Pictures", (string)null);
                 });
 
             modelBuilder.Entity("Gamex.Models.Post", b =>
@@ -222,7 +217,7 @@ namespace Gamex.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Posts");
+                    b.ToTable("Posts", (string)null);
                 });
 
             modelBuilder.Entity("Gamex.Models.Tournament", b =>
@@ -277,7 +272,7 @@ namespace Gamex.Data.Migrations
 
                     b.HasIndex("PictureId");
 
-                    b.ToTable("Tournaments");
+                    b.ToTable("Tournaments", (string)null);
                 });
 
             modelBuilder.Entity("Gamex.Models.UserTournament", b =>
@@ -292,7 +287,7 @@ namespace Gamex.Data.Migrations
 
                     b.HasIndex("TournamentId");
 
-                    b.ToTable("UserTournaments");
+                    b.ToTable("UserTournaments", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -428,6 +423,17 @@ namespace Gamex.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Gamex.Models.ApplicationUser", b =>
+                {
+                    b.HasOne("Gamex.Models.Picture", "Picture")
+                        .WithMany()
+                        .HasForeignKey("PictureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Picture");
+                });
+
             modelBuilder.Entity("Gamex.Models.Comment", b =>
                 {
                     b.HasOne("Gamex.Models.Post", "Post")
@@ -443,16 +449,6 @@ namespace Gamex.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Post");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Gamex.Models.Picture", b =>
-                {
-                    b.HasOne("Gamex.Models.ApplicationUser", "User")
-                        .WithOne("Picture")
-                        .HasForeignKey("Gamex.Models.Picture", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("User");
                 });
@@ -556,8 +552,6 @@ namespace Gamex.Data.Migrations
             modelBuilder.Entity("Gamex.Models.ApplicationUser", b =>
                 {
                     b.Navigation("Comments");
-
-                    b.Navigation("Picture");
 
                     b.Navigation("Posts");
 

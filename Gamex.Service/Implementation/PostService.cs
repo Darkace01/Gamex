@@ -64,10 +64,33 @@ public class PostService(GamexDbContext context) : IPostService
         return true;
     }
 
+    public async Task<bool> ArchivePost(Guid postId)
+    {
+        var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postId);
+        if (post is not null)
+        {
+            post.IsArchived = true;
+            await _context.SaveChangesAsync();
+        }
+        return true;
+    }
+
+    public async Task<bool> UnArchivePost(Guid postId)
+    {
+        var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postId);
+        if (post is not null)
+        {
+            post.IsArchived = false;
+            await _context.SaveChangesAsync();
+        }
+        return true;
+    }
+
     private static PostDTO MapPostToDTO(Post post)
     {
-        var comments = post.Comments?.Select(c => new CommentDTO(c.Id, c.Title, c.Content, c.IsArchived, new UserProfileDTO(c.User?.FirstName, c.User?.LastName,c.User?.DisplayName, c.User?.Email, c?.User?.PhoneNumber, c?.User?.Picture?.FileUrl, c?.User?.Picture?.PublicId), c.PostId));
+        var comments = post.Comments?.Select(c => new CommentDTO(c.Id, c.Title, c.Content, c.IsArchived, new UserProfileDTO(c.User?.FirstName, c.User?.LastName, c.User?.DisplayName, c.User?.Email, c?.User?.PhoneNumber, c?.User?.Picture?.FileUrl, c?.User?.Picture?.PublicId), c.PostId));
 
-        return new PostDTO(post.Id, post.Title, post.Content, post.IsArchived, post?.Picture?.FileUrl, post?.Picture?.PublicId, new UserProfileDTO(post?.User?.FirstName, post?.User?.LastName, post?.User?.DisplayName, post?.User?.Email, post?.User?.PhoneNumber, post?.User?.Picture?.FileUrl, post?.User?.Picture?.PublicId), comments);
+        return new PostDTO(post.Id, post.Title, post.Content, post.IsArchived, post?.Picture?.Id ?? Guid.NewGuid(), post?.Picture?.FileUrl, post?.Picture?.PublicId,
+            new UserProfileDTO(post?.User?.FirstName, post?.User?.LastName, post?.User?.DisplayName, post?.User?.Email, post?.User?.PhoneNumber, post?.User?.Picture?.FileUrl, post?.User?.Picture?.PublicId), comments);
     }
 }
