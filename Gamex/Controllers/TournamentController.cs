@@ -10,11 +10,21 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(ApiResponse<IEnumerable<TournamentDTO>>), StatusCodes.Status200OK)]
-    public IActionResult GetTournaments()
+    [ProducesResponseType(typeof(ApiResponse<PaginatedTournamentDTO>), StatusCodes.Status200OK)]
+    public IActionResult GetTournaments([FromQuery] int take = 10, [FromQuery] int skip = 0)
     {
         var tournaments = _repositoryServiceManager.TournamentService.GetAllTournaments();
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<TournamentDTO>>(tournaments));
+        var totalNumber = tournaments.Count();
+        tournaments = tournaments.Skip(skip).Take(take);
+        var paginationMetadata = new PaginatedTournamentDTO
+        {
+            TotalCount = totalNumber,
+            PageSize = take,
+            CurrentPage = skip,
+            TotalPages = Math.Ceiling((decimal)totalNumber / take),
+            Tournaments = tournaments
+        };
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginatedTournamentDTO>(paginationMetadata));
     }
 
     [HttpGet("{id}")]
