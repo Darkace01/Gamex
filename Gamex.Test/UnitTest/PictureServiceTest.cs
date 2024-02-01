@@ -73,6 +73,22 @@ public class PictureServiceTest : TestBase
         var deletedPictureInDb = dbContext.Pictures.FirstOrDefault(p => p.Id == pictureToDelete.Id);
         Assert.Null(deletedPictureInDb);
     }
+
+    [Fact]
+    public async Task GetPictureByPublicId_ShouldReturnPicture()
+    {
+        // Arrange
+        var dbContext = GetSampleData(nameof(GetPictureByPublicId_ShouldReturnPicture));
+        var pictureService = MockPictureService(dbContext);
+        var pictureToGet = dbContext.Pictures.FirstOrDefault();
+
+        // Act
+        var picture = await pictureService.GetPictureByPublicId(pictureToGet.PublicId);
+
+        // Assert
+        Assert.NotNull(picture);
+        Assert.Equal(pictureToGet.Id, picture.Id);
+    }
     #region Helpers
     private PictureService MockPictureService(GamexDbContext dbContext)
     {

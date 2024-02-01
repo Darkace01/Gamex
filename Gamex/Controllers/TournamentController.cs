@@ -108,6 +108,29 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         return StatusCode(StatusCodes.Status204NoContent, new ApiResponse<string>("Tournament Successfully Deleted"));
     }
 
+    [HttpPost("{id}/join")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status201Created)]
+    public async Task<IActionResult> JoinTournament(Guid id)
+    {
+        var user = await GetUser();
+        if (user == null)
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+
+        var tournamentExist = await _repositoryServiceManager.TournamentService.GetTournamentById(id);
+        if (tournamentExist == null)
+            return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Tournament not found"));
+
+        if (tournamentExist.TournamentUsers.Any(ut => ut.UserId == user.Id))
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Your are already in this tournament"));
+
+        await _repositoryServiceManager.TournamentService.JoinTournament(id, user);
+
+        return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>("Tournament Successfully Joined"));
+    }
+
     #region Helpers
     private async Task<ApplicationUser?> GetUser()
     {

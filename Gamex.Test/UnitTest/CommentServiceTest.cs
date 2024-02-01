@@ -83,7 +83,7 @@ public class CommentServiceTest:TestBase
 
         // Act
         var comments = commentService.GetAllComments().ToList();
-
+        var comment2 = commentService.GetAllComments();
         // Assert
         Assert.NotNull(comments);
         Assert.Equal(2, comments.Count());
@@ -103,6 +103,23 @@ public class CommentServiceTest:TestBase
         // Assert
         Assert.NotNull(comments);
         Assert.Equal(2, comments.Count());
+    }
+
+    [Fact]
+    public async Task DeleteCommentByPostId_ShouldDeleteComment()
+    {
+        // Arrange
+        var dbContext = GetSampleData(nameof(DeleteCommentByPostId_ShouldDeleteComment));
+        var commentService = MockCommentService(dbContext);
+        var postToDelete = dbContext.Posts.FirstOrDefault();
+
+        // Act
+        var deleted = await commentService.DeleteCommentByPostId(postToDelete.Id);
+
+        // Assert
+        Assert.True(deleted);
+        var deletedCommentInDb = dbContext.Comments.FirstOrDefault(p => p.PostId == postToDelete.Id);
+        Assert.Null(deletedCommentInDb);
     }
 
     #region Helpers

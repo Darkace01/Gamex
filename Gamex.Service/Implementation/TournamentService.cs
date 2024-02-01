@@ -238,4 +238,28 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             throw;
         }
     }
+
+    public async Task<bool> JoinTournament(Guid id, ApplicationUser user)
+    {
+        try
+        {
+            Tournament? existingTournament = await _context.Tournaments
+                .Include(t => t.UserTournaments)
+                .FirstOrDefaultAsync(t => t.Id == id) ?? throw new Exception("Tournament not found");
+            //if (existingTournament.UserTournaments.Any(ut => ut.UserId == user.Id))
+            //    throw new Exception("You have already joined this tournament");
+            UserTournament userTournament = new()
+            {
+                UserId = user.Id,
+                TournamentId = existingTournament.Id,
+            };
+            await _context.UserTournaments.AddAsync(userTournament);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
 }

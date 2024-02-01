@@ -96,6 +96,56 @@ public class PostServiceTest: TestBase
         Assert.True(deleted);
     }
 
+    [Fact]
+    public void GetAllPosts_ShouldReturnAllPosts()
+    {
+        // Arrange
+        var dbContext = GetSampleData(nameof(GetAllPosts_ShouldReturnAllPosts));
+        var postService = MockPostService(dbContext);
+
+        // Act
+        var posts = postService.GetAllPosts();
+
+        // Assert
+        Assert.NotNull(posts);
+        Assert.Equal(2, posts.Count());
+    }
+
+    [Fact]
+    public async Task ArchivePost_ShouldArchivePost()
+    {
+        // Arrange
+        var dbContext = GetSampleData(nameof(ArchivePost_ShouldArchivePost));
+        var postService = MockPostService(dbContext);
+        var postToArchive = dbContext.Posts.FirstOrDefault();
+
+        // Act
+        var archived = await postService.ArchivePost(postToArchive.Id);
+
+        // Assert
+        var archivedPostInDb = dbContext.Posts.FirstOrDefault(p => p.Id == postToArchive.Id);
+        Assert.NotNull(archivedPostInDb);
+        Assert.True(archived);
+        Assert.True(archivedPostInDb.IsArchived);
+    }
+
+    [Fact]
+    public async Task UnArchivePost_ShouldUnArchivePost()
+    {
+        // Arrange
+        var dbContext = GetSampleData(nameof(UnArchivePost_ShouldUnArchivePost));
+        var postService = MockPostService(dbContext);
+        var postToUnArchive = dbContext.Posts.FirstOrDefault();
+
+        // Act
+        var unArchived = await postService.UnArchivePost(postToUnArchive.Id);
+
+        // Assert
+        var unArchivedPostInDb = dbContext.Posts.FirstOrDefault(p => p.Id == postToUnArchive.Id);
+        Assert.NotNull(unArchivedPostInDb);
+        Assert.True(unArchived);
+        Assert.False(unArchivedPostInDb.IsArchived);
+    }
     #region Helpers
     private PostService MockPostService(GamexDbContext dbContext)
     {

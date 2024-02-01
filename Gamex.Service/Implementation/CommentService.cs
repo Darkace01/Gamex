@@ -1,4 +1,6 @@
-﻿namespace Gamex.Service.Implementation;
+﻿using Gamex.Models;
+
+namespace Gamex.Service.Implementation;
 
 public class CommentService : ICommentService
 {
@@ -26,6 +28,8 @@ public class CommentService : ICommentService
             PostId = comment.PostId,
             User = new UserProfileDTO
             {
+                FirstName = comment.User.FirstName,
+                LastName = comment.User.LastName,
                 DisplayName = comment.User.DisplayName,
                 Email = comment.User.Email,
                 PhoneNumber = comment.User.PhoneNumber,
@@ -38,24 +42,35 @@ public class CommentService : ICommentService
     public IQueryable<CommentDTO> GetAllComments()
     {
         var comments = _context.Comments
-                             .AsNoTracking()
-                             .Include(c => c.User);
-
-        return comments.Select(c => new CommentDTO
-        {
-            Id = c.Id,
-            Content = c.Content,
-            Title = c.Title,
-            PostId = c.PostId,
-            User = new UserProfileDTO
-            {
-                DisplayName = c.User.DisplayName,
-                Email = c.User.Email,
-                PhoneNumber = c.User.PhoneNumber,
-                ProfilePicturePublicId = c.User.Picture == null ? "" : c.User.Picture.PublicId,
-                ProfilePictureUrl = c.User.Picture == null ? "" : c.User.Picture.FileUrl
-            }
-        });
+                     .AsNoTracking()
+                     .Include(c => c.User)
+                     .Join(_context.Users.AsNoTracking(),
+                           comment => comment.UserId,
+                           user => user.Id,
+                           (comment, user) => new { Comment = comment, User = user })
+                     .GroupJoin(_context.Pictures.AsNoTracking(),
+                                cu => cu.User.PictureId,
+                                picture => picture.Id,
+                                (cu, pictures) => new { CommentUser = cu, Pictures = pictures })
+                     .SelectMany(cup => cup.Pictures.DefaultIfEmpty(),
+                                 (cup, picture) => new CommentDTO
+                                 {
+                                     Id = cup.CommentUser.Comment.Id,
+                                     Content = cup.CommentUser.Comment.Content,
+                                     Title = cup.CommentUser.Comment.Title,
+                                     PostId = cup.CommentUser.Comment.PostId,
+                                     User = new UserProfileDTO
+                                     {
+                                         FirstName = cup.CommentUser.User.FirstName,
+                                         LastName = cup.CommentUser.User.LastName,
+                                         DisplayName = cup.CommentUser.User.DisplayName,
+                                         Email = cup.CommentUser.User.Email,
+                                         PhoneNumber = cup.CommentUser.User.PhoneNumber,
+                                         ProfilePicturePublicId = picture == null ? "" : picture.PublicId,
+                                         ProfilePictureUrl = picture == null ? "" : picture.FileUrl
+                                     }
+                                 });
+        return comments;
     }
 
     public async Task<bool> CreateComment(CommentCreateDTO commentCreateDTO, string userId)
@@ -111,25 +126,6 @@ public class CommentService : ICommentService
 
     public IQueryable<CommentDTO> GetAllCommentByPostId(Guid postId)
     {
-        var comments = _context.Comments
-                             .AsNoTracking()
-                             .Include(c => c.User)
-                             .Where(c => c.PostId == postId);
-
-        return comments.Select(c => new CommentDTO
-        {
-            Id = c.Id,
-            Content = c.Content,
-            Title = c.Title,
-            PostId = c.PostId,
-            User = new UserProfileDTO
-            {
-                DisplayName = c.User.DisplayName,
-                Email = c.User.Email,
-                PhoneNumber = c.User.PhoneNumber,
-                ProfilePicturePublicId = c.User.Picture == null ? "" : c.User.Picture.PublicId,
-                ProfilePictureUrl = c.User.Picture == null ? "" : c.User.Picture.FileUrl
-            }
-        }).AsQueryable();
+        return GetAllComments().Where(c => c.PostId == postId);
     }
 }
