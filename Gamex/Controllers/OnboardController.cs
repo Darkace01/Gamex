@@ -68,7 +68,7 @@ public class OnboardController : ControllerBase
             else
             {
                 var uploadResult = await _repo.FileStorageService.SaveFile(model.ProfilePicture, "profile-picture");
-                var savePicture = await _repo.PictureService.CreatePictureForUser(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId), user.Id);
+                var savePicture = await _repo.PictureService.CreatePicture(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId));
 
                 trackedUser.PictureId = savePicture.Id;
             }

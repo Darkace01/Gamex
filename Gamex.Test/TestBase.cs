@@ -27,6 +27,15 @@ public class TestBase
         };
         dbContext.Users.Add(user1);
 
+        var user2 = new ApplicationUser
+        {
+            Id = "2",
+            UserName = "user2",
+            DisplayName = "User 2",
+            Email = "user2@email.com",
+        };
+        dbContext.Users.Add(user2);
+
 
         // tournament
         List<Tournament> tournaments =

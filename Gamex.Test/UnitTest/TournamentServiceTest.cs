@@ -115,6 +115,23 @@ public class TournamentServiceTest : TestBase
         Assert.Equal(dbContext.Tournaments.Count(), tournaments.Count());
     }
 
+    [Fact]
+    public async Task JoinTournament_ShouldJoinTournament()
+    {
+        // Arrange
+        var dbContext = GetSampleData(nameof(JoinTournament_ShouldJoinTournament));
+        var tournamentService = MockTournamentService(dbContext);
+        var tournamentToJoin = dbContext.Tournaments.FirstOrDefault();
+        var testUser = dbContext.Users.FirstOrDefault(x => x.Email == "user2@email.com");
+
+        // Act
+        await tournamentService.JoinTournament(tournamentToJoin.Id, testUser);
+
+        // Assert
+        var joinedTournamentInDb = dbContext.UserTournaments.FirstOrDefault(t => t.TournamentId == tournamentToJoin.Id && t.UserId == testUser.Id);
+        Assert.NotNull(joinedTournamentInDb);
+    }
+
     #region Helpers
     private ITournamentService MockTournamentService(GamexDbContext context)
     {
