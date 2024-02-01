@@ -12,6 +12,7 @@ public class GamexDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Post> Posts { get; set; }
     public DbSet<Comment> Comments { get; set; }
     public DbSet<TournamentCategory> TournamentCategories { get; set; }
+    public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
     public GamexDbContext(DbContextOptions<GamexDbContext> options) : base(options)
     {
@@ -69,6 +70,22 @@ public class GamexDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<ApplicationUser>()
             .HasOne(u => u.Picture);
+
+        builder.Entity<PaymentTransaction>()
+            .HasOne(pt => pt.User)
+            .WithMany(u => u.PaymentTransactions)
+            .HasForeignKey(pt => pt.UserId)
+            .OnDelete(DeleteBehavior.Cascade); // Added new foreign key constraint
+
+        builder.Entity<PaymentTransaction>()
+            .HasOne(pt => pt.Tournament)
+            .WithMany(t => t.PaymentTransactions)
+            .HasForeignKey(pt => pt.TournamentId)
+            .OnDelete(DeleteBehavior.NoAction); // Added new foreign key constraint
+
+        builder.Entity<PaymentTransaction>()
+            .Property(pt => pt.Amount)
+            .HasColumnType("decimal(18,2)");
         
     }
 }

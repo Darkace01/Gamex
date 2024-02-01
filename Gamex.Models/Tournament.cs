@@ -15,4 +15,5 @@ public class Tournament : Entity
     public Picture? Picture { get; set; }
     public List<UserTournament> UserTournaments { get; set; } = [];
     public ICollection<TournamentCategory> Categories { get; set; } = new List<TournamentCategory>();
+    public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 }

@@ -45,4 +45,5 @@ public class ApplicationUser: IdentityUser
     /// </summary>
     public ICollection<Post> Posts { get; set; }
     public ICollection<Comment> Comments { get; set; }
+    public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 }
