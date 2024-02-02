@@ -87,6 +87,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                         EntryFee = tournament.EntryFee,
                         Rules = tournament.Rules,
                         PictureId = tournament.PictureId,
+                        Categories = _context.TournamentCategories.Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList(),
                     };
 
                     await _context.Tournaments.AddAsync(newTournament);
@@ -136,6 +137,9 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 PictureId = tournament.PictureId,
             };
 
+            if(tournament.CategoryIds != null)
+                newTournament.Categories = _context.TournamentCategories.Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList();
+
             await _context.Tournaments.AddAsync(newTournament);
             await _context.SaveChangesAsync();
             //hasSaved = true;
@@ -182,6 +186,8 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             existingTournament.EntryFee = tournament.EntryFee;
             existingTournament.Rules = tournament.Rules;
             existingTournament.PictureId = tournament.PictureId;
+            if(tournament.CategoryIds != null)
+                existingTournament.Categories = _context.TournamentCategories.Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList();
             _context.Tournaments.Update(existingTournament);
             await _context.SaveChangesAsync();
         }

@@ -75,6 +75,7 @@ public class TournamentCreateDTO
     public decimal EntryFee { get; set; }
     public string Rules { get; set; } = string.Empty;
     public Guid? PictureId { get; set; }
+    public IEnumerable<Guid> CategoryIds { get; set; }
 }
 
 public class TournamentUpdateDTO
@@ -119,4 +120,5 @@ public class TournamentUpdateDTO
     public decimal EntryFee { get; set; }
     public string Rules { get; set; } = string.Empty;
     public Guid? PictureId { get; set; }
+    public IEnumerable<Guid> CategoryIds { get; set; }
 }

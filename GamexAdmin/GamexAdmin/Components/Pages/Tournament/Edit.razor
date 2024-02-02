@@ -1,4 +1,5 @@
 ﻿@page "/tournaments/edit/{Id}"
+@attribute [Authorize(Roles = AppConstant.AdminUserRole)]
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
@@ -27,24 +28,39 @@
                     @errorMessage
                 </div>
             }
-
-            @* <InputText @bind-Value="Model.Id.ToString()" hidden /> *@
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="@Model.Name" class="form-control" autocomplete="name" aria-required="true" placeholder="Please enter tournament name." disabled="@IsLoading"/>
-                <label for="name" class="form-label">Name</label>
-                <ValidationMessage For="@(() => Model.Name)" class="text-danger" />
-            </div>
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
-                        <InputDate @bind-Value="@Model.StartDateForm" class="form-control" autocomplete="start-date" aria-required="true" placeholder="Please enter tournament start date." disabled="@IsLoading"/>
+                        <InputText @bind-Value="@Model.Name" class="form-control" autocomplete="name" aria-required="true" placeholder="Please enter tournament name." disabled="@IsLoading" />
+                        <label for="name" class="form-label">Name</label>
+                        <ValidationMessage For="@(() => Model.Name)" class="text-danger" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="categories" class="form-label">Categories</label>
+                        <InputSelect @bind-Value="@Model.CategoryIds" class="form-select" multiple="true" disabled="@IsLoading">
+                            @foreach (var category in Categories)
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => Model.CategoryIds)" class="text-danger" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <InputDate @bind-Value="@Model.StartDateForm" class="form-control" autocomplete="start-date" aria-required="true" placeholder="Please enter tournament start date." disabled="@IsLoading" />
                         <label for="start-date" class="form-label">Start Date</label>
                         <ValidationMessage For="@(() => Model.StartDateForm)" class="text-danger" />
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
-                        <InputDate @bind-Value="@Model.EndDateForm" class="form-control" autocomplete="end-date" aria-required="true" placeholder="Please enter tournament end date."disabled="@IsLoading" />
+                        <InputDate @bind-Value="@Model.EndDateForm" class="form-control" autocomplete="end-date" aria-required="true" placeholder="Please enter tournament end date." disabled="@IsLoading" />
                         <label for="end-date" class="form-label">End Date</label>
                         <ValidationMessage For="@(() => Model.EndDateForm)" class="text-danger" />
                     </div>
@@ -53,14 +69,14 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
-                        <InputText @bind-Value="@Model.Location" class="form-control" autocomplete="location" aria-required="true" placeholder="Please enter tournament location."disabled="@IsLoading" />
+                        <InputText @bind-Value="@Model.Location" class="form-control" autocomplete="location" aria-required="true" placeholder="Please enter tournament location." disabled="@IsLoading" />
                         <label for="location" class="form-label">Location</label>
                         <ValidationMessage For="@(() => Model.Location)" class="text-danger" />
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <InputCheckbox @bind-Value="@Model.IsFeatured" class="form-check-input" autocomplete="isfeatured" aria-required="true" placeholder="Please enter tournament isfeatured." disabled="@IsLoading"/>
+                        <InputCheckbox @bind-Value="@Model.IsFeatured" class="form-check-input" autocomplete="isfeatured" aria-required="true" placeholder="Please enter tournament isfeatured." disabled="@IsLoading" />
                         <label for="isfeatured" class="form-check-label">Is Featured</label>
                         <ValidationMessage For="@(() => Model!.IsFeatured)" class="text-danger" />
                     </div>
@@ -69,7 +85,7 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
-                        <InputNumber @bind-Value="@Model.EntryFee" class="form-control" autocomplete="entry fee" aria-required="true" placeholder="Please enter tournament Entry Fee." disabled="@IsLoading"/>
+                        <InputNumber @bind-Value="@Model.EntryFee" class="form-control" autocomplete="entry fee" aria-required="true" placeholder="Please enter tournament Entry Fee." disabled="@IsLoading" />
                         <label for="entryFee" class="form-label">Entry Fee</label>
                         <ValidationMessage For="@(() => Model.EntryFee)" class="text-danger" />
                     </div>
@@ -77,23 +93,30 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label for="file-upload" class="form-label">Featured Image</label>
-                        <InputFile class="form-control" OnChange="HandleFileUpload" disabled="@IsLoading" id="file-upload"/>
+                        <InputFile class="form-control" OnChange="HandleFileUpload" disabled="@IsLoading" id="file-upload" />
                     </div>
                 </div>
             </div>
             <div class="form-floating mb-3">
-                <InputTextArea @bind-Value="@Model.Description" class="form-control" autocomplete="description" aria-required="true" placeholder="Please enter tournament description." rows="4" disabled="@IsLoading"/>
+                <InputTextArea @bind-Value="@Model.Description" class="form-control" autocomplete="description" aria-required="true" placeholder="Please enter tournament description." rows="4" disabled="@IsLoading" />
                 <label for="description" class="form-label">Description</label>
                 <ValidationMessage For="@(() => Model.Description)" class="text-danger" />
             </div>
 
             <div class="form-floating mb-3">
-                <InputTextArea @bind-Value="@Model.Rules" class="form-control" autocomplete="rules" aria-required="true" placeholder="Please enter tournament rules." rows="4" disabled="@IsLoading"/>
+                <InputTextArea @bind-Value="@Model.Rules" class="form-control" autocomplete="rules" aria-required="true" placeholder="Please enter tournament rules." rows="4" disabled="@IsLoading" />
                 <label for="rules" class="form-label">Rules</label>
                 <ValidationMessage For="@(() => Model.Rules)" class="text-danger" />
             </div>
 
-            <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">Submit</button>
+            <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">
+                @{
+                    if (IsLoading == true)
+                    {
+                        <Loading />
+                    }
+                } Submit
+            </button>
         </EditForm>
     </div>
 </div>
@@ -113,6 +136,8 @@
     private bool IsLoading { get; set; } = false;
     long maxFileSize = 1024 * 1024 * 10;
     string[] imageFileExtension = { ".jpg", ".jpeg", ".png", ".gif" };
+
+    private List<TournamentCategoryDTO> Categories { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -137,6 +162,7 @@
 
             PublicId = tournament.PicturePublicId ?? "";
         }
+        Categories = RepositoryServiceManager.TournamentCategoryService.GetAllCategories().ToList();
     }
 
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
