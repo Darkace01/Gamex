@@ -11,14 +11,23 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<PaginatedTournamentDTO>), StatusCodes.Status200OK)]
-    public IActionResult GetTournaments([FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "")
+    public IActionResult GetTournaments([FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "", [FromQuery] string categoryIds = "")
     {
         var tournaments = _repositoryServiceManager.TournamentService.GetAllTournaments();
         var totalNumber = tournaments.Count();
 
+        if (!string.IsNullOrEmpty(categoryIds))
+        {
+            var categoryIdsList = categoryIds.Split(',').Select(Guid.Parse).ToList();
+            if (categoryIdsList.Any())
+            {
+                tournaments = tournaments.Where(t => t.Categories != null && t.Categories.Any(x => categoryIdsList.Contains((Guid)x.Id)));
+            }
+        }
+
         if (!string.IsNullOrEmpty(s))
             tournaments = tournaments.Where(t => t.Name.Contains(s) || t.Description.Contains(s) || t.Location.Contains(s) || t.Rules.Contains(s) ||
-                                                            t.Categories.Any(x => x.Name.Contains(s)));
+                                                            (t.Categories != null && t.Categories.Any(x => x.Name.Contains(s))));
 
         tournaments = tournaments.Skip(skip).Take(take);
 
@@ -61,7 +70,7 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
         await _repositoryServiceManager.TournamentService.CreateTournament(tournamentCreateDTO, user);
-        
+
         return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>("Tournament Successfully Created"));
     }
 
@@ -83,7 +92,7 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         if (tournamentExist == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Tournament not found"));
 
-        if(tournamentExist.TournamentUsers.All(ut => ut.UserId != user.Id))
+        if (tournamentExist.TournamentUsers.All(ut => ut.UserId != user.Id))
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
         await _repositoryServiceManager.TournamentService.UpdateTournament(tournamentUpdateDTO, user);
