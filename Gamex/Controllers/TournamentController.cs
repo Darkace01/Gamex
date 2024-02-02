@@ -147,6 +147,16 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         tournaments = tournaments.Take(take).OrderByDescending(t => t.Name);
         return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<TournamentDTO>>(tournaments));
     }
+
+    [HttpGet("categories")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<IEnumerable<TournamentCategoryDTO>>), StatusCodes.Status200OK)]
+    public IActionResult GetTournamentCategories()
+    {
+        var categories = _repositoryServiceManager.TournamentCategoryService.GetAllCategories();
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<TournamentCategoryDTO>>(categories));
+    }
     #region Helpers
     private async Task<ApplicationUser?> GetUser()
     {

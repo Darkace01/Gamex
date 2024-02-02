@@ -42,7 +42,8 @@
                         <InputSelect @bind-Value="@CategoryId" class="form-select" multiple="true" disabled="@IsLoading">
                             @foreach (var category in Categories)
                             {
-                                <option value="@category.Id">@category.Name</option>
+                                var selected = Model.CategoryIds.Any(x => x == category.Id) ? "selected" : "";
+                                <option value="@category.Id" @selected>@category.Name</option>
                             }
                         </InputSelect>
                         <ValidationMessage For="@(() =>CategoryId)" class="text-danger" />
@@ -148,18 +149,19 @@
         if (tournament is not null)
         {
             Model = new TournamentUpdateDTO
-                {
-                    Id = tournament.Id,
-                    Name = tournament.Name,
-                    StartDateForm = tournament.StartDate,
-                    EndDateForm = tournament.EndDate,
-                    Location = tournament.Location,
-                    Description = tournament.Description,
-                    Rules = tournament.Rules,
-                    IsFeatured = tournament.IsFeatured,
-                    EntryFee = tournament.EntryFee,
-                    PictureId = tournament.PictureId
-                };
+            {
+                Id = tournament.Id,
+                Name = tournament.Name,
+                StartDateForm = tournament.StartDate,
+                EndDateForm = tournament.EndDate,
+                Location = tournament.Location,
+                Description = tournament.Description,
+                Rules = tournament.Rules,
+                IsFeatured = tournament.IsFeatured,
+                EntryFee = tournament.EntryFee,
+                PictureId = tournament.PictureId,
+                CategoryIds = tournament.Categories?.Select(x => (Guid)x.Id).ToList()
+            };
 
             PublicId = tournament.PicturePublicId ?? "";
         }
