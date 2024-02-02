@@ -1,6 +1,6 @@
 ﻿namespace Gamex.Service.Implementation;
 
-public class TournamentCategoryService
+public class TournamentCategoryService : ITournamentCategoryService
 {
     private readonly GamexDbContext _context;
 
@@ -9,27 +9,26 @@ public class TournamentCategoryService
         _context = context;
     }
 
-    public IQueryable<CategoryDTO> GetAllCategories()
+    public IQueryable<TournamentCategoryDTO> GetAllCategories()
     {
         return _context.TournamentCategories
             .AsNoTracking()
-            .Select(c => new CategoryDTO
+            .Select(c => new TournamentCategoryDTO
             {
                 Id = c.Id,
                 Name = c.Name
             });
     }
 
-    public async Task<CategoryDTO?> GetCategoryById(Guid id)
+    public async Task<TournamentCategoryDTO?> GetCategoryById(Guid id)
     {
         return await GetAllCategories().FirstOrDefaultAsync(c => c.Id == id);
     }
 
-    public async Task CreateCategory(CategoryDTO category)
+    public async Task CreateCategory(TournamentCategoryCreateDTO category)
     {
         var newCategory = new TournamentCategory
         {
-            Id = Guid.NewGuid(),
             Name = category.Name
         };
 
@@ -37,7 +36,7 @@ public class TournamentCategoryService
         await _context.SaveChangesAsync();
     }
 
-    public async Task UpdateCategory(CategoryDTO category)
+    public async Task UpdateCategory(TournamentCategoryUpdateDTO category)
     {
         var existingCategory = await _context.TournamentCategories.FirstOrDefaultAsync(c => c.Id == category.Id);
         if (existingCategory == null)

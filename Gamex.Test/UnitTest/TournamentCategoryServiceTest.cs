@@ -26,7 +26,7 @@ public class TournamentCategoryServiceTest: TestBase
         var tournamentCategoryService = MockTournamentCategoryService(dbContext);
 
         // Act
-        var newCategory = new CategoryDTO
+        var newCategory = new TournamentCategoryCreateDTO
         {
             Name = "Test Category NEW"
         };
@@ -46,7 +46,7 @@ public class TournamentCategoryServiceTest: TestBase
         var categoryToUpdate = dbContext.TournamentCategories.FirstOrDefault();
 
         // Act
-        var updatedCategory = new CategoryDTO
+        var updatedCategory = new TournamentCategoryUpdateDTO
         {
             Id = categoryToUpdate.Id,
             Name = "Updated Category"

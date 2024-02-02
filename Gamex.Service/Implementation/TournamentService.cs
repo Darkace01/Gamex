@@ -44,7 +44,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             PicturePublicId = t.Picture == null ? "" : t.Picture.PublicId,
             PictureUrl = t.Picture == null ? "" : t.Picture.FileUrl,
             
-            Categories = t.Categories.Select(tc => new CategoryDTO
+            Categories = t.Categories.Select(tc => new TournamentCategoryDTO
             {
                 Id = tc.Id,
                 Name = tc.Name

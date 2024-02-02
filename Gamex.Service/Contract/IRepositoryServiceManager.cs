@@ -10,5 +10,6 @@
         IPostService PostService { get; }
         ICommentService CommentService { get; }
         IExtendedUserService ExtendedUserService { get; }
+        ITournamentCategoryService TournamentCategoryService { get; }
     }
 }
