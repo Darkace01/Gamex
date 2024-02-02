@@ -20,6 +20,7 @@ public class TournamentDTO
     public Guid? PictureId { get; set; }
     public string PictureUrl { get; set; } = string.Empty;
     public string PicturePublicId { get; set; } = string.Empty;
+    public IEnumerable<CategoryDTO> Categories { get; set; }
     public IEnumerable<TournamentUserDTO> TournamentUsers { get; set; }
 }
 

@@ -9,41 +9,9 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    public async Task<TournamentDTO> GetTournamentById(Guid id)
+    public async Task<TournamentDTO?> GetTournamentById(Guid id)
     {
-        Tournament? tournament = await _context.Tournaments
-            .AsNoTracking()
-            .Include(t => t.Picture)
-            .Include(t => t.UserTournaments)
-            .ThenInclude(ut => ut.User)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Id == id);
-        if (tournament == null)
-            return null;
-
-        return new TournamentDTO
-        {
-            Id = tournament.Id,
-            Name = tournament.Name,
-            Description = tournament.Description,
-            IsFeatured = tournament.IsFeatured,
-            StartDate = tournament.StartDate,
-            EndDate = tournament.EndDate,
-            Location = tournament.Location,
-            Time = tournament.Time,
-            EntryFee = tournament.EntryFee,
-            Rules = tournament.Rules,
-            PictureId = tournament.Picture?.Id,
-            PicturePublicId = tournament.Picture?.PublicId,
-            PictureUrl = tournament.Picture?.FileUrl,
-
-            TournamentUsers = tournament.UserTournaments.Select(ut => new TournamentUserDTO
-            {
-                UserId = ut.UserId,
-                DisplayName = ut.User.DisplayName,
-                PictureUrl = ut.User.Picture?.FileUrl,
-            }).ToList()
-        };
+        return await GetAllTournaments().FirstOrDefaultAsync(t => t.Id == id);
     }
 
     /// <summary>
@@ -53,10 +21,13 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     public IQueryable<TournamentDTO> GetAllTournaments()
     {
         var tournaments = _context.Tournaments
-                             .AsNoTracking()
-                             .Include(t => t.Picture)
-                             .Include(t => t.UserTournaments)
-                             .ThenInclude(ut => ut.User);
+            .AsNoTracking()
+            .Include(t => t.Picture)
+            .Include(t => t.Categories)
+            .Include(t => t.UserTournaments)
+            .ThenInclude(ut => ut.User)
+            .Include(t => t.UserTournaments)
+            .ThenInclude(ut => ut.User.Picture);
 
         return tournaments.Select(t => new TournamentDTO
         {
@@ -72,6 +43,12 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             Rules = t.Rules,
             PicturePublicId = t.Picture == null ? "" : t.Picture.PublicId,
             PictureUrl = t.Picture == null ? "" : t.Picture.FileUrl,
+            
+            Categories = t.Categories.Select(tc => new CategoryDTO
+            {
+                Id = tc.Id,
+                Name = tc.Name
+            }),
 
             TournamentUsers = t.UserTournaments.Select(ut => new TournamentUserDTO
             {

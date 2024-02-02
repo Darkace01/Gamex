@@ -151,6 +151,26 @@ public class TestBase
 
         dbContext.SaveChanges();
 
+        //TournamentCategory
+        List<TournamentCategory> categories =
+        [
+            new TournamentCategory
+            {
+                Name = "Category 1"
+            },
+            new TournamentCategory
+            {
+                Name = "Category 2"
+            },
+            new TournamentCategory
+            {
+                Name = "Category 3"
+            }
+        ];
+
+        dbContext.TournamentCategories.AddRange(categories);
+        dbContext.SaveChanges();
+
         return dbContext;
 
     }
