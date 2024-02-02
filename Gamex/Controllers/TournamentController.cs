@@ -11,11 +11,17 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<PaginatedTournamentDTO>), StatusCodes.Status200OK)]
-    public IActionResult GetTournaments([FromQuery] int take = 10, [FromQuery] int skip = 0)
+    public IActionResult GetTournaments([FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "")
     {
         var tournaments = _repositoryServiceManager.TournamentService.GetAllTournaments();
         var totalNumber = tournaments.Count();
+
+        if (!string.IsNullOrEmpty(s))
+            tournaments = tournaments.Where(t => t.Name.Contains(s) || t.Description.Contains(s) || t.Location.Contains(s) || t.Rules.Contains(s) ||
+                                                            t.Categories.Any(x => x.Name.Contains(s)));
+
         tournaments = tournaments.Skip(skip).Take(take);
+
         var paginationMetadata = new PaginatedTournamentDTO
         {
             TotalCount = totalNumber,
@@ -135,9 +141,10 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<IEnumerable<TournamentDTO>>), StatusCodes.Status200OK)]
-    public IActionResult GetFeaturedTournaments()
+    public IActionResult GetFeaturedTournaments([FromQuery] int take = 10)
     {
         var tournaments = _repositoryServiceManager.TournamentService.GetFeaturedTournaments();
+        tournaments = tournaments.Take(take).OrderByDescending(t => t.Name);
         return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<TournamentDTO>>(tournaments));
     }
     #region Helpers

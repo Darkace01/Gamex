@@ -14,6 +14,7 @@ public class RepositoryServiceManager : IRepositoryServiceManager
     private IPostService _postService;
     private ICommentService _commentService;
     private IExtendedUserService _extendedUserService;
+    private ITournamentCategoryService _tournamentCategoryService;
 
     public RepositoryServiceManager(GamexDbContext context, IConfiguration config)
     {
@@ -91,6 +92,15 @@ public class RepositoryServiceManager : IRepositoryServiceManager
         {
             _extendedUserService ??= new ExtendedUserService(_context);
             return _extendedUserService;
+        }
+    }
+
+    public ITournamentCategoryService TournamentCategoryService
+    {
+        get
+        {
+            _tournamentCategoryService ??= new TournamentCategoryService(_context);
+            return _tournamentCategoryService;
         }
     }
 }

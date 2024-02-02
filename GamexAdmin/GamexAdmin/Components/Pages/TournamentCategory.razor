@@ -1,0 +1,71 @@
+﻿@page "/tournament-category"
+@attribute [Authorize(Roles = AppConstant.AdminUserRole)]
+@attribute [StreamRendering]
+@rendermode @(new InteractiveServerRenderMode(prerender: true))
+@* @rendermode InteractiveAuto *@
+@inject IRepositoryServiceManager RepositoryServiceManager
+
+<PageTitle>Tournament Category</PageTitle>
+
+<div class="row">
+    <div class="col-md-6">
+        <h1>Tournament Category</h1>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex justify-content-end">
+            <a href="/tournament-category/create" class="btn btn-primary">Create Category</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <QuickGrid Items="@CategoryFiltered" Pagination="@pagination" Virtualize="true" @ref="CategoryGrid">
+            <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+            <TemplateColumn Title="Actions">
+                <a href="/tournament-category/@context.Id" class="btn btn-primary">Edit</a>
+                <button class="btn btn-danger" @onclick="(() => HandleDelete(context.Id))">Delete</button>
+            </TemplateColumn>
+        </QuickGrid>
+        <Paginator State="@pagination" />
+    </div>
+</div>
+
+@code {
+    QuickGrid<TournamentCategoryDTO>? CategoryGrid;
+    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+    private IQueryable<TournamentCategoryDTO>? CategoryList = null;
+    bool IsLoading = false;
+
+    protected override void OnInitialized()
+    {
+        CategoryList = RepositoryServiceManager.TournamentCategoryService.GetAllCategories().ToList().AsQueryable();
+    }
+
+    IQueryable<TournamentCategoryDTO> CategoryFiltered
+    {
+        get
+        {
+            return CategoryList ?? Enumerable.Empty<TournamentCategoryDTO>().AsQueryable();
+        }
+    }
+
+    private async Task HandleDelete(Guid? Id)
+    {
+        IsLoading = true;
+        try
+        {
+            if (Id != null && Id.HasValue)
+            {
+                await RepositoryServiceManager.TournamentCategoryService.DeleteCategory(Id.Value);
+                CategoryList = RepositoryServiceManager.TournamentCategoryService.GetAllCategories();
+                await CategoryGrid?.RefreshDataAsync();
+                IsLoading = false;
+            }
+        }
+        catch (Exception)
+        {
+            IsLoading = true;
+        }
+    }
+}

@@ -20,6 +20,7 @@ public class TournamentDTO
     public Guid? PictureId { get; set; }
     public string PictureUrl { get; set; } = string.Empty;
     public string PicturePublicId { get; set; } = string.Empty;
+    public IEnumerable<TournamentCategoryDTO> Categories { get; set; }
     public IEnumerable<TournamentUserDTO> TournamentUsers { get; set; }
 }
 
@@ -74,6 +75,7 @@ public class TournamentCreateDTO
     public decimal EntryFee { get; set; }
     public string Rules { get; set; } = string.Empty;
     public Guid? PictureId { get; set; }
+    public IEnumerable<Guid> CategoryIds { get; set; }
 }
 
 public class TournamentUpdateDTO
@@ -118,4 +120,5 @@ public class TournamentUpdateDTO
     public decimal EntryFee { get; set; }
     public string Rules { get; set; } = string.Empty;
     public Guid? PictureId { get; set; }
+    public IEnumerable<Guid> CategoryIds { get; set; }
 }
