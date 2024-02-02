@@ -55,4 +55,10 @@ public class TournamentCategoryService : ITournamentCategoryService
         _context.TournamentCategories.Remove(existingCategory);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<TournamentCategoryDTO> GetCategoryByName(string name)
+    {
+        return await GetAllCategories().FirstOrDefaultAsync(c => c.Name.ToLower().Trim() == name.ToLower());
+    }
+
 }

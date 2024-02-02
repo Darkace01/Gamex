@@ -1,0 +1,90 @@
+﻿@page "/tournament-category/create"
+@attribute [Authorize(Roles = AppConstant.AdminUserRole)]
+@inject IRepositoryServiceManager RepositoryServiceManager
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@rendermode InteractiveAuto
+<div class="row">
+    <div class="col-md-6">
+        <h1>Create Tournament Category</h1>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex justify-content-end">
+            <a href="/tournament-category" class="btn btn-secondary">Go Back</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <EditForm Model="@Model" OnValidSubmit="HandleSubmit" FormName="CreateTournamentCategory" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="alert alert-danger" role="alert" />
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @errorMessage
+                </div>
+            }
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="@Model.Name" class="form-control" autocomplete="name" aria-required="true" placeholder="Please enter a category name." disabled="@IsLoading" />
+                <label for="name" class="form-label">Name</label>
+                <ValidationMessage For="@(() => Model.Name)" class="text-danger" />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">
+                @{
+                    if (IsLoading == true)
+                    {
+                        <Loading />
+                    }
+                }Submit
+            </button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    public TournamentCategoryCreateDTO? Model { get; set; }
+
+    public string errorMessage { get; set; } = "";
+
+    private bool IsLoading { get; set; } = false;
+
+    protected override void OnInitialized() => Model = new TournamentCategoryCreateDTO();
+
+    private async Task HandleSubmit()
+    {
+        errorMessage = "";
+        IsLoading = true;
+        try
+        {
+            if (Model != null)
+            {
+                if (string.IsNullOrWhiteSpace(Model.Name))
+                {
+                    errorMessage = "Category name is required.";
+                    return;
+                }
+                var categoryExist = await RepositoryServiceManager.TournamentCategoryService.GetCategoryByName(Model.Name);
+                if (categoryExist != null)
+                {
+                    errorMessage = "Category already exist.";
+                    return;
+                }
+                await RepositoryServiceManager.TournamentCategoryService.CreateCategory(Model);
+                NavigationManager.NavigateTo("/tournament-category");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+}
