@@ -131,6 +131,15 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>("Tournament Successfully Joined"));
     }
 
+    [HttpGet("featured")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<IEnumerable<TournamentDTO>>), StatusCodes.Status200OK)]
+    public IActionResult GetFeaturedTournaments()
+    {
+        var tournaments = _repositoryServiceManager.TournamentService.GetFeaturedTournaments();
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<TournamentDTO>>(tournaments));
+    }
     #region Helpers
     private async Task<ApplicationUser?> GetUser()
     {

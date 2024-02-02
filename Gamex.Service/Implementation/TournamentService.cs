@@ -262,4 +262,9 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             throw;
         }
     }
+
+    public IQueryable<TournamentDTO> GetFeaturedTournaments()
+    {
+        return GetAllTournaments().Where(t => t.IsFeatured);
+    }
 }
