@@ -11,17 +11,17 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<PaginatedTournamentDTO>), StatusCodes.Status200OK)]
-    public IActionResult GetTournaments([FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "", [FromQuery]string categoryIds = "")
+    public IActionResult GetTournaments([FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "", [FromQuery]string categoryNames = "")
     {
         var tournaments = _repositoryServiceManager.TournamentService.GetAllTournaments();
         var totalNumber = tournaments.Count();
 
-        if (!string.IsNullOrEmpty(categoryIds))
+        if (!string.IsNullOrEmpty(categoryNames))
         {
-            var categoryIdsList = categoryIds.Split(',').Select(Guid.Parse).ToList();
-            if (categoryIdsList.Any())
+            var categoryNamesList = categoryNames.Split(',').ToList();
+            if (categoryNamesList.Any())
             {
-                tournaments = tournaments.Where(t => t.Categories.Any(x => categoryIdsList.ToString().Contains(x.Id.ToString())));
+                tournaments = tournaments.Where(t => t.Categories.Any(x => categoryNamesList.Contains(x.Name)));
             }
         }
 
