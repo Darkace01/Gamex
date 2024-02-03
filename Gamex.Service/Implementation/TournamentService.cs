@@ -185,7 +185,10 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             existingTournament.Time = tournament.Time;
             existingTournament.EntryFee = tournament.EntryFee;
             existingTournament.Rules = tournament.Rules;
-            existingTournament.PictureId = tournament.PictureId;
+            if (tournament.PictureId.HasValue && tournament.PictureId != tournament.PictureId)
+            {
+                existingTournament.PictureId = tournament.PictureId;
+            }
             if(tournament.CategoryIds != null)
                 existingTournament.Categories = _context.TournamentCategories.Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList();
             _context.Tournaments.Update(existingTournament);
