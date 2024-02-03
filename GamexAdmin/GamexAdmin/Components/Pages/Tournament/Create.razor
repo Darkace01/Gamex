@@ -1,4 +1,5 @@
 ﻿@page "/tournaments/create"
+@attribute [Authorize(Roles = AppConstant.AdminUserRole)]
 @inject IRepositoryServiceManager RepositoryServiceManager
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -26,11 +27,28 @@
                     @errorMessage
                 </div>
             }
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="@Model.Name" class="form-control" autocomplete="name" aria-required="true" placeholder="Please enter tournament name." disabled="@IsLoading" />
-                <label for="name" class="form-label">Name</label>
-                <ValidationMessage For="@(() => Model.Name)" class="text-danger" />
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <InputText @bind-Value="@Model.Name" class="form-control" autocomplete="name" aria-required="true" placeholder="Please enter tournament name." disabled="@IsLoading" />
+                        <label for="name" class="form-label">Name</label>
+                        <ValidationMessage For="@(() => Model.Name)" class="text-danger" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="categories" class="form-label">Categories</label>
+                        <InputSelect @bind-Value="@CategoryId" class="form-select" multiple="true" disabled="@IsLoading">
+                            @foreach (var category in Categories)
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => CategoryId)" class="text-danger" />
+                    </div>
+                </div>
             </div>
+            
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
@@ -90,7 +108,14 @@
                 <label for="rules" class="form-label">Rules</label>
                 <ValidationMessage For="@(() => Model.Rules)" class="text-danger" />
             </div>
-            <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">Submit</button>
+            <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">
+                @{
+                    if (IsLoading == true)
+                    {
+                        <Loading />
+                    }
+                }Submit
+            </button>
         </EditForm>
     </div>
 </div>
@@ -100,12 +125,19 @@
     public TournamentCreateDTO? Model { get; set; }
 
     public string errorMessage { get; set; } = "";
+    private string CategoryId { get; set; } = "";
 
     private bool IsLoading { get; set; } = false;
     long maxFileSize = 1024 * 1024 * 10;
     string[] imageFileExtension = { ".jpg", ".jpeg", ".png", ".gif" };
 
-    protected override void OnInitialized() => Model ??= new();
+    private List<TournamentCategoryDTO> Categories { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        Model ??= new();
+        Categories = RepositoryServiceManager.TournamentCategoryService.GetAllCategories().ToList();
+    }
 
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
     {
@@ -165,6 +197,12 @@
 
                 Model.StartDateString = startDateStr;
                 Model.EndDateString = endDateStr;
+
+                if (!string.IsNullOrWhiteSpace(CategoryId))
+                {
+                    _ = Guid.TryParse(CategoryId, out Guid categoryId);
+                    Model!.CategoryIds = new List<Guid> { categoryId };
+                }
                 await RepositoryServiceManager.TournamentService.CreateTournament(Model, currentUser);
                 IsLoading = false;
                 NavigationManager.NavigateTo("/tournaments");

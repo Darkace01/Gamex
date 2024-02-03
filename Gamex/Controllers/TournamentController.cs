@@ -11,10 +11,19 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<PaginatedTournamentDTO>), StatusCodes.Status200OK)]
-    public IActionResult GetTournaments([FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "")
+    public IActionResult GetTournaments([FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "", [FromQuery]string categoryNames = "")
     {
         var tournaments = _repositoryServiceManager.TournamentService.GetAllTournaments();
         var totalNumber = tournaments.Count();
+
+        if (!string.IsNullOrEmpty(categoryNames))
+        {
+            var categoryNamesList = categoryNames.Split(',').ToList();
+            if (categoryNamesList.Any())
+            {
+                tournaments = tournaments.Where(t => t.Categories.Any(x => categoryNamesList.Contains(x.Name)));
+            }
+        }
 
         if (!string.IsNullOrEmpty(s))
             tournaments = tournaments.Where(t => t.Name.Contains(s) || t.Description.Contains(s) || t.Location.Contains(s) || t.Rules.Contains(s) ||
@@ -146,6 +155,16 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         var tournaments = _repositoryServiceManager.TournamentService.GetFeaturedTournaments();
         tournaments = tournaments.Take(take).OrderByDescending(t => t.Name);
         return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<TournamentDTO>>(tournaments));
+    }
+
+    [HttpGet("categories")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<IEnumerable<TournamentCategoryDTO>>), StatusCodes.Status200OK)]
+    public IActionResult GetTournamentCategories()
+    {
+        var categories = _repositoryServiceManager.TournamentCategoryService.GetAllCategories();
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<TournamentCategoryDTO>>(categories));
     }
     #region Helpers
     private async Task<ApplicationUser?> GetUser()

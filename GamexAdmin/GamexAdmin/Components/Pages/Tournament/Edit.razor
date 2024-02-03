@@ -1,4 +1,5 @@
 ﻿@page "/tournaments/edit/{Id}"
+@attribute [Authorize(Roles = AppConstant.AdminUserRole)]
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
@@ -27,24 +28,40 @@
                     @errorMessage
                 </div>
             }
-
-            @* <InputText @bind-Value="Model.Id.ToString()" hidden /> *@
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="@Model.Name" class="form-control" autocomplete="name" aria-required="true" placeholder="Please enter tournament name." disabled="@IsLoading"/>
-                <label for="name" class="form-label">Name</label>
-                <ValidationMessage For="@(() => Model.Name)" class="text-danger" />
-            </div>
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
-                        <InputDate @bind-Value="@Model.StartDateForm" class="form-control" autocomplete="start-date" aria-required="true" placeholder="Please enter tournament start date." disabled="@IsLoading"/>
+                        <InputText @bind-Value="@Model.Name" class="form-control" autocomplete="name" aria-required="true" placeholder="Please enter tournament name." disabled="@IsLoading" />
+                        <label for="name" class="form-label">Name</label>
+                        <ValidationMessage For="@(() => Model.Name)" class="text-danger" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="categories" class="form-label">Categories</label>
+                        <InputSelect @bind-Value="@CategoryId" class="form-select" multiple="true" disabled="@IsLoading">
+                            @foreach (var category in Categories)
+                            {
+                                var selected = Model.CategoryIds.Any(x => x == category.Id) ? "selected" : "";
+                                <option value="@category.Id" @selected>@category.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() =>CategoryId)" class="text-danger" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <InputDate @bind-Value="@Model.StartDateForm" class="form-control" autocomplete="start-date" aria-required="true" placeholder="Please enter tournament start date." disabled="@IsLoading" />
                         <label for="start-date" class="form-label">Start Date</label>
                         <ValidationMessage For="@(() => Model.StartDateForm)" class="text-danger" />
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
-                        <InputDate @bind-Value="@Model.EndDateForm" class="form-control" autocomplete="end-date" aria-required="true" placeholder="Please enter tournament end date."disabled="@IsLoading" />
+                        <InputDate @bind-Value="@Model.EndDateForm" class="form-control" autocomplete="end-date" aria-required="true" placeholder="Please enter tournament end date." disabled="@IsLoading" />
                         <label for="end-date" class="form-label">End Date</label>
                         <ValidationMessage For="@(() => Model.EndDateForm)" class="text-danger" />
                     </div>
@@ -53,14 +70,14 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
-                        <InputText @bind-Value="@Model.Location" class="form-control" autocomplete="location" aria-required="true" placeholder="Please enter tournament location."disabled="@IsLoading" />
+                        <InputText @bind-Value="@Model.Location" class="form-control" autocomplete="location" aria-required="true" placeholder="Please enter tournament location." disabled="@IsLoading" />
                         <label for="location" class="form-label">Location</label>
                         <ValidationMessage For="@(() => Model.Location)" class="text-danger" />
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <InputCheckbox @bind-Value="@Model.IsFeatured" class="form-check-input" autocomplete="isfeatured" aria-required="true" placeholder="Please enter tournament isfeatured." disabled="@IsLoading"/>
+                        <InputCheckbox @bind-Value="@Model.IsFeatured" class="form-check-input" autocomplete="isfeatured" aria-required="true" placeholder="Please enter tournament isfeatured." disabled="@IsLoading" />
                         <label for="isfeatured" class="form-check-label">Is Featured</label>
                         <ValidationMessage For="@(() => Model!.IsFeatured)" class="text-danger" />
                     </div>
@@ -69,7 +86,7 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
-                        <InputNumber @bind-Value="@Model.EntryFee" class="form-control" autocomplete="entry fee" aria-required="true" placeholder="Please enter tournament Entry Fee." disabled="@IsLoading"/>
+                        <InputNumber @bind-Value="@Model.EntryFee" class="form-control" autocomplete="entry fee" aria-required="true" placeholder="Please enter tournament Entry Fee." disabled="@IsLoading" />
                         <label for="entryFee" class="form-label">Entry Fee</label>
                         <ValidationMessage For="@(() => Model.EntryFee)" class="text-danger" />
                     </div>
@@ -77,23 +94,30 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label for="file-upload" class="form-label">Featured Image</label>
-                        <InputFile class="form-control" OnChange="HandleFileUpload" disabled="@IsLoading" id="file-upload"/>
+                        <InputFile class="form-control" OnChange="HandleFileUpload" disabled="@IsLoading" id="file-upload" />
                     </div>
                 </div>
             </div>
             <div class="form-floating mb-3">
-                <InputTextArea @bind-Value="@Model.Description" class="form-control" autocomplete="description" aria-required="true" placeholder="Please enter tournament description." rows="4" disabled="@IsLoading"/>
+                <InputTextArea @bind-Value="@Model.Description" class="form-control" autocomplete="description" aria-required="true" placeholder="Please enter tournament description." rows="4" disabled="@IsLoading" />
                 <label for="description" class="form-label">Description</label>
                 <ValidationMessage For="@(() => Model.Description)" class="text-danger" />
             </div>
 
             <div class="form-floating mb-3">
-                <InputTextArea @bind-Value="@Model.Rules" class="form-control" autocomplete="rules" aria-required="true" placeholder="Please enter tournament rules." rows="4" disabled="@IsLoading"/>
+                <InputTextArea @bind-Value="@Model.Rules" class="form-control" autocomplete="rules" aria-required="true" placeholder="Please enter tournament rules." rows="4" disabled="@IsLoading" />
                 <label for="rules" class="form-label">Rules</label>
                 <ValidationMessage For="@(() => Model.Rules)" class="text-danger" />
             </div>
 
-            <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">Submit</button>
+            <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">
+                @{
+                    if (IsLoading == true)
+                    {
+                        <Loading />
+                    }
+                } Submit
+            </button>
         </EditForm>
     </div>
 </div>
@@ -109,10 +133,13 @@
     public TournamentUpdateDTO? Model { get; set; }
 
     private string PublicId { get; set; } = "";
+    private string CategoryId { get; set; } = "";
 
     private bool IsLoading { get; set; } = false;
     long maxFileSize = 1024 * 1024 * 10;
     string[] imageFileExtension = { ".jpg", ".jpeg", ".png", ".gif" };
+
+    private List<TournamentCategoryDTO> Categories { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -122,21 +149,23 @@
         if (tournament is not null)
         {
             Model = new TournamentUpdateDTO
-                {
-                    Id = tournament.Id,
-                    Name = tournament.Name,
-                    StartDateForm = tournament.StartDate,
-                    EndDateForm = tournament.EndDate,
-                    Location = tournament.Location,
-                    Description = tournament.Description,
-                    Rules = tournament.Rules,
-                    IsFeatured = tournament.IsFeatured,
-                    EntryFee = tournament.EntryFee,
-                    PictureId = tournament.PictureId
-                };
+            {
+                Id = tournament.Id,
+                Name = tournament.Name,
+                StartDateForm = tournament.StartDate,
+                EndDateForm = tournament.EndDate,
+                Location = tournament.Location,
+                Description = tournament.Description,
+                Rules = tournament.Rules,
+                IsFeatured = tournament.IsFeatured,
+                EntryFee = tournament.EntryFee,
+                PictureId = tournament.PictureId,
+                CategoryIds = tournament.Categories?.Select(x => (Guid)x.Id).ToList()
+            };
 
             PublicId = tournament.PicturePublicId ?? "";
         }
+        Categories = RepositoryServiceManager.TournamentCategoryService.GetAllCategories().ToList();
     }
 
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
@@ -165,7 +194,6 @@
                 }
                 var tournamentId = Guid.Parse(Id);
 
-                // var formFile = new FormFile(file.OpenReadStream(file.Size), 0, file.Size, file.Name, file.Name);
                 var fileResult = await RepositoryServiceManager.FileStorageService.SaveFile(file, "tournament-picture");
                 if (fileResult is not null)
                 {
@@ -195,6 +223,12 @@
 
             Model.StartDateString = startDateStr;
             Model.EndDateString = endDateStr;
+
+            if (!string.IsNullOrWhiteSpace(CategoryId))
+            {
+                _ = Guid.TryParse(CategoryId, out Guid categoryId);
+                Model!.CategoryIds = new List<Guid> { categoryId };
+            }
             // _ = Guid.TryParse(Id, out Guid tournamentId);
             // Model.Id = tournamentId;
             await RepositoryServiceManager.TournamentService.UpdateTournament(Model, currentUser);

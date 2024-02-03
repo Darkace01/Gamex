@@ -45,7 +45,7 @@ public class TournamentServiceTest : TestBase
         var tournamentService = MockTournamentService(dbContext);
         var tournamentToUpdate = dbContext.Tournaments.FirstOrDefault();
         var testUser = dbContext.Users.FirstOrDefault();
-
+        var tournamnetCategories = dbContext.TournamentCategories.ToList();
         TournamentUpdateDTO updatedTournament = new()
         {
             Name = "Updated Tournament",
@@ -56,7 +56,8 @@ public class TournamentServiceTest : TestBase
             StartDateString = "02/02/2024",
             EndDateString = "02/02/2024",
             TimeString = "02:00",
-            Id = tournamentToUpdate.Id
+            Id = tournamentToUpdate.Id,
+            CategoryIds = tournamnetCategories.Select(x => x.Id).ToList()
         };
 
         // Act
