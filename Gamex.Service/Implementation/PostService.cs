@@ -4,20 +4,15 @@ public class PostService(GamexDbContext context) : IPostService
 {
     private readonly GamexDbContext _context = context;
 
-    public async Task<PostDTO> GetPost(Guid postId)
+    public PostDTO? GetPost(Guid postId)
     {
-        var post = await _context.Posts.AsNoTracking().FirstOrDefaultAsync(p => p.Id == postId);
-        if (post == null)
-        {
-            return null;
-        }
-
-        return MapPostToDTO(post);
+        var post = _context.Posts.Include(x => x.User).Include(x => x.Comments).ThenInclude(x => x.User).AsNoTracking().FirstOrDefault(p => p.Id == postId);
+        return post != null ? MapPostToDTO(post) : null;
     }
 
     public IQueryable<PostDTO> GetAllPosts()
     {
-        var posts = _context.Posts.AsNoTracking();
+        var posts = _context.Posts.Include(x => x.User).Include(x => x.Comments).ThenInclude(x => x.User).AsNoTracking();
         return posts.Select(p => MapPostToDTO(p));
     }
 

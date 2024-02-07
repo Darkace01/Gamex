@@ -11,32 +11,9 @@ public class CommentService : ICommentService
         _context = context;
     }
 
-    public async Task<CommentDTO> GetCommentById(Guid id)
+    public CommentDTO? GetCommentById(Guid id)
     {
-        Comment? comment = await _context.Comments
-            .AsNoTracking()
-            .Include(c => c.User)
-            .FirstOrDefaultAsync(c => c.Id == id);
-        if (comment == null)
-            return null;
-
-        return new CommentDTO
-        {
-            Id = comment.Id,
-            Content = comment.Content,
-            Title = comment.Title,
-            PostId = comment.PostId,
-            User = new UserProfileDTO
-            {
-                FirstName = comment.User.FirstName,
-                LastName = comment.User.LastName,
-                DisplayName = comment.User.DisplayName,
-                Email = comment.User.Email,
-                PhoneNumber = comment.User.PhoneNumber,
-                ProfilePicturePublicId = comment.User.Picture?.PublicId,
-                ProfilePictureUrl = comment.User.Picture?.FileUrl
-            }
-        };
+        return GetAllComments().FirstOrDefault(c => c.Id == id);
     }
 
     public IQueryable<CommentDTO> GetAllComments()
