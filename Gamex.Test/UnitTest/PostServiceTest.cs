@@ -11,7 +11,7 @@ public class PostServiceTest: TestBase
         var postToGet = dbContext.Posts.FirstOrDefault();
 
         // Act
-        var post = await postService.GetPost(postToGet.Id);
+        var post = postService.GetPost(postToGet.Id);
 
         // Assert
         Assert.NotNull(post);
