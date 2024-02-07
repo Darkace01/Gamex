@@ -116,8 +116,8 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         if (response.HasError) return BadRequest(new ApiResponse<LoginResponseDTO>(400, response.Message));
 
-        var userExist = await _userManager.FindByEmailAsync(response.Data?.Email);
-        userExist ??= await _userManager.FindByNameAsync(response.Data?.Email);
+        var userExist = await _userManager.FindByEmailAsync(response.Data.Email);
+        userExist ??= await _userManager.FindByNameAsync(response.Data.Email);
 
         if (userExist is not null)
         {
@@ -142,8 +142,8 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         {
             Email = response?.Data?.Email,
             EmailConfirmed = true,
-            FirstName = response.Data?.GivenName,
-            LastName = response.Data?.FamilyName,
+            FirstName = response?.Data?.GivenName ?? string.Empty,
+            LastName = response?.Data?.FamilyName ?? string.Empty,
             SecurityStamp = Guid.NewGuid().ToString(),
             UserName = response?.Data?.Email,
             ExternalAuthInWithGoogle = true,
@@ -165,7 +165,6 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         return Ok(await GenerateLoginTokenandResponseForUser(user));
 
     }
-
     #region Private Methods
     private async Task<ApiResponse<GoogleJsonWebSignature.Payload>> ValidateUserTokenForGoogle(string token)
     {
@@ -175,7 +174,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         {
             ExpirationTimeClockTolerance = TimeSpan.FromHours(1)
         };
-        GoogleJsonWebSignature.Payload payload = null;
+        GoogleJsonWebSignature.Payload? payload = null;
         bool isValidToken = false;
         var message = string.Empty;
         try
@@ -194,7 +193,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         var response = new ApiResponse<GoogleJsonWebSignature.Payload>()
         {
             HasError = !isValidToken,
-            Data = payload,
+            Data = payload!,
             Message = message
         };
         return response;
@@ -215,7 +214,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         await _userManager.UpdateAsync(user);
 
-        ApiResponse<LoginResponseDTO> loginResponse = new(new LoginResponseDTO(user.Id,accessToken, refreshToken, authToken.ValidTo.Ticks, "Bearer",new UserMiniDTO(user.Email,user.Picture?.FileUrl,user.FirstName,user.LastName)));
+        ApiResponse<LoginResponseDTO> loginResponse = new(new LoginResponseDTO(user.Id, accessToken, refreshToken, authToken.ValidTo.Ticks, "Bearer", new UserMiniDTO(user.Email, user.Picture?.FileUrl, user.FirstName, user.LastName)));
         return loginResponse;
     }
     #endregion

@@ -11,7 +11,7 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<PaginatedTournamentDTO>), StatusCodes.Status200OK)]
-    public IActionResult GetTournaments([FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "", [FromQuery]string categoryNames = "")
+    public IActionResult GetTournaments([FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "", [FromQuery] string categoryNames = "")
     {
         var tournaments = _repositoryServiceManager.TournamentService.GetAllTournaments();
         var totalNumber = tournaments.Count();
@@ -21,13 +21,13 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
             var categoryNamesList = categoryNames.Split(',').ToList();
             if (categoryNamesList.Any())
             {
-                tournaments = tournaments.Where(t => t.Categories.Any(x => categoryNamesList.Contains(x.Name)));
+                tournaments = tournaments.Where(t => t.Categories != null && t.Categories.Any(x => categoryNamesList.Contains(x.Name)));
             }
         }
 
         if (!string.IsNullOrEmpty(s))
             tournaments = tournaments.Where(t => t.Name.Contains(s) || t.Description.Contains(s) || t.Location.Contains(s) || t.Rules.Contains(s) ||
-                                                            t.Categories.Any(x => x.Name.Contains(s)));
+                                                            (t.Categories != null && t.Categories.Any(x => x.Name.Contains(s))));
 
         tournaments = tournaments.Skip(skip).Take(take);
 
@@ -170,6 +170,10 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
     private async Task<ApplicationUser?> GetUser()
     {
         var username = User?.Identity?.Name;
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return null;
+        }
         var user = await _userManager.FindByNameAsync(username);
         return user;
     }

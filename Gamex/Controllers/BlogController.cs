@@ -30,9 +30,9 @@ public class BlogController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<PostDTO>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetPost(Guid id)
+    public IActionResult GetPost(Guid id)
     {
-        var post = await _repo.PostService.GetPost(id);
+        var post = _repo.PostService.GetPost(id);
         if (post == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<PostDTO>(404, "Post not found"));
 
@@ -82,7 +82,7 @@ public class BlogController : ControllerBase
         if (user == null)
             return Unauthorized(new ApiResponse<string>(401, "Unauthorized"));
 
-        var postToUpdate = await _repo.PostService.GetPost(id);
+        var postToUpdate = _repo.PostService.GetPost(id);
         if (postToUpdate == null)
             return NotFound(new ApiResponse<string>(404, "Post not found"));
 
@@ -129,7 +129,7 @@ public class BlogController : ControllerBase
         if (user == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        var postToDelete = await _repo.PostService.GetPost(id);
+        var postToDelete = _repo.PostService.GetPost(id);
         if (postToDelete == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Post not found"));
 
@@ -165,9 +165,9 @@ public class BlogController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<CommentDTO>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetComment(Guid id)
+    public IActionResult GetComment(Guid id)
     {
-        var comment = await _repo.CommentService.GetCommentById(id);
+        var comment = _repo.CommentService.GetCommentById(id);
         if (comment == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<CommentDTO>(404, "Comment not found"));
 
@@ -188,7 +188,7 @@ public class BlogController : ControllerBase
         if (user == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        await _repo.CommentService.CreateComment(commentCreateDTO, user?.Id);
+        await _repo.CommentService.CreateComment(commentCreateDTO, user.Id);
 
         return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>("Comment Successfully Created"));
     }
@@ -207,7 +207,7 @@ public class BlogController : ControllerBase
         if (user == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        var commentToUpdate = await _repo.CommentService.GetCommentById(id);
+        var commentToUpdate = _repo.CommentService.GetCommentById(id);
         if (commentToUpdate == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Comment not found"));
 
@@ -230,7 +230,7 @@ public class BlogController : ControllerBase
         if (user == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        var commentToDelete = await _repo.CommentService.GetCommentById(id);
+        var commentToDelete = _repo.CommentService.GetCommentById(id);
         if (commentToDelete == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Comment not found"));
 
@@ -246,6 +246,8 @@ public class BlogController : ControllerBase
     private async Task<ApplicationUser?> GetUser()
     {
         var username = User?.Identity?.Name;
+        if (username is null)
+            return null;
         var user = await _userManager.FindByNameAsync(username);
         return user;
     }

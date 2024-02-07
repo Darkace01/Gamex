@@ -7,7 +7,7 @@
         Task<bool> DeleteCommentByPostId(Guid postId);
         IQueryable<CommentDTO> GetAllCommentByPostId(Guid postId);
         IQueryable<CommentDTO> GetAllComments();
-        Task<CommentDTO> GetCommentById(Guid id);
+        CommentDTO GetCommentById(Guid id);
         Task<bool> UpdateComment(CommentUpdateDTO commentUpdateDTO);
     }
 }

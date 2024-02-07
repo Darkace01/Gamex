@@ -37,7 +37,7 @@ public class OnboardController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(user.Picture?.PublicId))
         {
-            _repo.FileStorageService.DeleteFile(user.Picture.PublicId);
+            await _repo.FileStorageService.DeleteFile(user.Picture.PublicId);
         }
 
         var existingDisplayName = await _userManager.Users.AsNoTracking().AnyAsync(u => u.DisplayName == model.DisplayName && u.Id != user.Id);
@@ -54,6 +54,11 @@ public class OnboardController : ControllerBase
         }
 
         var trackedUser = await GetUserWithTracking();
+
+        if (trackedUser is null)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<UserProfileDTO>(500, "Internal server error"));
+        }
 
         if (model.ProfilePicture is not null)
         {
@@ -87,6 +92,10 @@ public class OnboardController : ControllerBase
         }
 
         user = GetUser();
+        if(user is null)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<UserProfileDTO>(500, "Internal server error"));
+        }
         return Ok(new ApiResponse<UserProfileDTO>(GetUserProfileDTO(user)));
     }
 
