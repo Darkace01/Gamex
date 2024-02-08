@@ -242,6 +242,48 @@ public class BlogController : ControllerBase
         return StatusCode(StatusCodes.Status204NoContent, new ApiResponse<string>("Comment Successfully Deleted"));
     }
 
+    [HttpGet("tags")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<IEnumerable<TagDTO>>), StatusCodes.Status200OK)]
+    public IActionResult GetTags()
+    {
+        var tags = _repo.TagService.GetAllTags();
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<TagDTO>>(tags));
+    }
+
+    [HttpGet("tags/{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<TagDTO>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetTag(Guid id)
+    {
+        var tag = await _repo.TagService.GetTagById(id);
+        if (tag == null)
+            return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<TagDTO>(404, "Tag not found"));
+
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<TagDTO>(tag));
+    }
+
+    [HttpPost("tags")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status201Created)]
+    public async Task<IActionResult> CreateTag([FromBody] TagCreateDTO tagCreateDTO)
+    {
+        if (!ModelState.IsValid)
+            return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, "Invalid model object"));
+
+        var tagExist = await _repo.TagService.GetTagByName(tagCreateDTO.Name);
+        if (tagExist != null)
+            return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, "Tag already exist"));
+
+        var tag = await _repo.TagService.CreateTag(tagCreateDTO);
+
+        return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>("Tag Successfully Created"));
+    }
+
     #region Helpers
     private async Task<ApplicationUser?> GetUser()
     {
