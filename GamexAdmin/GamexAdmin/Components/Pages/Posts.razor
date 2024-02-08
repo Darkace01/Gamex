@@ -26,7 +26,13 @@
             <PropertyColumn Property="@(p => p.Title)" Sortable="true" />
             <PropertyColumn Property="@(p => p.Content.Substring(0, Math.Min(p.Content.Length, 50)))" Title="Summary" />
 
-            <PropertyColumn Property="@(p => p.User.DisplayName)" Sortable="true" Title="Author"/>
+            <PropertyColumn Property="@(p => p.User.DisplayName)" Sortable="true" Title="Author" />
+            <TemplateColumn Title="Tags">
+                @foreach (var tag in context.Tag)
+                {
+                    <span class="badge bg-primary">@tag.Name</span>
+                }
+            </TemplateColumn>
             <TemplateColumn Title="Archived" Sortable="true">
                 @if (context.IsArchived == true)
                 {

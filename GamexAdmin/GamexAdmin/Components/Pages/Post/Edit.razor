@@ -8,7 +8,7 @@
 
 <div class="row">
     <div class="col-md-6">
-        <h1>Create Post</h1>
+        <h1>Update Post</h1>
     </div>
     <div class="col-md-6">
         <div class="d-flex justify-content-end">
@@ -40,10 +40,27 @@
                 <label for="content" class="form-label">Content</label>
                 <ValidationMessage For="@(() => Model.Content)" class="text-danger" />
             </div>
-
-            <div class="mb-3">
-                <label for="file-upload" class="form-label">Featured Image</label>
-                <InputFile class="form-control" OnChange="HandleFileUpload" disabled="@IsLoading" id="file-upload" />
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="file-upload" class="form-label">Featured Image</label>
+                        <InputFile class="form-control" OnChange="HandleFileUpload" disabled="@IsLoading" id="file-upload" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="tag" class="form-label">Tag</label>
+                        <InputSelect @bind-Value="@TagId" class="form-control" disabled="@IsLoading">
+                            <option value="">Select a tag</option>
+                            @foreach (var tag in Tags)
+                            {
+                                var selected = Model.TagIds.Any(x => x == tag.Id) ? "selected" : "_";
+                                <option value="@tag.Id" selected="@selected">@tag.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => TagId)" class="text-danger" />
+                    </div>
+                </div>
             </div>
 
             <div class="d-flex justify-content-end">
@@ -53,7 +70,7 @@
                         {
                             <Loading />
                         }
-                    }Create
+                    }Update
                 </button>
             </div>
         </EditForm>
@@ -68,6 +85,9 @@
     private PostUpdateDTO? Model { get; set; }
 
     public string errorMessage { get; set; } = "";
+    public string TagId { get; set; } = "";
+
+    private List<TagDTO> Tags { get; set; } = new();
 
     private bool IsLoading { get; set; } = false;
     long maxFileSize = 1024 * 1024 * 10;
@@ -77,7 +97,7 @@
     {
         Model ??= new();
         _ = Guid.TryParse(Id, out Guid postId);
-        var post = await RepositoryServiceManager.PostService.GetPost(postId);
+        var post = RepositoryServiceManager.PostService.GetPost(postId);
         if (post is not null)
         {
             Model = new PostUpdateDTO
@@ -85,9 +105,11 @@
                     Id = post.Id,
                     Title = post.Title,
                     Content = post.Content,
-                    PictureId = post.PictureId
+                    PictureId = post.PictureId,
+                    TagIds = post.Tag.Select(x => x.Id).ToList()
                 };
         }
+        Tags = RepositoryServiceManager.TagService.GetAllTags().ToList();
     }
 
     private async Task HandleSubmit()
@@ -98,6 +120,11 @@
         try
         {
             var currentUser = await GetCurrentUser();
+            if (!string.IsNullOrWhiteSpace(TagId))
+            {
+                _ = Guid.TryParse(TagId, out Guid tagId);
+                Model!.TagIds = new List<Guid> { tagId };
+            }
             var post = await RepositoryServiceManager.PostService.UpdatePost(Model!, currentUser);
             IsLoading = false;
             NavigationManager.NavigateTo("/posts");

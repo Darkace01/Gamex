@@ -40,11 +40,28 @@
                 <label for="content" class="form-label">Content</label>
                 <ValidationMessage For="@(() => Model.Content)" class="text-danger" />
             </div>
-
-            <div class="mb-3">
-                <label for="file-upload" class="form-label">Featured Image</label>
-                <InputFile class="form-control" OnChange="HandleFileUpload" disabled="@IsLoading" id="file-upload" />
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="file-upload" class="form-label">Featured Image</label>
+                        <InputFile class="form-control" OnChange="HandleFileUpload" disabled="@IsLoading" id="file-upload" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="tag" class="form-label">Tag</label>
+                        <InputSelect @bind-Value="@TagId" class="form-control" disabled="@IsLoading">
+                            <option value="">Select a tag</option>
+                            @foreach (var tag in Tags)
+                            {
+                                <option value="@tag.Id">@tag.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => TagId)" class="text-danger" />
+                    </div>
+                </div>
             </div>
+
 
             <div class="d-flex justify-content-end">
                 <button type="submit" class="btn btn-primary" disabled="@IsLoading">
@@ -70,7 +87,14 @@
     long maxFileSize = 1024 * 1024 * 10;
     string[] imageFileExtension = { ".jpg", ".jpeg", ".png", ".gif" };
 
-    protected override void OnInitialized() => Model ??= new();
+    private List<TagDTO> Tags { get; set; } = new();
+    private string TagId { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Model ??= new();
+        Tags = RepositoryServiceManager.TagService.GetAllTags().ToList();
+    }
 
     private async Task HandleSubmit()
     {
@@ -80,6 +104,11 @@
         try
         {
             var currentUser = await GetCurrentUser();
+            if (!string.IsNullOrWhiteSpace(TagId))
+            {
+                _ = Guid.TryParse(TagId, out Guid tagId);
+                Model!.TagIds = new List<Guid> { tagId };
+            }
             var post = await RepositoryServiceManager.PostService.CreatePost(Model!, currentUser);
             IsLoading = false;
             NavigationManager.NavigateTo("/posts");
@@ -88,7 +117,7 @@
         {
             errorMessage = "An error has occurred, please contact your administrator for help";
             IsLoading = false;
-        }        
+        }
     }
 
     private async Task<ApplicationUser> GetCurrentUser()
@@ -135,7 +164,7 @@
                     Model!.PictureId = pictureFile.Id;
                 }
             }
-            
+
         }
         catch (Exception ex)
         {

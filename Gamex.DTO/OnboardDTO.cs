@@ -15,7 +15,16 @@ public class UserProfileDTO
 {
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
-    public string DisplayName { get; set; } = string.Empty;
+
+    private string _displayName = string.Empty;
+    public string DisplayName
+    {
+        get
+        {
+            return string.IsNullOrWhiteSpace(_displayName) ? $"{FirstName} {LastName}" : _displayName;
+        }
+        set => _displayName = value;
+    }
     public string Email { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
     public string ProfilePictureUrl { get; set; } = string.Empty;

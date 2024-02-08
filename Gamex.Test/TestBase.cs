@@ -12,9 +12,6 @@ public class TestBase
         dbContext.Database.EnsureDeleted();
         dbContext.Database.EnsureCreated();
 
-        //user manager
-
-
         // Add sample data
 
         // user
@@ -40,7 +37,8 @@ public class TestBase
         // tournament
         List<Tournament> tournaments =
         [
-            new Tournament {
+            new Tournament
+            {
                 Name = "Tournament 1",
                 Description = "Description 1",
                 StartDate = DateTime.Now.AddDays(1),
@@ -48,9 +46,10 @@ public class TestBase
                 EntryFee = 100,
                 IsFeatured = true,
                 Location = "Location 1",
-                Rules = "Rules 1",                
+                Rules = "Rules 1",
             },
-            new Tournament {
+            new Tournament
+            {
                 Name = "Tournament 2",
                 Description = "Description 2",
                 StartDate = DateTime.Now.AddDays(3),
@@ -60,7 +59,8 @@ public class TestBase
                 Location = "Location 2",
                 Rules = "Rules 2",
             },
-            new Tournament {
+            new Tournament
+            {
                 Name = "Tournament 3",
                 Description = "Description 3",
                 StartDate = DateTime.Now.AddDays(5),
@@ -88,17 +88,20 @@ public class TestBase
 
         // picture
         List<Picture> pictures = [
-            new Picture {
+            new Picture
+            {
                 Name = "Picture 1",
                 PublicId = "PublicId 1",
                 FileUrl = "https://res.cloudinary.com/dzqhcj3km/image/upload/v1629780569/1.jpg",
             },
-            new Picture {
+            new Picture
+            {
                 Name = "Picture 2",
                 PublicId = "PublicId 2",
                 FileUrl = "https://res.cloudinary.com/dzqhcj3km/image/upload/v1629780569/2.jpg",
             },
-            new Picture {
+            new Picture
+            {
                 Name = "Picture 3",
                 PublicId = "PublicId 3",
                 FileUrl = "https://res.cloudinary.com/dzqhcj3km/image/upload/v1629780569/3.jpg",
@@ -111,18 +114,19 @@ public class TestBase
         // Post
         List<Post> posts =
         [
-            new Post {
-               Title = "Post 1",
-               Content = "Post Content 1",
-               PictureId = dbContext.Pictures.AsNoTracking().FirstOrDefault()?.Id,
-               UserId = dbContext.Users.AsNoTracking().FirstOrDefault()?.Id
-             },
             new Post
             {
-               Title = "Post 2",
-               Content = "Post Content 2",
-               PictureId = dbContext.Pictures.AsNoTracking().FirstOrDefault()?.Id,
-               UserId = dbContext.Users.AsNoTracking().FirstOrDefault()?.Id
+                Title = "Post 1",
+                Content = "Post Content 1",
+                PictureId = dbContext.Pictures.AsNoTracking().FirstOrDefault()?.Id,
+                UserId = dbContext.Users.AsNoTracking().FirstOrDefault()?.Id
+            },
+            new Post
+            {
+                Title = "Post 2",
+                Content = "Post Content 2",
+                PictureId = dbContext.Pictures.AsNoTracking().FirstOrDefault()?.Id,
+                UserId = dbContext.Users.AsNoTracking().FirstOrDefault()?.Id
             }
         ];
 
@@ -136,14 +140,14 @@ public class TestBase
             {
                 Title = "Comment 1",
                 Content = "Comment Content 1",
-                UserId =  dbContext.Users.AsNoTracking().FirstOrDefault()?.Id,
+                UserId = dbContext.Users?.AsNoTracking().FirstOrDefault()?.Id,
                 PostId = posts.First().Id
             },
             new Comment
             {
                 Title = "Comment 2",
                 Content = "Comment Content 2",
-                UserId =  dbContext.Users.AsNoTracking().FirstOrDefault()?.Id,
+                UserId = dbContext.Users?.AsNoTracking().FirstOrDefault()?.Id,
                 PostId = posts.First().Id
             }
         ];
@@ -171,7 +175,44 @@ public class TestBase
         dbContext.TournamentCategories.AddRange(categories);
         dbContext.SaveChanges();
 
-        return dbContext;
+        // Tag
+        List<Tag> tags =
+        [
+            new Tag
+            {
+                Name = "Tag 1"
+            },
+            new Tag
+            {
+                Name = "Tag 2"
+            },
+            new Tag
+            {
+                Name = "Tag 3"
+            }
+        ];
 
+        dbContext.Tags.AddRange(tags);
+        dbContext.SaveChanges();
+
+        // PostTag
+        List<PostTag> postTags =
+        [
+            new PostTag
+            {
+                PostId = posts.First().Id,
+                TagId = tags.First().Id
+            },
+            new PostTag
+            {
+                PostId = posts.First().Id,
+                TagId = tags.Last().Id
+            }
+        ];
+
+        dbContext.PostTags.AddRange(postTags);
+        dbContext.SaveChanges();
+
+        return dbContext;
     }
 }

@@ -13,12 +13,13 @@ public class PostDTO
     public string PicturePublicId { get; set; } = string.Empty;
     public UserProfileDTO User { get; set; } = new();
     public IEnumerable<CommentDTO> Comment { get; set; }
+    public IEnumerable<TagDTO> Tag { get; set; }
 
     public PostDTO()
     {
     }
 
-    public PostDTO(Guid id, string title, string content, bool? isArchived,Guid pictureId, string pictureUrl, string picturePublicId, UserProfileDTO user, IEnumerable<CommentDTO> comment)
+    public PostDTO(Guid id, string title, string content, bool? isArchived,Guid pictureId, string pictureUrl, string picturePublicId, UserProfileDTO user, IEnumerable<CommentDTO> comment, IEnumerable<TagDTO> tag)
     {
         Id = id;
         Title = title;
@@ -29,6 +30,7 @@ public class PostDTO
         PicturePublicId = picturePublicId;
         User = user;
         Comment = comment;
+        Tag = tag;
     }
 }
 
@@ -40,6 +42,7 @@ public class PostCreateDTO
     public Guid? PictureId { get; set; }
     public IFormFile? Picture { get; set; }
     public string UserId { get; set; }
+    public List<Guid>? TagIds { get; set; }
 }
 
 public class PostUpdateDTO
@@ -51,4 +54,5 @@ public class PostUpdateDTO
     public Guid? PictureId { get; set; }
     public IFormFile Picture { get; set; }
     public string UserId { get; set; }
+    public List<Guid>? TagIds { get; set; }
 }
