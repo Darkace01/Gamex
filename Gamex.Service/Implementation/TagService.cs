@@ -15,17 +15,16 @@ public class TagService : ITagService
         _context = context;
     }
 
-    public async Task<IEnumerable<TagDTO>> GetAllTags()
+    public IQueryable<TagDTO> GetAllTags()
     {
-        var tags = await _context.Tags.Include(t => t.PostTags)
+        var tags = _context.Tags.Include(t => t.PostTags)
             .AsNoTracking()
             .Select(t => new TagDTO
             {
                 Id = t.Id,
                 Name = t.Name,
                 PostCount = t.PostTags.Count
-            })
-            .ToListAsync();
+            });
 
         return tags;
     }

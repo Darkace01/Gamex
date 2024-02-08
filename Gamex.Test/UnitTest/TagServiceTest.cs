@@ -39,14 +39,14 @@ public class TagServiceTest: TestBase
     }
 
     [Fact]
-    public async Task GetAllTags_ShouldReturnAllTags()
+    public void GetAllTags_ShouldReturnAllTags()
     {
         // Arrange
         var dbContext = GetSampleData(nameof(GetAllTags_ShouldReturnAllTags));
         var tagService = MockTagService(dbContext);
 
         // Act
-        var tags = await tagService.GetAllTags();
+        var tags = tagService.GetAllTags();
 
         // Assert
         Assert.NotNull(tags);
