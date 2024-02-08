@@ -10,4 +10,5 @@ public class Post:Entity
     public string UserId { get; set; }
     public ApplicationUser User { get; set; }
     public ICollection<Comment> Comments { get; set; }
+    public ICollection<PostTag> PostTags { get; set; }
 }

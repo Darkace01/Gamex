@@ -40,6 +40,7 @@ public class PostCreateDTO
     public Guid? PictureId { get; set; }
     public IFormFile? Picture { get; set; }
     public string UserId { get; set; }
+    public List<Guid> TagIds { get; set; }
 }
 
 public class PostUpdateDTO
@@ -51,4 +52,5 @@ public class PostUpdateDTO
     public Guid? PictureId { get; set; }
     public IFormFile Picture { get; set; }
     public string UserId { get; set; }
+    public List<Guid> TagIds { get; set; }
 }

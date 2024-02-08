@@ -13,6 +13,8 @@ public class GamexDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Comment> Comments { get; set; }
     public DbSet<TournamentCategory> TournamentCategories { get; set; }
     public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+    public DbSet<Tag> Tags { get; set; }
+    public DbSet<PostTag> PostTags { get; set; }
 
     public GamexDbContext(DbContextOptions<GamexDbContext> options) : base(options)
     {
@@ -86,6 +88,36 @@ public class GamexDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<PaymentTransaction>()
             .Property(pt => pt.Amount)
             .HasColumnType("decimal(18,2)");
+
+        builder.Entity<Tag>()
+            .HasIndex(t => t.Name)
+            .IsUnique();
+
+        builder.Entity<PostTag>()
+           .HasKey(ut => new { ut.PostId, ut.TagId });
+
+        builder.Entity<Tag>()
+            .HasMany(t => t.PostTags)
+            .WithOne(pt => pt.Tag)
+            .HasForeignKey(pt => pt.TagId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Post>()
+            .HasMany(p => p.PostTags)
+            .WithOne(pt => pt.Post)
+            .HasForeignKey(pt => pt.PostId)
+            .OnDelete(DeleteBehavior.NoAction);
         
+        builder.Entity<PostTag>()
+            .HasOne(pt => pt.Post)
+            .WithMany(p => p.PostTags)
+            .HasForeignKey(pt => pt.PostId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<PostTag>()
+            .HasOne(pt => pt.Tag)
+            .WithMany(t => t.PostTags)
+            .HasForeignKey(pt => pt.TagId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
