@@ -6,6 +6,7 @@
         Task<bool> DeleteTag(Guid id);
         IQueryable<TagDTO> GetAllTags();
         Task<TagDTO?> GetTagById(Guid id);
+        Task<TagDTO> GetTagByName(string name);
         Task<bool> UpdateTag(TagUpdateDTO tagUpdateDTO);
     }
 }

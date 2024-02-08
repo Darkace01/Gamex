@@ -21,6 +21,7 @@
     <div class="card-body">
         <QuickGrid Items="@TagFiltered" Pagination="@pagination" Virtualize="true" @ref="TagGrid">
             <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.PostCount)" Sortable="true" Title="Number Of Posts"/>
             <TemplateColumn Title="Actions">
                 <a href="/@context.Id" class="btn btn-primary">Edit</a>
                 <button class="btn btn-danger" @onclick="(() => HandleDelete(context.Id))">Delete</button>

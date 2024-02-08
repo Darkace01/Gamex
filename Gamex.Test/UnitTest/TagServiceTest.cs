@@ -53,9 +53,6 @@ public class TagServiceTest: TestBase
         Assert.Equal(3, tags.Count());
     }
 
-    // update tag
-    // delete tag
-
     [Fact]
     public async Task UpdateTag_ShouldUpdateTag()
     {
@@ -90,6 +87,22 @@ public class TagServiceTest: TestBase
 
         // Assert
         Assert.True(deleted);
+    }
+
+    [Fact]
+    public async Task GetTagByName_ShouldReturnTag()
+    {
+        // Arrange
+        var dbContext = GetSampleData(nameof(GetTagByName_ShouldReturnTag));
+        var tagService = MockTagService(dbContext);
+        var tagToGet = dbContext.Tags.FirstOrDefault();
+
+        // Act
+        var tag = await tagService.GetTagByName(tagToGet.Name);
+
+        // Assert
+        Assert.NotNull(tag);
+        Assert.Equal(tagToGet.Name, tag.Name);
     }
 
     #region Helpers

@@ -6,13 +6,13 @@ public class PostService(GamexDbContext context) : IPostService
 
     public PostDTO? GetPost(Guid postId)
     {
-        var post = _context.Posts.Include(x => x.User).Include(x => x.Comments).ThenInclude(x => x.User).AsNoTracking().FirstOrDefault(p => p.Id == postId);
+        var post = _context.Posts.Include(x => x.User).Include(x => x.PostTags).ThenInclude(x => x.Tag).Include(x => x.Comments).ThenInclude(x => x.User).AsNoTracking().FirstOrDefault(p => p.Id == postId);
         return post != null ? MapPostToDTO(post) : null;
     }
 
     public IQueryable<PostDTO> GetAllPosts()
     {
-        var posts = _context.Posts.Include(x => x.User).Include(x => x.Comments).ThenInclude(x => x.User).AsNoTracking();
+        var posts = _context.Posts.Include(x => x.User).Include(x => x.PostTags).ThenInclude(x => x.Tag).Include(x => x.Comments).ThenInclude(x => x.User).AsNoTracking();
         return posts.Select(p => MapPostToDTO(p));
     }
 
@@ -128,6 +128,7 @@ public class PostService(GamexDbContext context) : IPostService
                             await _context.SaveChangesAsync();
                             hasSaved = true;
                         }
+                        await transaction.CommitAsync();
                         return true;
                     }
                 }
@@ -210,7 +211,9 @@ public class PostService(GamexDbContext context) : IPostService
     {
         var comments = post.Comments?.Select(c => new CommentDTO(c.Id, c.Title, c.Content, c.IsArchived, new UserProfileDTO(c.User?.FirstName, c.User?.LastName, c.User?.DisplayName, c.User?.Email, c?.User?.PhoneNumber, c?.User?.Picture?.FileUrl, c?.User?.Picture?.PublicId), c.PostId));
 
+        var tags = post.PostTags?.Select(pt => new TagDTO(pt.Tag.Id, pt.Tag.Name, pt.Tag.PostTags.Count));
+
         return new PostDTO(post.Id, post.Title, post.Content, post.IsArchived, post?.Picture?.Id ?? Guid.NewGuid(), post?.Picture?.FileUrl, post?.Picture?.PublicId,
-            new UserProfileDTO(post?.User?.FirstName, post?.User?.LastName, post?.User?.DisplayName, post?.User?.Email, post?.User?.PhoneNumber, post?.User?.Picture?.FileUrl, post?.User?.Picture?.PublicId), comments);
+            new UserProfileDTO(post?.User?.FirstName, post?.User?.LastName, post?.User?.DisplayName, post?.User?.Email, post?.User?.PhoneNumber, post?.User?.Picture?.FileUrl, post?.User?.Picture?.PublicId), comments, tags);
     }
 }

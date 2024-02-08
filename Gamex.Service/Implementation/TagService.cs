@@ -92,4 +92,18 @@ public class TagService : ITagService
 
         return true;
     }
+    public async Task<TagDTO> GetTagByName(string name)
+    {
+        var tag = await _context.Tags.Include(t => t.PostTags)
+            .AsNoTracking()
+            .Select(t => new TagDTO
+            {
+                Id = t.Id,
+                Name = t.Name,
+                PostCount = t.PostTags.Count
+            })
+            .FirstOrDefaultAsync(t => t.Name == name);
+
+        return tag;
+    }
 }
