@@ -58,6 +58,7 @@ if (app.Environment.IsDevelopment())
 app.UseSwagger();
 app.UseSwaggerUI();
 
+app.UseCors("CorsPolicy");
 
 app.ConfigureExceptionHandler(app.Logger, app.Configuration);
 
