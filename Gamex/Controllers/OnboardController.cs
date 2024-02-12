@@ -4,16 +4,10 @@ namespace Gamex.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{v:apiversion}/onboard")]
 [ApiController]
-public class OnboardController : ControllerBase
+public class OnboardController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager) : ControllerBase
 {
-    private readonly IRepositoryServiceManager _repo;
-    private readonly UserManager<ApplicationUser> _userManager;
-
-    public OnboardController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager)
-    {
-        _repo = repo;
-        _userManager = userManager;
-    }
+    private readonly IRepositoryServiceManager _repo = repo;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
 
     [HttpPost]
     [Authorize]
@@ -112,7 +106,6 @@ public class OnboardController : ControllerBase
         {
             return Unauthorized(new ApiResponse<UserProfileDTO>(401, "Unauthorized"));
         }
-
         return Ok(new ApiResponse<UserProfileDTO>(GetUserProfileDTO(user)));
     }
 
@@ -139,9 +132,12 @@ public class OnboardController : ControllerBase
         return user;
     }
 
-    private static UserProfileDTO GetUserProfileDTO(ApplicationUser user)
+    private UserProfileDTO? GetUserProfileDTO(ApplicationUser? user)
     {
-        return new UserProfileDTO(user.FirstName, user.LastName, user.DisplayName, user.Email, user.PhoneNumber, user.Picture?.FileUrl ?? string.Empty, user.Picture?.PublicId ?? string.Empty);
+        if (user is null) return null;
+        if (string.IsNullOrWhiteSpace(user.UserName)) return null;
+
+        return _repo.ExtendedUserService.GetUserByNameForProfile(user.UserName);
     }
     #endregion
 }
