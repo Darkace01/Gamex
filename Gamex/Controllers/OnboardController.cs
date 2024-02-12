@@ -22,7 +22,7 @@ public class OnboardController(IRepositoryServiceManager repo, UserManager<Appli
             return BadRequest(new ApiResponse<UserProfileDTO>(400, "Invalid model object"));
         }
 
-        var user = GetUser();
+        var user = await GetUser();
 
         if (user == null)
         {
@@ -85,7 +85,7 @@ public class OnboardController(IRepositoryServiceManager repo, UserManager<Appli
             return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<UserProfileDTO>(500, "Internal server error"));
         }
 
-        user = GetUser();
+        user = await GetUser();
         if(user is null)
         {
             return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<UserProfileDTO>(500, "Internal server error"));
@@ -98,11 +98,11 @@ public class OnboardController(IRepositoryServiceManager repo, UserManager<Appli
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<UserProfileDTO>), StatusCodes.Status200OK)]
-    public IActionResult GetUserProfile()
+    public async Task<IActionResult> GetUserProfile()
     {
-        var user = GetUser();
+        var user = await GetUser();
 
-        if (user == null)
+        if (user is null)
         {
             return Unauthorized(new ApiResponse<UserProfileDTO>(401, "Unauthorized"));
         }
@@ -110,14 +110,14 @@ public class OnboardController(IRepositoryServiceManager repo, UserManager<Appli
     }
 
     #region Helpers
-    private ApplicationUser? GetUser()
+    private async Task<ApplicationUser?> GetUser()
     {
         var username = User?.Identity?.Name;
         if (string.IsNullOrWhiteSpace(username))
         {
             return null;
         }
-        var user = _repo.ExtendedUserService.GetUserByName(username);
+        var user = await _userManager.FindByNameAsync(username);
         return user;
     }
 
