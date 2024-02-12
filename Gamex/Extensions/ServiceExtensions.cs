@@ -10,9 +10,9 @@ public static class ServiceExtensions
     /// <param name="services"></param>
     public static void ConfigureCors(this IServiceCollection services, IConfiguration configuration)
     {
-        var corsOrigins = configuration["CorsOrigins"];
-        string[] originList = [];
-        originList = string.IsNullOrEmpty(corsOrigins) ? (["http://localhost:3000", "https://localhost:3000"]) : corsOrigins.Split(";");
+        //var corsOrigins = configuration["CorsOrigins"];
+        //string[] originList = [];
+        //originList = string.IsNullOrEmpty(corsOrigins) ? (["http://localhost:3000", "https://localhost:3000"]) : corsOrigins.Split(";");
 
         services.AddCors(options =>
         {
@@ -21,8 +21,8 @@ public static class ServiceExtensions
                                   .AllowAnyHeader()
                                   .AllowAnyOrigin()
                                   //.WithOrigins("*")
-                                  //.SetIsOriginAllowed(origin => true)
-                                  .AllowCredentials());
+                                  .SetIsOriginAllowed(origin => true));
+                                  //.AllowCredentials());
         });
     }
 
