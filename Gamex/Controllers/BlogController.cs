@@ -5,16 +5,10 @@ namespace Gamex.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{v:apiversion}/blog")]
 [ApiController]
-public class BlogController : ControllerBase
+public class BlogController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager) : ControllerBase
 {
-    private readonly IRepositoryServiceManager _repo;
-    private readonly UserManager<ApplicationUser> _userManager;
-
-    public BlogController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager)
-    {
-        _repo = repo;
-        _userManager = userManager;
-    }
+    private readonly IRepositoryServiceManager _repo = repo;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
 
     [HttpGet("posts")]
     [ProducesResponseType(StatusCodes.Status200OK)]
