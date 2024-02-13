@@ -14,7 +14,7 @@ public class OnboardController(IRepositoryServiceManager repo, UserManager<Appli
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<UserProfileDTO>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> UpdateUserProfile([FromForm] UserProfileUpdateDTO model)
+    public async Task<IActionResult> UpdateUserProfile([FromBody] UserProfileUpdateDTO model)
     {
         if (model is null)
         {
