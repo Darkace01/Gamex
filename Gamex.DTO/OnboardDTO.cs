@@ -8,7 +8,6 @@ public class UserProfileUpdateDTO
     public string LastName { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
-    public IFormFile ProfilePicture { get; set; } = null;
 }
 
 public class UserProfileDTO

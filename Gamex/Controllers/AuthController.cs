@@ -82,6 +82,8 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         ApplicationUser user = new()
         {
+            FirstName = model.FirstName,
+            LastName = model.LastName,
             Email = model.Email,
             SecurityStamp = Guid.NewGuid().ToString(),
             UserName = model.Username,
@@ -164,6 +166,33 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         return Ok(await GenerateLoginTokenandResponseForUser(user));
 
+    }
+
+    [HttpPost("change-password")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO model)
+    {
+        if (model is null) return BadRequest(new ApiResponse<string>(400, "Invalid change password request"));
+
+        if (!ModelState.IsValid) return BadRequest(new ApiResponse<string>(400, "Invalid change password request"));
+
+        var userName = User.Identity?.Name;
+
+        if (string.IsNullOrWhiteSpace(userName)) return BadRequest(new ApiResponse<string>(400, "Invalid change password request"));
+
+        var user = await _userManager.FindByNameAsync(userName);
+
+        if (user == null) return BadRequest(new ApiResponse<string>(400, "Invalid change password request"));
+
+        var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+
+        if (!result.Succeeded) return BadRequest(new ApiResponse<string>(400, "Invalid change password request"));
+
+        return Ok(new ApiResponse<string>(200, "Password changed successfully!"));
     }
     #region Private Methods
     private async Task<ApiResponse<GoogleJsonWebSignature.Payload>> ValidateUserTokenForGoogle(string token)
