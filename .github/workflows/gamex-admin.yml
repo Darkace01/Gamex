@@ -1,6 +1,6 @@
 name: Build and deploy .NET Core application to Web App gamex-admin
 on:
-  pull_request:
+  push:
     branches:
     - main
 env:
