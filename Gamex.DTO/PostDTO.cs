@@ -8,7 +8,7 @@ public class PostDTO
     public string Title { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
     public bool? IsArchived { get; set; } = false;
-    public Guid PictureId { get; set; }
+    public Guid? PictureId { get; set; }
     public string PictureUrl { get; set; } = string.Empty;
     public string PicturePublicId { get; set; } = string.Empty;
     public UserProfileDTO User { get; set; } = new();
@@ -19,7 +19,7 @@ public class PostDTO
     {
     }
 
-    public PostDTO(Guid id, string title, string content, bool? isArchived,Guid pictureId, string pictureUrl, string picturePublicId, UserProfileDTO user, IEnumerable<CommentDTO> comment, IEnumerable<TagDTO> tag)
+    public PostDTO(Guid id, string title, string content, bool? isArchived,Guid? pictureId, string pictureUrl, string picturePublicId, UserProfileDTO user, IEnumerable<CommentDTO> comment, IEnumerable<TagDTO> tag)
     {
         Id = id;
         Title = title;
