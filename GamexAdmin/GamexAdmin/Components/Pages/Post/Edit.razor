@@ -91,7 +91,7 @@
 
     private bool IsLoading { get; set; } = false;
     long maxFileSize = 1024 * 1024 * 10;
-    string[] imageFileExtension = { ".jpg", ".jpeg", ".png", ".gif" };
+    string[] imageFileExtension = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
 
     protected override async Task OnInitializedAsync()
     {
@@ -172,12 +172,29 @@
                     return;
                 }
 
-                // var formFile = new FormFile(file.OpenReadStream(file.Size), 0, file.Size, file.Name, file.Name);
-                var fileResult = await RepositoryServiceManager.FileStorageService.SaveFile(file, "post-picture");
-                if (fileResult is not null)
+                if (Model?.PictureId.HasValue == true)
                 {
-                    var pictureFile = await RepositoryServiceManager.PictureService.CreatePicture(new PictureCreateDTO(fileResult.FileUrl, fileResult.PublicId));
-                    Model!.PictureId = pictureFile.Id;
+                    var picture = await RepositoryServiceManager.PictureService.GetPicture(Model.PictureId.Value);
+                    if (picture is not null)
+                    {
+                        await RepositoryServiceManager.FileStorageService.DeleteFile(picture.PublicId);
+                    }
+                    var updatedFile = await RepositoryServiceManager.FileStorageService.SaveFile(file, "post-picture");
+                    if (updatedFile is not null)
+                    {
+                        var pictureFile = await RepositoryServiceManager.PictureService.UpdatePicture(new PictureUpdateDTO(picture.Id, updatedFile.FileUrl, updatedFile.PublicId));
+                        Model.PictureId = pictureFile.Id;
+                    }
+                }
+                else
+                {
+                    // var formFile = new FormFile(file.OpenReadStream(file.Size), 0, file.Size, file.Name, file.Name);
+                    var fileResult = await RepositoryServiceManager.FileStorageService.SaveFile(file, "post-picture");
+                    if (fileResult is not null)
+                    {
+                        var pictureFile = await RepositoryServiceManager.PictureService.CreatePicture(new PictureCreateDTO(fileResult.FileUrl, fileResult.PublicId));
+                        Model!.PictureId = pictureFile.Id;
+                    }
                 }
             }
 
