@@ -14,9 +14,14 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<IEnumerable<PostDTO>>), StatusCodes.Status200OK)]
-    public IActionResult GetPosts()
+    public IActionResult GetPosts([FromQuery] IEnumerable<string> TagIds)
     {
         var posts = _repo.PostService.GetAllPosts();
+        if (TagIds.Count() > 0)
+        {
+            TagIds = TagIds.Select(t => t.ToLower().ToString());
+            posts = posts.Where(p => p.Tag.Any(t => TagIds.Contains(t.Name.ToLower().ToString())));
+        }
         return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<PostDTO>>(posts));
     }
 
