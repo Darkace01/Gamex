@@ -23,6 +23,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
         var tournaments = _context.Tournaments
             .AsNoTracking()
             .Include(t => t.Picture)
+            .Include(t => t.CoverPicture)
             .Include(t => t.Categories)
             .Include(t => t.UserTournaments)
             .ThenInclude(ut => ut.User)
@@ -43,6 +44,8 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             Rules = t.Rules,
             PicturePublicId = t.Picture == null ? "" : t.Picture.PublicId,
             PictureUrl = t.Picture == null ? "" : t.Picture.FileUrl,
+            CoverPicturePublicId = t.CoverPicture == null ? "" : t.CoverPicture.PublicId,
+            CoverPictureUrl = t.CoverPicture == null ? "" : t.CoverPicture.FileUrl,
             
             Categories = t.Categories.Select(tc => new TournamentCategoryDTO
             {
@@ -87,6 +90,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                         EntryFee = tournament.EntryFee,
                         Rules = tournament.Rules,
                         PictureId = tournament.PictureId,
+                        CoverPictureId = tournament.CoverPictureId,
                         Categories = _context.TournamentCategories.Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList(),
                     };
 
@@ -135,6 +139,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 EntryFee = tournament.EntryFee,
                 Rules = tournament.Rules,
                 PictureId = tournament.PictureId,
+                CoverPictureId = tournament.CoverPictureId,
             };
 
             if(tournament.CategoryIds != null)
@@ -189,7 +194,11 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             {
                 existingTournament.PictureId = tournament.PictureId;
             }
-            if(tournament.CategoryIds != null)
+            if (tournament.CoverPictureId.HasValue && tournament.CoverPictureId != tournament.CoverPictureId)
+            {
+                existingTournament.CoverPictureId = tournament.CoverPictureId;
+            }
+            if (tournament.CategoryIds != null)
                 existingTournament.Categories = _context.TournamentCategories.Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList();
             _context.Tournaments.Update(existingTournament);
             await _context.SaveChangesAsync();
