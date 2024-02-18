@@ -149,19 +149,19 @@
         if (tournament is not null)
         {
             Model = new TournamentUpdateDTO
-            {
-                Id = tournament.Id,
-                Name = tournament.Name,
-                StartDateForm = tournament.StartDate,
-                EndDateForm = tournament.EndDate,
-                Location = tournament.Location,
-                Description = tournament.Description,
-                Rules = tournament.Rules,
-                IsFeatured = tournament.IsFeatured,
-                EntryFee = tournament.EntryFee,
-                PictureId = tournament.PictureId,
-                CategoryIds = tournament.Categories?.Select(x => (Guid)x.Id).ToList()
-            };
+                {
+                    Id = tournament.Id,
+                    Name = tournament.Name,
+                    StartDateForm = tournament.StartDate,
+                    EndDateForm = tournament.EndDate,
+                    Location = tournament.Location,
+                    Description = tournament.Description,
+                    Rules = tournament.Rules,
+                    IsFeatured = tournament.IsFeatured,
+                    EntryFee = tournament.EntryFee,
+                    PictureId = tournament.PictureId,
+                    CategoryIds = tournament.Categories?.Select(x => (Guid)x.Id).ToList()
+                };
 
             PublicId = tournament.PicturePublicId ?? "";
         }
@@ -194,7 +194,7 @@
                 }
                 var tournamentId = Guid.Parse(Id);
 
-                var fileResult = await RepositoryServiceManager.FileStorageService.SaveFile(file, "tournament-picture");
+                var fileResult = await RepositoryServiceManager.FileStorageService.SaveFile(file, AppConstant.TournamentPictureTag);
                 if (fileResult is not null)
                 {
                     var pictureFile = await RepositoryServiceManager.PictureService.CreatePicture(new PictureCreateDTO(fileResult.FileUrl, fileResult.PublicId));

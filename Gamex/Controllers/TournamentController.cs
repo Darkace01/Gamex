@@ -1,4 +1,6 @@
-﻿namespace Gamex.Controllers;
+﻿using Gamex.DTO;
+
+namespace Gamex.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{v:apiversion}/tournaments")]
 [ApiController]
@@ -60,7 +62,7 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status201Created)]
-    public async Task<IActionResult> CreateTournament([FromBody] TournamentCreateDTO tournamentCreateDTO)
+    public async Task<IActionResult> CreateTournament([FromForm] TournamentCreateDTO tournamentCreateDTO)
     {
         if (!ModelState.IsValid)
             return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, "Invalid model object"));
@@ -68,6 +70,25 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         var user = await GetUser();
         if (user == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+
+        if (tournamentCreateDTO.Picture is not null)
+        {
+            var uploadResult = await _repositoryServiceManager.FileStorageService.SaveFile(tournamentCreateDTO.Picture, AppConstant.TournamentPictureTag);
+            if (uploadResult is not null)
+            {
+                var pictureFile = await _repositoryServiceManager.PictureService.CreatePicture(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId));
+                tournamentCreateDTO.PictureId = pictureFile.Id;
+            }
+        }
+        if (tournamentCreateDTO.CoverPicture is not null)
+        {
+            var uploadResult = await _repositoryServiceManager.FileStorageService.SaveFile(tournamentCreateDTO.CoverPicture, AppConstant.TournamentCoverPictureTag);
+            if (uploadResult is not null)
+            {
+                var pictureFile = await _repositoryServiceManager.PictureService.CreatePicture(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId));
+                tournamentCreateDTO.CoverPictureId = pictureFile.Id;
+            }
+        }
 
         await _repositoryServiceManager.TournamentService.CreateTournament(tournamentCreateDTO, user);
         
