@@ -91,7 +91,7 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         }
 
         await _repositoryServiceManager.TournamentService.CreateTournament(tournamentCreateDTO, user);
-        
+
         return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>("Tournament Successfully Created"));
     }
 
@@ -113,8 +113,11 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         if (tournamentExist == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Tournament not found"));
 
-        if(tournamentExist.TournamentUsers.All(ut => ut.UserId != user.Id))
-            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+        var userRole = await _userManager.GetRolesAsync(user);
+
+        if (!userRole.Contains(AppConstant.AdminUserRole))
+            if (tournamentExist.TournamentUsers.All(ut => ut.CreatorId != user.Id))
+                return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
         if (tournamentUpdateDTO.Picture is not null)
         {
@@ -183,8 +186,11 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         if (tournamentExist == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Tournament not found"));
 
-        if (tournamentExist.TournamentUsers.All(ut => ut.UserId != user.Id))
-            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+        var userRole = await _userManager.GetRolesAsync(user);
+
+        if (!userRole.Contains(AppConstant.AdminUserRole))
+            if (tournamentExist.TournamentUsers.All(ut => ut.CreatorId != user.Id))
+                return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
         await _repositoryServiceManager.TournamentService.DeleteTournament(id, user);
 
