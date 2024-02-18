@@ -1,4 +1,6 @@
-﻿namespace Gamex.Test;
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace Gamex.Test;
 
 public class TestBase
 {
@@ -32,6 +34,31 @@ public class TestBase
             Email = "user2@email.com",
         };
         dbContext.Users.Add(user2);
+
+        var role1 = new IdentityRole
+        {
+            Id = "1",
+            Name = "Admin",
+            NormalizedName = "ADMIN"
+        };
+
+        dbContext.Roles.Add(role1);
+
+        var userRoles = new List<IdentityUserRole<string>>
+        {
+            new IdentityUserRole<string>
+            {
+                UserId = user1.Id,
+                RoleId = "1",
+            },
+            new IdentityUserRole<string>
+            {
+                UserId = user2.Id,
+                RoleId = "1",
+            }
+        };
+
+        dbContext.UserRoles.AddRange(userRoles);
 
 
         // tournament

@@ -117,7 +117,7 @@ public class OnboardController(IRepositoryServiceManager repo, UserManager<Appli
             await _repo.FileStorageService.DeleteFile(user.Picture.PublicId);
         }
 
-        var uploadResult = await _repo.FileStorageService.SaveFile(file, "profile-picture");
+        var uploadResult = await _repo.FileStorageService.SaveFile(file, AppConstant.ProfilePictureTag);
 
         if (uploadResult is null)
         {

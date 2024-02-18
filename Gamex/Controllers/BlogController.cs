@@ -49,7 +49,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
 
         if(postCreateDTO.Picture is not null)
         {
-            var uploadResult = await _repo.FileStorageService.SaveFile(postCreateDTO.Picture, "post-picture");
+            var uploadResult = await _repo.FileStorageService.SaveFile(postCreateDTO.Picture, AppConstant.PostPictureTag);
             if (uploadResult is not null)
             {
                 var pictureFile = await _repo.PictureService.CreatePicture(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId));
@@ -85,7 +85,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
 
         if (postUpdateDTO.Picture is not null)
         {
-            var uploadResult = await _repo.FileStorageService.SaveFile(postUpdateDTO.Picture, "post-picture");
+            var uploadResult = await _repo.FileStorageService.SaveFile(postUpdateDTO.Picture, AppConstant.PostPictureTag);
             if (uploadResult is not null)
             {
                 if (!string.IsNullOrWhiteSpace(postToUpdate.PicturePublicId))

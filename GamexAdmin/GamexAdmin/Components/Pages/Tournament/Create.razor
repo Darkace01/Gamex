@@ -166,7 +166,7 @@
                 }
 
                 // var formFile = new FormFile(file.OpenReadStream(file.Size), 0, file.Size, file.Name, file.Name);
-                var fileResult = await RepositoryServiceManager.FileStorageService.SaveFile(file, "tournament-picture");
+                var fileResult = await RepositoryServiceManager.FileStorageService.SaveFile(file, AppConstant.TournamentPictureTag);
                 if (fileResult is not null)
                 {
                     var pictureFile = await RepositoryServiceManager.PictureService.CreatePicture(new PictureCreateDTO(fileResult.FileUrl, fileResult.PublicId));

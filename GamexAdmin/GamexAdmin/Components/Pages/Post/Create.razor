@@ -157,7 +157,7 @@
                 }
 
                 // var formFile = new FormFile(file.OpenReadStream(file.Size), 0, file.Size, file.Name, file.Name);
-                var fileResult = await RepositoryServiceManager.FileStorageService.SaveFile(file, "post-picture");
+                var fileResult = await RepositoryServiceManager.FileStorageService.SaveFile(file, AppConstant.PostPictureTag);
                 if (fileResult is not null)
                 {
                     var pictureFile = await RepositoryServiceManager.PictureService.CreatePicture(new PictureCreateDTO(fileResult.FileUrl, fileResult.PublicId));

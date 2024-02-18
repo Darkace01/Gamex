@@ -3,6 +3,7 @@
 public class UserTournament
 {
     public string UserId { get; set; } = string.Empty;
+    public string CreatorId { get; set; } = string.Empty;
     public ApplicationUser User { get; set; } = null!;
     public Guid TournamentId { get; set; }
     public Tournament Tournament { get; set; } = null!;
