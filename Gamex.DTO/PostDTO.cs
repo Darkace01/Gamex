@@ -11,6 +11,7 @@ public class PostDTO
     public Guid? PictureId { get; set; }
     public string PictureUrl { get; set; } = string.Empty;
     public string PicturePublicId { get; set; } = string.Empty;
+    public DateTime DateCreated { get; set; }
     public UserProfileDTO User { get; set; } = new();
     public IEnumerable<CommentDTO> Comment { get; set; }
     public IEnumerable<TagDTO> Tag { get; set; }
@@ -19,7 +20,7 @@ public class PostDTO
     {
     }
 
-    public PostDTO(Guid id, string title, string content, bool? isArchived,Guid? pictureId, string pictureUrl, string picturePublicId, UserProfileDTO user, IEnumerable<CommentDTO> comment, IEnumerable<TagDTO> tag)
+    public PostDTO(Guid id, string title, string content, bool? isArchived,Guid? pictureId, string pictureUrl, string picturePublicId, UserProfileDTO user, IEnumerable<CommentDTO> comment, IEnumerable<TagDTO> tag,DateTime dateCreated)
     {
         Id = id;
         Title = title;
@@ -31,6 +32,7 @@ public class PostDTO
         User = user;
         Comment = comment;
         Tag = tag;
+        DateCreated = dateCreated;
     }
 }
 

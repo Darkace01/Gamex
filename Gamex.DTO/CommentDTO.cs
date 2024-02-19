@@ -8,12 +8,13 @@ public class CommentDTO
     public bool? IsArchived { get; set; } = false;
     public UserProfileDTO User { get; set; } = new();
     public Guid PostId { get; set; }
+    public DateTime DateCreated { get; set; }
 
     public CommentDTO()
     {
     }
 
-    public CommentDTO(Guid id, string title, string content, bool? isArchived, UserProfileDTO user, Guid postId)
+    public CommentDTO(Guid id, string title, string content, bool? isArchived, UserProfileDTO user, Guid postId,DateTime dateCreated)
     {
         Id = id;
         Title = title;
@@ -21,6 +22,7 @@ public class CommentDTO
         IsArchived = isArchived;
         User = user;
         PostId = postId;
+        DateCreated = dateCreated;
     }
 }
 

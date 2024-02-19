@@ -45,7 +45,8 @@ public class CommentService : ICommentService
                                          PhoneNumber = cup.CommentUser.User.PhoneNumber,
                                          ProfilePicturePublicId = picture == null ? "" : picture.PublicId,
                                          ProfilePictureUrl = picture == null ? "" : picture.FileUrl
-                                     }
+                                     },
+                                     DateCreated = cup.CommentUser.Comment.DateCreated
                                  });
         return comments;
     }
