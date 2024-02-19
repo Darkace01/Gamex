@@ -20,16 +20,16 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
 
         if (!string.IsNullOrEmpty(categoryNames))
         {
-            var categoryNamesList = categoryNames.Split(',').ToList();
-            if (categoryNamesList.Any())
+            var categoryNamesList = categoryNames.Split(',').Select(x => x.ToLower()).ToList();
+            if (categoryNamesList.Count != 0)
             {
-                tournaments = tournaments.Where(t => t.Categories != null && t.Categories.Any(x => categoryNamesList.Contains(x.Name)));
+                tournaments = tournaments.Where(t => t.Categories.Any() && t.Categories.Any(x => categoryNamesList.Contains(x.Name.ToLower())));
             }
         }
 
         if (!string.IsNullOrEmpty(s))
             tournaments = tournaments.Where(t => t.Name.Contains(s) || t.Description.Contains(s) || t.Location.Contains(s) || t.Rules.Contains(s) ||
-                                                            (t.Categories != null && t.Categories.Any(x => x.Name.Contains(s))));
+                                                            (t.Categories.Any() && t.Categories.Any(x => x.Name.Contains(s))));
 
         tournaments = tournaments.Skip(skip).Take(take);
 
