@@ -152,6 +152,7 @@
 
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
     {
+        errorMessage = "";
         try
         {
             if (IsLoading == true) return;
@@ -195,6 +196,7 @@
     }
     private async Task HandleCoverFileUpload(InputFileChangeEventArgs e)
     {
+        errorMessage = "";
         try
         {
             if (IsLoading == true) return;
@@ -239,6 +241,7 @@
 
     private async Task HandleSubmit()
     {
+        errorMessage = "";
         var currentUser = await GetCurrentUser();
         if (Model is not null)
         {
@@ -264,6 +267,7 @@
             catch (Exception)
             {
                 errorMessage = "An error has occured, please contact your administrator for help";
+                IsLoading = false;
             }
         }
     }

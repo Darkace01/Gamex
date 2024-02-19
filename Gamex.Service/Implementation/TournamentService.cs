@@ -183,15 +183,29 @@ public class TournamentService(GamexDbContext context) : ITournamentService
         {
             Tournament? existingTournament = await _context.Tournaments
                 .Include(t => t.UserTournaments)
-                .FirstOrDefaultAsync(t => t.Id == tournament.Id) ?? throw new Exception("Tournament not found");
+                .Include(t => t.Categories)
+                .Include(t => t.Picture)
+                .Include(t => t.CoverPicture)
+                .FirstOrDefaultAsync(t => t.Id == tournament.Id);
+
+            if (existingTournament is null)
+            {
+                throw new Exception("Tournament not found");
+            }
+
             var adminRoleId = _context.Roles.AsNoTracking().FirstOrDefault(r => r.Name == AppConstant.AdminUserRole)?.Id;
             List<string> adminUsers = [];
             if (!string.IsNullOrWhiteSpace(adminRoleId))
             {
                 adminUsers = _context.UserRoles.AsNoTracking().Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
             }
-            if (!existingTournament.UserTournaments.Any(ut => ut.CreatorId != user.Id || adminUsers.Any(x => x == user.Id)))
+
+            bool isAuthorized = existingTournament.UserTournaments.Any(ut => ut.CreatorId != user.Id || adminUsers.Any(x => x == user.Id));
+            if (!isAuthorized)
+            {
                 throw new Exception("You are not authorized to update this tournament");
+            }
+
             existingTournament.Name = tournament.Name;
             existingTournament.Description = tournament.Description;
             existingTournament.IsFeatured = tournament.IsFeatured;
@@ -201,17 +215,27 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             existingTournament.Time = tournament.Time;
             existingTournament.EntryFee = tournament.EntryFee;
             existingTournament.Rules = tournament.Rules;
-            if (tournament.PictureId.HasValue && tournament.PictureId != tournament.PictureId)
+
+            if (tournament.PictureId.HasValue && existingTournament.PictureId != tournament.PictureId)
             {
                 existingTournament.PictureId = tournament.PictureId;
             }
-            if (tournament.CoverPictureId.HasValue && tournament.CoverPictureId != tournament.CoverPictureId)
+
+            if (tournament.CoverPictureId.HasValue && existingTournament.CoverPictureId != tournament.CoverPictureId)
             {
                 existingTournament.CoverPictureId = tournament.CoverPictureId;
             }
+
             if (tournament.CategoryIds != null)
-                existingTournament.Categories = _context.TournamentCategories.Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList();
-            _context.Tournaments.Update(existingTournament);
+            {
+                var categoryList = _context.TournamentCategories.AsNoTracking().Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList();
+                if (categoryList.Count > 0)
+                {
+                    existingTournament.Categories.Clear();
+                    existingTournament.Categories?.AddRange(categoryList);
+                }
+            }
+
             await _context.SaveChangesAsync();
         }
         catch (Exception)
