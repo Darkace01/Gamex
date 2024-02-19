@@ -40,10 +40,15 @@
                     <div class="mb-3">
                         <label for="categories" class="form-label">Categories</label>
                         <InputSelect @bind-Value="@CategoryId" class="form-select" multiple="true" disabled="@IsLoading">
-                            @foreach (var category in Categories)
+                            @foreach (var category in Categories.Where(x => Model.CategoryIds.Any(y => y == x.Id)))
                             {
-                                var selected = Model.CategoryIds.Any(x => x == category.Id) ? "selected" : "";
-                                <option value="@category.Id" @selected>@category.Name</option>
+                                @* var selected = Model.CategoryIds.Any(x => x == category.Id) ? "selected" : ""; *@
+                                <option value="@category.Id" selected>@category.Name</option>
+                            }
+                            @foreach (var category in Categories.Where(x => !Model.CategoryIds.Any(y => y == x.Id)))
+                            {
+                                @* var selected = Model.CategoryIds.Any(x => x == category.Id) ? "selected" : ""; *@
+                                <option value="@category.Id">@category.Name</option>
                             }
                         </InputSelect>
                         <ValidationMessage For="@(() =>CategoryId)" class="text-danger" />
@@ -187,6 +192,7 @@
 
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
     {
+        errorMessage = "";
         IsLoading = true;
         try
         {
@@ -230,6 +236,7 @@
 
     private async Task HandleCoverFileUpload(InputFileChangeEventArgs e)
     {
+        errorMessage = "";
         IsLoading = true;
         try
         {
@@ -273,28 +280,37 @@
 
     private async Task HandleSubmit()
     {
-        if (IsLoading == true) return;
-        IsLoading = true;
-        var currentUser = await GetCurrentUser();
-        if (Model is not null)
+        errorMessage = "";
+        try
         {
-            var startDateStr = Model.StartDateForm.HasValue ? Model.StartDateForm.Value.ToString("dd/MM/yyyy") : "";
-            var endDateStr = Model.EndDateForm.HasValue ? Model.EndDateForm.Value.ToString("dd/MM/yyyy") : "";
-
-            Model.StartDateString = startDateStr;
-            Model.EndDateString = endDateStr;
-
-            if (!string.IsNullOrWhiteSpace(CategoryId))
+            if (IsLoading == true) return;
+            IsLoading = true;
+            var currentUser = await GetCurrentUser();
+            if (Model is not null)
             {
-                _ = Guid.TryParse(CategoryId, out Guid categoryId);
-                Model!.CategoryIds = new List<Guid> { categoryId };
+                var startDateStr = Model.StartDateForm.HasValue ? Model.StartDateForm.Value.ToString("dd/MM/yyyy") : "";
+                var endDateStr = Model.EndDateForm.HasValue ? Model.EndDateForm.Value.ToString("dd/MM/yyyy") : "";
+
+                Model.StartDateString = startDateStr;
+                Model.EndDateString = endDateStr;
+
+                if (!string.IsNullOrWhiteSpace(CategoryId))
+                {
+                    _ = Guid.TryParse(CategoryId, out Guid categoryId);
+                    Model!.CategoryIds = new List<Guid> { categoryId };
+                }
+                // _ = Guid.TryParse(Id, out Guid tournamentId);
+                // Model.Id = tournamentId;
+                await RepositoryServiceManager.TournamentService.UpdateTournament(Model, currentUser);
+                NavigationManager.NavigateTo("/tournaments");
             }
-            // _ = Guid.TryParse(Id, out Guid tournamentId);
-            // Model.Id = tournamentId;
-            await RepositoryServiceManager.TournamentService.UpdateTournament(Model, currentUser);
-            NavigationManager.NavigateTo("/tournaments");
+            IsLoading = false;
         }
-        IsLoading = false;
+        catch (Exception)
+        {
+            errorMessage = "An error occured, please contact your administrator.";
+            IsLoading = false;
+        }
     }
 
     private async Task<ApplicationUser> GetCurrentUser()
