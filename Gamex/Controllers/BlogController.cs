@@ -17,7 +17,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     public IActionResult GetPosts([FromQuery] IEnumerable<string> TagIds)
     {
         var posts = _repo.PostService.GetAllPosts();
-        if (TagIds.Count() > 0)
+        if (TagIds.Any())
         {
             TagIds = TagIds.Select(t => t.ToLower().ToString());
             posts = posts.Where(p => p.Tag.Any(t => TagIds.Contains(t.Name.ToLower().ToString())));
