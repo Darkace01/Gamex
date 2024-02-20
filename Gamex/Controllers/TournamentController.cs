@@ -12,8 +12,8 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(ApiResponse<PaginatedTournamentDTO>), StatusCodes.Status200OK)]
-    public IActionResult GetTournaments([FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "", [FromQuery] string categoryNames = "")
+    [ProducesResponseType(typeof(ApiResponse<PaginationDTO<TournamentDTO>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetTournaments([FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "", [FromQuery] string categoryNames = "", CancellationToken cancellationToken = default)
     {
         var tournaments = _repositoryServiceManager.TournamentService.GetAllTournaments();
         var totalNumber = tournaments.Count();
@@ -31,17 +31,10 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
             tournaments = tournaments.Where(t => t.Name.Contains(s) || t.Description.Contains(s) || t.Location.Contains(s) || t.Rules.Contains(s) ||
                                                             (t.Categories.Any() && t.Categories.Any(x => x.Name.Contains(s))));
 
-        tournaments = tournaments.Skip(skip).Take(take);
+        var tournamentList = await tournaments.Skip(skip).Take(take).ToListAsync(cancellationToken);
+        PaginationDTO<TournamentDTO> paginatedTournament = new(tournamentList, Math.Ceiling((decimal)totalNumber / take), skip, take, totalNumber);
 
-        var paginationMetadata = new PaginatedTournamentDTO
-        {
-            TotalCount = totalNumber,
-            PageSize = take,
-            CurrentPage = skip,
-            TotalPages = Math.Ceiling((decimal)totalNumber / take),
-            Tournaments = tournaments
-        };
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginatedTournamentDTO>(paginationMetadata));
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<TournamentDTO>>(paginatedTournament));
     }
 
     [HttpGet("{id}")]

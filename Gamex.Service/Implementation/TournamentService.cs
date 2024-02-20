@@ -177,7 +177,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     /// <param name="tournament"></param>
     /// <param name="user"></param>
     /// <returns></returns>
-    public async Task UpdateTournament(TournamentUpdateDTO tournament, ApplicationUser user)
+    public async Task UpdateTournament(TournamentUpdateDTO tournament, ApplicationUser user, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -186,7 +186,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 .Include(t => t.Categories)
                 .Include(t => t.Picture)
                 .Include(t => t.CoverPicture)
-                .FirstOrDefaultAsync(t => t.Id == tournament.Id);
+                .FirstOrDefaultAsync(t => t.Id == tournament.Id,cancellationToken);
 
             if (existingTournament is null)
             {
@@ -197,7 +197,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             List<string> adminUsers = [];
             if (!string.IsNullOrWhiteSpace(adminRoleId))
             {
-                adminUsers = _context.UserRoles.AsNoTracking().Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+                adminUsers = await _context.UserRoles.AsNoTracking().Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToListAsync(cancellationToken);
             }
 
             bool isAuthorized = existingTournament.UserTournaments.Any(ut => ut.CreatorId != user.Id || adminUsers.Any(x => x == user.Id));
@@ -236,7 +236,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 }
             }
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
         catch (Exception)
         {

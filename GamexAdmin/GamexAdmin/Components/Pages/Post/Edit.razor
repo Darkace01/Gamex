@@ -97,7 +97,7 @@
     {
         Model ??= new();
         _ = Guid.TryParse(Id, out Guid postId);
-        var post = RepositoryServiceManager.PostService.GetPost(postId);
+        var post = await RepositoryServiceManager.PostService.GetPost(postId);
         if (post is not null)
         {
             Model = new PostUpdateDTO

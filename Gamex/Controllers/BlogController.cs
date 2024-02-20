@@ -13,25 +13,26 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [HttpGet("posts")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(ApiResponse<IEnumerable<PostDTO>>), StatusCodes.Status200OK)]
-    public IActionResult GetPosts([FromQuery] IEnumerable<string> TagIds)
+    [ProducesResponseType(typeof(ApiResponse<PaginationDTO<PostDTO>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPosts([FromQuery] IEnumerable<string> TagIds, [FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "", CancellationToken cancellationToken = default)
     {
         var posts = _repo.PostService.GetAllPosts();
-        if (TagIds.Any())
-        {
-            TagIds = TagIds.Select(t => t.ToLower().ToString());
-            posts = posts.Where(p => p.Tag.Any(t => TagIds.Contains(t.Name.ToLower().ToString())));
-        }
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<PostDTO>>(posts));
+        var totalNumber = await posts.CountAsync(cancellationToken);
+
+        var postList = await _repo.PostService.GetAllPosts(TagIds, take, skip, s).ToListAsync(cancellationToken);
+
+        PaginationDTO<PostDTO> pagination = new(postList, Math.Ceiling((decimal)posts.Count() / take), skip, take, totalNumber);
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<PostDTO>>(pagination));
+
     }
 
     [HttpGet("posts/{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<PostDTO>), StatusCodes.Status200OK)]
-    public IActionResult GetPost(Guid id)
+    public async Task<IActionResult> GetPost(Guid id, CancellationToken cancellationToken = default)
     {
-        var post = _repo.PostService.GetPost(id);
+        var post = await _repo.PostService.GetPost(id, cancellationToken);
         if (post == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<PostDTO>(404, "Post not found"));
 
@@ -43,7 +44,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status201Created)]
-    public async Task<IActionResult> CreatePost([FromForm] PostCreateDTO postCreateDTO)
+    public async Task<IActionResult> CreatePost([FromForm] PostCreateDTO postCreateDTO, CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid)
             return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, "Invalid model object"));
@@ -52,7 +53,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
         if (user == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        if(postCreateDTO.Picture is not null)
+        if (postCreateDTO.Picture is not null)
         {
             var uploadResult = await _repo.FileStorageService.SaveFile(postCreateDTO.Picture, AppConstant.PostPictureTag);
             if (uploadResult is not null)
@@ -62,7 +63,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
             }
         }
 
-        await _repo.PostService.CreatePost(postCreateDTO, user);
+        await _repo.PostService.CreatePost(postCreateDTO, user, cancellationToken);
 
         return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>("Post Successfully Created"));
     }
@@ -72,7 +73,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> UpdatePost(Guid id, [FromBody] PostUpdateDTO postUpdateDTO)
+    public async Task<IActionResult> UpdatePost(Guid id, [FromBody] PostUpdateDTO postUpdateDTO, CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid)
             return BadRequest(new ApiResponse<string>(400, "Invalid model object"));
@@ -81,7 +82,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
         if (user == null)
             return Unauthorized(new ApiResponse<string>(401, "Unauthorized"));
 
-        var postToUpdate = _repo.PostService.GetPost(id);
+        var postToUpdate = await _repo.PostService.GetPost(id, cancellationToken);
         if (postToUpdate == null)
             return NotFound(new ApiResponse<string>(404, "Post not found"));
 
@@ -112,7 +113,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
             }
         }
 
-        await _repo.PostService.UpdatePost(postUpdateDTO, user);
+        await _repo.PostService.UpdatePost(postUpdateDTO, user, cancellationToken);
 
         return StatusCode(StatusCodes.Status200OK, new ApiResponse<string>("Post Successfully Updated"));
     }
@@ -122,20 +123,20 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> DeletePost(Guid id)
+    public async Task<IActionResult> DeletePost(Guid id, CancellationToken cancellationToken = default)
     {
         var user = await GetUser();
         if (user == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        var postToDelete = _repo.PostService.GetPost(id);
+        var postToDelete = await _repo.PostService.GetPost(id, cancellationToken);
         if (postToDelete == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Post not found"));
 
         if (postToDelete.User.Email != user.Email)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        await _repo.PostService.DeletePost(id, user);
+        await _repo.PostService.DeletePost(id, user, cancellationToken);
 
         return StatusCode(StatusCodes.Status204NoContent, new ApiResponse<string>("Post Successfully Deleted"));
     }
@@ -143,30 +144,38 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [HttpGet("posts/{id}/comments")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(ApiResponse<IEnumerable<CommentDTO>>), StatusCodes.Status200OK)]
-    public IActionResult GetPostComments(Guid id)
+    [ProducesResponseType(typeof(ApiResponse<PaginationDTO<CommentDTO>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPostComments(Guid id, [FromQuery] int take = 10, [FromQuery] int skip = 0, CancellationToken cancellationToken = default)
     {
         var comments = _repo.CommentService.GetAllCommentByPostId(id);
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<CommentDTO>>(comments));
+        var totalNumber = await comments.CountAsync(cancellationToken);
+
+        var commentList = await comments.Skip(skip).Take(take).OrderByDescending(x => x.DateCreated).ToListAsync(cancellationToken);
+        PaginationDTO<CommentDTO> pagination = new(commentList, Math.Ceiling((decimal)totalNumber / take), skip, take, totalNumber);
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<CommentDTO>>(pagination));
     }
 
     [HttpGet("comments")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(typeof(ApiResponse<IEnumerable<CommentDTO>>), StatusCodes.Status200OK)]
-    public IActionResult GetComments()
+    [ProducesResponseType(typeof(ApiResponse<PaginationDTO<CommentDTO>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetComments([FromQuery] int take = 10, [FromQuery] int skip = 0, CancellationToken cancellationToken = default)
     {
         var comments = _repo.CommentService.GetAllComments();
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<CommentDTO>>(comments));
+        var totalNumber = await comments.CountAsync(cancellationToken);
+
+        var commentList = await comments.Skip(skip).Take(take).OrderByDescending(x => x.DateCreated).ToListAsync(cancellationToken);
+        PaginationDTO<CommentDTO> pagination = new(commentList, Math.Ceiling((decimal)totalNumber / take), skip, take, totalNumber);
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<CommentDTO>>(pagination));
     }
 
     [HttpGet("comments/{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<CommentDTO>), StatusCodes.Status200OK)]
-    public IActionResult GetComment(Guid id)
+    public async Task<IActionResult> GetComment(Guid id, CancellationToken cancellationToken = default)
     {
-        var comment = _repo.CommentService.GetCommentById(id);
+        var comment = await _repo.CommentService.GetCommentById(id, cancellationToken);
         if (comment == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<CommentDTO>(404, "Comment not found"));
 
@@ -178,7 +187,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status201Created)]
-    public async Task<IActionResult> CreateComment([FromBody] CommentCreateDTO commentCreateDTO)
+    public async Task<IActionResult> CreateComment([FromBody] CommentCreateDTO commentCreateDTO, CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid)
             return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, "Invalid model object"));
@@ -187,7 +196,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
         if (user == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        await _repo.CommentService.CreateComment(commentCreateDTO, user.Id);
+        await _repo.CommentService.CreateComment(commentCreateDTO, user.Id, cancellationToken);
 
         return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>("Comment Successfully Created"));
     }
@@ -197,7 +206,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> UpdateComment(Guid id, [FromBody] CommentUpdateDTO commentUpdateDTO)
+    public async Task<IActionResult> UpdateComment(Guid id, [FromBody] CommentUpdateDTO commentUpdateDTO, CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid)
             return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, "Invalid model object"));
@@ -206,14 +215,14 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
         if (user == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        var commentToUpdate = _repo.CommentService.GetCommentById(id);
+        var commentToUpdate = await _repo.CommentService.GetCommentById(id, cancellationToken);
         if (commentToUpdate == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Comment not found"));
 
         if (commentToUpdate.User.Email != user.Email)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        await _repo.CommentService.UpdateComment(commentUpdateDTO);
+        await _repo.CommentService.UpdateComment(commentUpdateDTO, cancellationToken);
 
         return StatusCode(StatusCodes.Status204NoContent, new ApiResponse<string>("Comment Successfully Updated"));
     }
@@ -223,20 +232,20 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> DeleteComment(Guid id)
+    public async Task<IActionResult> DeleteComment(Guid id, CancellationToken cancellationToken = default)
     {
         var user = await GetUser();
         if (user == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        var commentToDelete = _repo.CommentService.GetCommentById(id);
+        var commentToDelete = await _repo.CommentService.GetCommentById(id, cancellationToken);
         if (commentToDelete == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Comment not found"));
 
         if (commentToDelete.User.Email != user.Email)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        await _repo.CommentService.DeleteComment(id);
+        await _repo.CommentService.DeleteComment(id, cancellationToken);
 
         return StatusCode(StatusCodes.Status204NoContent, new ApiResponse<string>("Comment Successfully Deleted"));
     }
