@@ -8,7 +8,10 @@ public class PostService(GamexDbContext context) : IPostService
 
     public async Task<PostDTO?> GetPost(Guid postId, CancellationToken cancellationToken = default)
     {
-        return await GetAllPosts().FirstOrDefaultAsync(p => p.Id == postId, cancellationToken);
+        // TODO: Remove comment for single post
+        var post = await _context.Posts.Include(x => x.User).Include(x => x.Picture).Include(x => x.PostTags).ThenInclude(x => x.Tag).Include(x => x.Comments).ThenInclude(x => x.User).AsNoTracking().FirstOrDefaultAsync(x => x.Id == postId, cancellationToken);
+        return post != null ? MapPostToDTO(post) : null;
+        
     }
 
     public IQueryable<PostDTO> GetAllPosts()
