@@ -10,7 +10,7 @@ public class PostService(GamexDbContext context) : IPostService
     {
         // TODO: Remove comment for single post
         var post = await _context.Posts.Include(x => x.User).Include(x => x.Picture).Include(x => x.PostTags).ThenInclude(x => x.Tag).Include(x => x.Comments).ThenInclude(x => x.User).AsNoTracking().FirstOrDefaultAsync(x => x.Id == postId, cancellationToken);
-        return post != null ? MapPostToDTO(post) : null;
+        return post is null ? MapPostToDTO(post) : null;
         
     }
 
