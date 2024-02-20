@@ -12,7 +12,7 @@ public class CommentServiceTest:TestBase
         var commentToGet = dbContext.Comments.FirstOrDefault();
 
         // Act
-        var comment = commentService.GetCommentById(commentToGet.Id);
+        var comment = await commentService.GetCommentById(commentToGet.Id);
 
         // Assert
         Assert.NotNull(comment);

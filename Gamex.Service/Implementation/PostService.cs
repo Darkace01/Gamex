@@ -1,13 +1,14 @@
-﻿namespace Gamex.Service.Implementation;
+﻿using System.Threading;
+
+namespace Gamex.Service.Implementation;
 
 public class PostService(GamexDbContext context) : IPostService
 {
     private readonly GamexDbContext _context = context;
 
-    public PostDTO? GetPost(Guid postId)
+    public async Task<PostDTO?> GetPost(Guid postId, CancellationToken cancellationToken = default)
     {
-        var post = _context.Posts.Include(x => x.User).Include(x => x.Picture).Include(x => x.PostTags).ThenInclude(x => x.Tag).Include(x => x.Comments).ThenInclude(x => x.User).AsNoTracking().FirstOrDefault(p => p.Id == postId);
-        return post != null ? MapPostToDTO(post) : null;
+        return await GetAllPosts().FirstOrDefaultAsync(p => p.Id == postId, cancellationToken);
     }
 
     public IQueryable<PostDTO> GetAllPosts()
@@ -15,14 +16,28 @@ public class PostService(GamexDbContext context) : IPostService
         var posts = _context.Posts.Include(x => x.User).Include(x => x.Picture).Include(x => x.PostTags).ThenInclude(x => x.Tag).Include(x => x.Comments).ThenInclude(x => x.User).AsNoTracking();
         return posts.Select(p => MapPostToDTO(p));
     }
+    public IQueryable<PostDTO> GetAllPosts(IEnumerable<string> TagIds, int take = 10, int skip = 0, string s = "")
+    {
+        var posts = _context.Posts.Include(x => x.User).Include(x => x.Picture).Include(x => x.PostTags).ThenInclude(x => x.Tag).Include(x => x.Comments).ThenInclude(x => x.User).AsNoTracking();
+        if (TagIds.Any())
+        {
+            TagIds = TagIds.Select(t => t.ToLower().ToString());
+            posts = posts.Where(p => p.PostTags.Any(t => TagIds.Contains(t.Tag.Name.ToLower().ToString())));
+        }
+        if (!string.IsNullOrWhiteSpace(s))
+        {
+            posts = posts.Where(p => p.Title.Contains(s, StringComparison.CurrentCultureIgnoreCase) || p.Content.Contains(s, StringComparison.CurrentCultureIgnoreCase));
+        }
+        return posts.OrderByDescending(p => p.DateCreated).Skip(skip).Take(take).Select(p => MapPostToDTO(p));
+    }
 
-    public async Task<bool> CreatePost(PostCreateDTO postCreateDTO, ApplicationUser user)
+    public async Task<bool> CreatePost(PostCreateDTO postCreateDTO, ApplicationUser user, CancellationToken cancellationToken = default)
     {
         var executionStrategy = _context.Database.CreateExecutionStrategy();
         await executionStrategy.Execute(
             async () =>
             {
-                using var transaction = _context.Database.BeginTransaction();
+                using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
                 bool hasSaved = false;
                 try
                 {
@@ -37,7 +52,7 @@ public class PostService(GamexDbContext context) : IPostService
 
                     };
                     await _context.Posts.AddAsync(post);
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync(cancellationToken);
                     hasSaved = true;
 
                     if (postCreateDTO.TagIds is not null)
@@ -49,16 +64,16 @@ public class PostService(GamexDbContext context) : IPostService
                                 TagId = t.Id
                             }).ToListAsync();
                         await _context.PostTags.AddRangeAsync(postTag);
-                        await _context.SaveChangesAsync();
+                        await _context.SaveChangesAsync(cancellationToken);
                         hasSaved = true;
                     }
-                    await transaction.CommitAsync();
+                    await transaction.CommitAsync(cancellationToken);
                     return true;
                 }
                 catch (Exception)
                 {
                     if (hasSaved)
-                        transaction.Rollback();
+                        await transaction.RollbackAsync(cancellationToken);
                     throw;
                 }
             });
@@ -94,29 +109,29 @@ public class PostService(GamexDbContext context) : IPostService
 
     }
 
-    public async Task<bool> UpdatePost(PostUpdateDTO postUpdateDTO, ApplicationUser user)
+    public async Task<bool> UpdatePost(PostUpdateDTO postUpdateDTO, ApplicationUser user, CancellationToken cancellationToken = default)
     {
         var executionStrategy = _context.Database.CreateExecutionStrategy();
         await executionStrategy.Execute(
             async () =>
             {
-                using var transaction = _context.Database.BeginTransaction();
+                using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
                 bool hasSaved = false;
                 try
                 {
-                    var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postUpdateDTO.Id && p.UserId == user.Id);
+                    var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postUpdateDTO.Id && p.UserId == user.Id, cancellationToken);
                     if (post is not null)
                     {
                         post.Title = postUpdateDTO.Title;
                         post.Content = postUpdateDTO.Content;
                         post.DateModified = DateTime.UtcNow;
-                        await _context.SaveChangesAsync();
+                        await _context.SaveChangesAsync(cancellationToken);
                         hasSaved = true;
                         if (postUpdateDTO.TagIds is not null)
                         {
                             var postTags = await _context.PostTags.Where(pt => pt.PostId == post.Id).ToListAsync();
                             _context.PostTags.RemoveRange(postTags);
-                            await _context.SaveChangesAsync();
+                            await _context.SaveChangesAsync(cancellationToken);
 
                             var newPostTags = await _context.Tags.Where(t => postUpdateDTO.TagIds.Contains(t.Id))
                                 .Select(t => new PostTag()
@@ -124,18 +139,18 @@ public class PostService(GamexDbContext context) : IPostService
                                     PostId = post.Id,
                                     TagId = t.Id
                                 }).ToListAsync();
-                            await _context.PostTags.AddRangeAsync(newPostTags);
-                            await _context.SaveChangesAsync();
+                            await _context.PostTags.AddRangeAsync(newPostTags, cancellationToken);
+                            await _context.SaveChangesAsync(cancellationToken);
                             hasSaved = true;
                         }
-                        await transaction.CommitAsync();
+                        await transaction.CommitAsync(cancellationToken);
                         return true;
                     }
                 }
                 catch (Exception)
                 {
                     if (hasSaved)
-                        transaction.Rollback();
+                        await transaction.RollbackAsync(cancellationToken);
                     throw;
                 }
                 return false;
@@ -173,36 +188,36 @@ public class PostService(GamexDbContext context) : IPostService
         return false;
     }
 
-    public async Task<bool> DeletePost(Guid postId, ApplicationUser user)
+    public async Task<bool> DeletePost(Guid postId, ApplicationUser user, CancellationToken cancellationToken = default)
     {
-        var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postId && p.UserId == user.Id);
+        var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postId && p.UserId == user.Id, cancellationToken);
         if (post == null)
         {
             return false;
         }
         _context.Posts.Remove(post);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
-    public async Task<bool> ArchivePost(Guid postId)
+    public async Task<bool> ArchivePost(Guid postId, CancellationToken cancellationToken = default)
     {
-        var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postId);
+        var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postId, cancellationToken);
         if (post is not null)
         {
             post.IsArchived = true;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
         return true;
     }
 
-    public async Task<bool> UnArchivePost(Guid postId)
+    public async Task<bool> UnArchivePost(Guid postId, CancellationToken cancellationToken = default)
     {
-        var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postId);
+        var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postId, cancellationToken);
         if (post is not null)
         {
             post.IsArchived = false;
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(cancellationToken);
         }
         return true;
     }

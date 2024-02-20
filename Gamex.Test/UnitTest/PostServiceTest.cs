@@ -8,10 +8,10 @@ public class PostServiceTest: TestBase
         // Arrange
         var dbContext = GetSampleData(nameof(GetPost_ShouldReturnPost));
         var postService = MockPostService(dbContext);
-        var postToGet = dbContext.Posts.FirstOrDefault();
+        var postToGet = dbContext.Posts.First();
 
         // Act
-        var post = postService.GetPost(postToGet.Id);
+        var post = await postService.GetPost(postToGet.Id);
 
         // Assert
         Assert.NotNull(post);

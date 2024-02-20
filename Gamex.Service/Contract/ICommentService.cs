@@ -2,12 +2,12 @@
 {
     public interface ICommentService
     {
-        Task<bool> CreateComment(CommentCreateDTO commentCreateDTO, string userId);
-        Task<bool> DeleteComment(Guid commentId);
-        Task<bool> DeleteCommentByPostId(Guid postId);
+        Task<bool> CreateComment(CommentCreateDTO commentCreateDTO, string userId, CancellationToken cancellationToken = default);
+        Task<bool> DeleteComment(Guid commentId, CancellationToken cancellationToken = default);
+        Task<bool> DeleteCommentByPostId(Guid postId, CancellationToken cancellationToken = default);
         IQueryable<CommentDTO> GetAllCommentByPostId(Guid postId);
         IQueryable<CommentDTO> GetAllComments();
-        CommentDTO GetCommentById(Guid id);
-        Task<bool> UpdateComment(CommentUpdateDTO commentUpdateDTO);
+        Task<CommentDTO?> GetCommentById(Guid id, CancellationToken cancellationToken = default);
+        Task<bool> UpdateComment(CommentUpdateDTO commentUpdateDTO, CancellationToken cancellationToken = default);
     }
 }
