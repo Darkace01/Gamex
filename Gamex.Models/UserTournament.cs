@@ -9,6 +9,7 @@ public class UserTournament
     public Tournament Tournament { get; set; } = null!;
     public DateTime? DateJoined { get; set; } = DateTime.UtcNow;
     public decimal? Amount { get; set; }
+    public int? Point { get; set; }
     public Guid? PaymentTransactionId { get; set; }
     public PaymentTransaction? PaymentTransaction { get; set; }
 }
