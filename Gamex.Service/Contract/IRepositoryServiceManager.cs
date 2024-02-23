@@ -12,5 +12,6 @@
         IExtendedUserService ExtendedUserService { get; }
         ITournamentCategoryService TournamentCategoryService { get; }
         ITagService TagService { get; }
+        ILeaderboardService LeaderboardService { get; }
     }
 }
