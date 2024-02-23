@@ -27,7 +27,7 @@ public class ApplicationUser: IdentityUser
     /// <summary>
     /// List of tournaments user is part of
     /// </summary>
-    public List<UserTournament> UserTournaments { get; set; } = new();
+    public ICollection<UserTournament> UserTournaments { get; set; } = new List<UserTournament>();
     /// <summary>
     /// Refresh token for user
     /// </summary>
