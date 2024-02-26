@@ -34,6 +34,9 @@ jobs:
           Authentication.Google.MobileClientId: ${{ secrets.GOOGLE_MOBILE_CLIENTID }}
           ConnectionStrings.DefaultConnection: ${{ secrets.DB_CONNECTION }}
           JWT.Secret: ${{ secrets.JWT_SECRET }}
+          Paystack.SecretKey: ${{ secrets.PAYSTACK_SECRET_KEY }}
+          Paystack.PublicKey: ${{ secrets.PAYSTACK_PUBLIC_KEY }}
+      - name: Setup .NET
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
