@@ -37,7 +37,6 @@ jobs:
           Paystack.SecretKey: ${{ secrets.PAYSTACK_SECRET_KEY }}
           Paystack.PublicKey: ${{ secrets.PAYSTACK_PUBLIC_KEY }}
       - name: Setup .NET
-      - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
