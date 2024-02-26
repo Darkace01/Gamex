@@ -18,6 +18,7 @@ public class RepositoryServiceManager : IRepositoryServiceManager
     private ITagService _tagService;
     private ILeaderboardService _leaderboardService;
     private IPaymentService _paymentService;
+    private IPaystackPayment _paystackPayment;
 
     public RepositoryServiceManager(GamexDbContext context, IConfiguration config)
     {
@@ -131,6 +132,15 @@ public class RepositoryServiceManager : IRepositoryServiceManager
         {
             _paymentService ??= new PaymentService(_context);
             return _paymentService;
+        }
+    }
+
+    public IPaystackPayment PaystackPayment
+    {
+        get
+        {
+            _paystackPayment ??= new PaystackPayment(_configuration);
+            return _paystackPayment;
         }
     }
 }

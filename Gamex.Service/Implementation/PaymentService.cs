@@ -57,7 +57,7 @@ public class PaymentService(GamexDbContext context) : IPaymentService
         return null;
     }
 
-    public IQueryable<PaymentTransactionDTO> GetPaymentTransactions(string userId)
+    public IQueryable<PaymentTransactionDTO> GetPaymentTransactionsByUser(string userId)
     {
         var paymentTransactions = _context.PaymentTransactions.AsNoTracking().Where(x => x.UserId == userId);
         return paymentTransactions.Select(x => new PaymentTransactionDTO
@@ -71,18 +71,22 @@ public class PaymentService(GamexDbContext context) : IPaymentService
         });
     }
 
-    public IQueryable<PaymentTransactionDTO> GetPaymentTransactions(Guid tournamentId)
+    public async Task<PaymentTransactionDTO?> GetPaymentTransactionsByReference(string transactionReference, CancellationToken cancellationToken = default)
     {
-        var paymentTransactions = _context.PaymentTransactions.AsNoTracking().Where(x => x.TournamentId == tournamentId);
-        return paymentTransactions.Select(x => new PaymentTransactionDTO
+        var paymentTransaction = await _context.PaymentTransactions.AsNoTracking().FirstOrDefaultAsync(x => x.TransactionReference == transactionReference, cancellationToken);
+        if (paymentTransaction != null)
         {
-            Id = x.Id,
-            UserId = x.UserId,
-            TournamentId = x.TournamentId,
-            Amount = x.Amount,
-            Status = (Common.TransactionStatus)x.Status,
-            TransactionReference = x.TransactionReference
-        });
+            return new PaymentTransactionDTO
+            {
+                Id = paymentTransaction.Id,
+                UserId = paymentTransaction.UserId,
+                TournamentId = paymentTransaction.TournamentId,
+                Amount = paymentTransaction.Amount,
+                Status = (Common.TransactionStatus)paymentTransaction.Status,
+                TransactionReference = paymentTransaction.TransactionReference
+            };
+        }
+        return null;
     }
 
     public IQueryable<PaymentTransactionDTO> GetPaymentTransactions()
