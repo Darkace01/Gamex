@@ -15,6 +15,8 @@ public class RepositoryServiceManager : IRepositoryServiceManager
     private ICommentService _commentService;
     private IExtendedUserService _extendedUserService;
     private ITournamentCategoryService _tournamentCategoryService;
+    private ITagService _tagService;
+    private ILeaderboardService _leaderboardService;
 
     public RepositoryServiceManager(GamexDbContext context, IConfiguration config)
     {
@@ -101,6 +103,24 @@ public class RepositoryServiceManager : IRepositoryServiceManager
         {
             _tournamentCategoryService ??= new TournamentCategoryService(_context);
             return _tournamentCategoryService;
+        }
+    }
+
+    public ITagService TagService
+    {
+        get
+        {
+            _tagService ??= new TagService(_context);
+            return _tagService;
+        }
+    }
+
+    public ILeaderboardService LeaderboardService
+    {
+        get
+        {
+            _leaderboardService ??= new LeaderboardService(_context);
+            return _leaderboardService;
         }
     }
 }

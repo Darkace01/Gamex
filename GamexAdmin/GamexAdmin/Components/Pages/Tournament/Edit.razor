@@ -40,10 +40,15 @@
                     <div class="mb-3">
                         <label for="categories" class="form-label">Categories</label>
                         <InputSelect @bind-Value="@CategoryId" class="form-select" multiple="true" disabled="@IsLoading">
-                            @foreach (var category in Categories)
+                            @foreach (var category in Categories.Where(x => Model.CategoryIds.Any(y => y == x.Id)))
                             {
-                                var selected = Model.CategoryIds.Any(x => x == category.Id) ? "selected" : "";
-                                <option value="@category.Id" @selected>@category.Name</option>
+                                @* var selected = Model.CategoryIds.Any(x => x == category.Id) ? "selected" : ""; *@
+                                <option value="@category.Id" selected>@category.Name</option>
+                            }
+                            @foreach (var category in Categories.Where(x => !Model.CategoryIds.Any(y => y == x.Id)))
+                            {
+                                @* var selected = Model.CategoryIds.Any(x => x == category.Id) ? "selected" : ""; *@
+                                <option value="@category.Id">@category.Name</option>
                             }
                         </InputSelect>
                         <ValidationMessage For="@(() =>CategoryId)" class="text-danger" />
@@ -92,9 +97,25 @@
                     </div>
                 </div>
                 <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <InputTextArea @bind-Value="@Model.Rules" class="form-control" autocomplete="rules" aria-required="true" placeholder="Please enter tournament rules." rows="4" disabled="@IsLoading" />
+                        <label for="rules" class="form-label">Rules</label>
+                        <ValidationMessage For="@(() => Model.Rules)" class="text-danger" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
                     <div class="mb-3">
                         <label for="file-upload" class="form-label">Featured Image</label>
                         <InputFile class="form-control" OnChange="HandleFileUpload" disabled="@IsLoading" id="file-upload" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="cover-file-upload" class="form-label">Cover Image</label>
+                        <InputFile class="form-control" OnChange="HandleCoverFileUpload" disabled="@IsLoading" id="cover-file-upload" />
                     </div>
                 </div>
             </div>
@@ -137,7 +158,7 @@
 
     private bool IsLoading { get; set; } = false;
     long maxFileSize = 1024 * 1024 * 10;
-    string[] imageFileExtension = { ".jpg", ".jpeg", ".png", ".gif" };
+    string[] imageFileExtension = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
 
     private List<TournamentCategoryDTO> Categories { get; set; } = new();
 
@@ -149,19 +170,20 @@
         if (tournament is not null)
         {
             Model = new TournamentUpdateDTO
-            {
-                Id = tournament.Id,
-                Name = tournament.Name,
-                StartDateForm = tournament.StartDate,
-                EndDateForm = tournament.EndDate,
-                Location = tournament.Location,
-                Description = tournament.Description,
-                Rules = tournament.Rules,
-                IsFeatured = tournament.IsFeatured,
-                EntryFee = tournament.EntryFee,
-                PictureId = tournament.PictureId,
-                CategoryIds = tournament.Categories?.Select(x => (Guid)x.Id).ToList()
-            };
+                {
+                    Id = tournament.Id,
+                    Name = tournament.Name,
+                    StartDateForm = tournament.StartDate,
+                    EndDateForm = tournament.EndDate,
+                    Location = tournament.Location,
+                    Description = tournament.Description,
+                    Rules = tournament.Rules,
+                    IsFeatured = tournament.IsFeatured,
+                    EntryFee = tournament.EntryFee,
+                    PictureId = tournament.PictureId,
+                    CoverPictureId = tournament.CoverPictureId,
+                    CategoryIds = tournament.Categories?.Select(x => (Guid)x.Id).ToList()
+                };
 
             PublicId = tournament.PicturePublicId ?? "";
         }
@@ -170,6 +192,7 @@
 
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
     {
+        errorMessage = "";
         IsLoading = true;
         try
         {
@@ -194,7 +217,7 @@
                 }
                 var tournamentId = Guid.Parse(Id);
 
-                var fileResult = await RepositoryServiceManager.FileStorageService.SaveFile(file, "tournament-picture");
+                var fileResult = await RepositoryServiceManager.FileStorageService.SaveFile(file, AppConstant.TournamentPictureTag);
                 if (fileResult is not null)
                 {
                     var pictureFile = await RepositoryServiceManager.PictureService.CreatePicture(new PictureCreateDTO(fileResult.FileUrl, fileResult.PublicId));
@@ -211,30 +234,83 @@
 
     }
 
+    private async Task HandleCoverFileUpload(InputFileChangeEventArgs e)
+    {
+        errorMessage = "";
+        IsLoading = true;
+        try
+        {
+            var file = e.File;
+            if (file is not null)
+            {
+                var (isValid, error) = CommonHelpers.CheckFileSize(file, maxFileSize);
+
+                if (!isValid)
+                {
+                    errorMessage = error;
+                    IsLoading = false;
+                    return;
+                }
+
+                var (isImage, errorImage) = CommonHelpers.CheckFileExtension(file, imageFileExtension);
+                if (!isImage)
+                {
+                    errorMessage = errorImage;
+                    IsLoading = false;
+                    return;
+                }
+                var tournamentId = Guid.Parse(Id);
+
+                var fileResult = await RepositoryServiceManager.FileStorageService.SaveFile(file, AppConstant.TournamentCoverPictureTag);
+                if (fileResult is not null)
+                {
+                    var pictureFile = await RepositoryServiceManager.PictureService.CreatePicture(new PictureCreateDTO(fileResult.FileUrl, fileResult.PublicId));
+                    Model!.CoverPictureId = pictureFile.Id;
+                }
+            }
+            IsLoading = false;
+        }
+        catch (Exception ex)
+        {
+            IsLoading = false;
+            errorMessage = ex?.Message;
+        }
+
+    }
+
     private async Task HandleSubmit()
     {
-        if (IsLoading == true) return;
-        IsLoading = true;
-        var currentUser = await GetCurrentUser();
-        if (Model is not null)
+        errorMessage = "";
+        try
         {
-            var startDateStr = Model.StartDateForm.HasValue ? Model.StartDateForm.Value.ToString("dd/MM/yyyy") : "";
-            var endDateStr = Model.EndDateForm.HasValue ? Model.EndDateForm.Value.ToString("dd/MM/yyyy") : "";
-
-            Model.StartDateString = startDateStr;
-            Model.EndDateString = endDateStr;
-
-            if (!string.IsNullOrWhiteSpace(CategoryId))
+            if (IsLoading == true) return;
+            IsLoading = true;
+            var currentUser = await GetCurrentUser();
+            if (Model is not null)
             {
-                _ = Guid.TryParse(CategoryId, out Guid categoryId);
-                Model!.CategoryIds = new List<Guid> { categoryId };
+                var startDateStr = Model.StartDateForm.HasValue ? Model.StartDateForm.Value.ToString("dd/MM/yyyy") : "";
+                var endDateStr = Model.EndDateForm.HasValue ? Model.EndDateForm.Value.ToString("dd/MM/yyyy") : "";
+
+                Model.StartDateString = startDateStr;
+                Model.EndDateString = endDateStr;
+
+                if (!string.IsNullOrWhiteSpace(CategoryId))
+                {
+                    _ = Guid.TryParse(CategoryId, out Guid categoryId);
+                    Model!.CategoryIds = new List<Guid> { categoryId };
+                }
+                // _ = Guid.TryParse(Id, out Guid tournamentId);
+                // Model.Id = tournamentId;
+                await RepositoryServiceManager.TournamentService.UpdateTournament(Model, currentUser);
+                NavigationManager.NavigateTo("/tournaments");
             }
-            // _ = Guid.TryParse(Id, out Guid tournamentId);
-            // Model.Id = tournamentId;
-            await RepositoryServiceManager.TournamentService.UpdateTournament(Model, currentUser);
-            NavigationManager.NavigateTo("/tournaments");
+            IsLoading = false;
         }
-        IsLoading = false;
+        catch (Exception)
+        {
+            errorMessage = "An error occured, please contact your administrator.";
+            IsLoading = false;
+        }
     }
 
     private async Task<ApplicationUser> GetCurrentUser()

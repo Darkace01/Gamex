@@ -11,32 +11,9 @@ public class CommentService : ICommentService
         _context = context;
     }
 
-    public async Task<CommentDTO> GetCommentById(Guid id)
+    public async Task<CommentDTO?> GetCommentById(Guid id, CancellationToken cancellationToken = default)
     {
-        Comment? comment = await _context.Comments
-            .AsNoTracking()
-            .Include(c => c.User)
-            .FirstOrDefaultAsync(c => c.Id == id);
-        if (comment == null)
-            return null;
-
-        return new CommentDTO
-        {
-            Id = comment.Id,
-            Content = comment.Content,
-            Title = comment.Title,
-            PostId = comment.PostId,
-            User = new UserProfileDTO
-            {
-                FirstName = comment.User.FirstName,
-                LastName = comment.User.LastName,
-                DisplayName = comment.User.DisplayName,
-                Email = comment.User.Email,
-                PhoneNumber = comment.User.PhoneNumber,
-                ProfilePicturePublicId = comment.User.Picture?.PublicId,
-                ProfilePictureUrl = comment.User.Picture?.FileUrl
-            }
-        };
+        return await GetAllComments().FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 
     public IQueryable<CommentDTO> GetAllComments()
@@ -68,12 +45,13 @@ public class CommentService : ICommentService
                                          PhoneNumber = cup.CommentUser.User.PhoneNumber,
                                          ProfilePicturePublicId = picture == null ? "" : picture.PublicId,
                                          ProfilePictureUrl = picture == null ? "" : picture.FileUrl
-                                     }
+                                     },
+                                     DateCreated = cup.CommentUser.Comment.DateCreated
                                  });
         return comments;
     }
 
-    public async Task<bool> CreateComment(CommentCreateDTO commentCreateDTO, string userId)
+    public async Task<bool> CreateComment(CommentCreateDTO commentCreateDTO, string userId, CancellationToken cancellationToken = default)
     {
         var comment = new Comment()
         {
@@ -83,11 +61,11 @@ public class CommentService : ICommentService
             UserId = userId
         };
         await _context.Comments.AddAsync(comment);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
-    public async Task<bool> UpdateComment(CommentUpdateDTO commentUpdateDTO)
+    public async Task<bool> UpdateComment(CommentUpdateDTO commentUpdateDTO, CancellationToken cancellationToken = default)
     {
         var comment = await _context.Comments.FirstOrDefaultAsync(c => c.Id == commentUpdateDTO.Id);
         if (comment == null)
@@ -96,11 +74,11 @@ public class CommentService : ICommentService
         }
         comment.Content = commentUpdateDTO.Content;
         comment.Title = commentUpdateDTO.Title;
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
-    public async Task<bool> DeleteComment(Guid commentId)
+    public async Task<bool> DeleteComment(Guid commentId, CancellationToken cancellationToken = default)
     {
         var comment = await _context.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
         if (comment == null)
@@ -108,11 +86,11 @@ public class CommentService : ICommentService
             return false;
         }
         _context.Comments.Remove(comment);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
-    public async Task<bool> DeleteCommentByPostId(Guid postId)
+    public async Task<bool> DeleteCommentByPostId(Guid postId, CancellationToken cancellationToken = default)
     {
         var comments = await _context.Comments.Where(c => c.PostId == postId).ToListAsync();
         if (comments == null)
@@ -120,7 +98,7 @@ public class CommentService : ICommentService
             return false;
         }
         _context.Comments.RemoveRange(comments);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 

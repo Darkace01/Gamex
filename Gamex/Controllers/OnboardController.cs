@@ -4,31 +4,24 @@ namespace Gamex.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{v:apiversion}/onboard")]
 [ApiController]
-public class OnboardController : ControllerBase
+public class OnboardController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager) : ControllerBase
 {
-    private readonly IRepositoryServiceManager _repo;
-    private readonly UserManager<ApplicationUser> _userManager;
-
-    public OnboardController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager)
-    {
-        _repo = repo;
-        _userManager = userManager;
-    }
+    private readonly IRepositoryServiceManager _repo = repo;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
 
     [HttpPost]
     [Authorize]
-    [Consumes("multipart/form-data")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<UserProfileDTO>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> UpdateUserProfile([FromForm] UserProfileUpdateDTO model)
+    public async Task<IActionResult> UpdateUserProfile([FromBody] UserProfileUpdateDTO model)
     {
         if (model is null)
         {
             return BadRequest(new ApiResponse<UserProfileDTO>(400, "Invalid model object"));
         }
 
-        var user = GetUser();
+        var user = await GetUser();
 
         if (user == null)
         {
@@ -37,7 +30,7 @@ public class OnboardController : ControllerBase
 
         if (!string.IsNullOrWhiteSpace(user.Picture?.PublicId))
         {
-            _repo.FileStorageService.DeleteFile(user.Picture.PublicId);
+            await _repo.FileStorageService.DeleteFile(user.Picture.PublicId);
         }
 
         var existingDisplayName = await _userManager.Users.AsNoTracking().AnyAsync(u => u.DisplayName == model.DisplayName && u.Id != user.Id);
@@ -55,24 +48,29 @@ public class OnboardController : ControllerBase
 
         var trackedUser = await GetUserWithTracking();
 
-        if (model.ProfilePicture is not null)
+        if (trackedUser is null)
         {
-            if (!string.IsNullOrWhiteSpace(user.Picture?.FileUrl))
-            {
-                var uploadResult = await _repo.FileStorageService.SaveFile(model.ProfilePicture, "profile-picture");
-                if (uploadResult is not null)
-                {
-                    await _repo.PictureService.UpdatePicture(new PictureUpdateDTO(user.PictureId, uploadResult.FileUrl, uploadResult.PublicId));
-                }
-            }
-            else
-            {
-                var uploadResult = await _repo.FileStorageService.SaveFile(model.ProfilePicture, "profile-picture");
-                var savePicture = await _repo.PictureService.CreatePicture(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId));
-
-                trackedUser.PictureId = savePicture.Id;
-            }
+            return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<UserProfileDTO>(500, "Internal server error"));
         }
+
+        //if (model.ProfilePicture is not null)
+        //{
+        //    if (!string.IsNullOrWhiteSpace(user.Picture?.FileUrl))
+        //    {
+        //        var uploadResult = await _repo.FileStorageService.SaveFile(model.ProfilePicture, "profile-picture");
+        //        if (uploadResult is not null)
+        //        {
+        //            await _repo.PictureService.UpdatePicture(new PictureUpdateDTO(user.PictureId, uploadResult.FileUrl, uploadResult.PublicId));
+        //        }
+        //    }
+        //    else
+        //    {
+        //        var uploadResult = await _repo.FileStorageService.SaveFile(model.ProfilePicture, "profile-picture");
+        //        var savePicture = await _repo.PictureService.CreatePicture(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId));
+
+        //        trackedUser.PictureId = savePicture.Id;
+        //    }
+        //}
 
         trackedUser.DisplayName = model.DisplayName;
         trackedUser.PhoneNumber = model.PhoneNumber;
@@ -86,8 +84,62 @@ public class OnboardController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<UserProfileDTO>(500, "Internal server error"));
         }
 
-        user = GetUser();
+        user = await GetUser();
+        if(user is null)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<UserProfileDTO>(500, "Internal server error"));
+        }
         return Ok(new ApiResponse<UserProfileDTO>(GetUserProfileDTO(user)));
+    }
+
+    [HttpPost("profile-picture")]
+    [Authorize]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateProfilePicture([FromForm] IFormFile file)
+    {
+        if (file is null)
+        {
+            return BadRequest(new ApiResponse<string>(400, "Invalid model object"));
+        }
+
+        var user = await GetUser();
+
+        if (user is null)
+        {
+            return Unauthorized(new ApiResponse<string>(401, "Unauthorized"));
+        }
+
+        if (!string.IsNullOrWhiteSpace(user.Picture?.PublicId))
+        {
+            await _repo.FileStorageService.DeleteFile(user.Picture.PublicId);
+        }
+
+        var uploadResult = await _repo.FileStorageService.SaveFile(file, AppConstant.ProfilePictureTag);
+
+        if (uploadResult is null)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<string>(500, "Internal server error"));
+        }
+
+        if (!string.IsNullOrWhiteSpace(user.Picture?.FileUrl))
+        {
+            await _repo.PictureService.UpdatePicture(new PictureUpdateDTO(user.PictureId, uploadResult.FileUrl, uploadResult.PublicId));
+        }
+        else
+        {
+            var savePicture = await _repo.PictureService.CreatePicture(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId));
+            user.PictureId = savePicture.Id;
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<string>(500, "Internal server error"));
+            }
+        }
+
+        return Ok(new ApiResponse<string>("Profile picture updated successfully"));
     }
 
     [HttpGet]
@@ -95,27 +147,26 @@ public class OnboardController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<UserProfileDTO>), StatusCodes.Status200OK)]
-    public IActionResult GetUserProfile()
+    public async Task<IActionResult> GetUserProfile()
     {
-        var user = GetUser();
+        var user = await GetUser();
 
-        if (user == null)
+        if (user is null)
         {
             return Unauthorized(new ApiResponse<UserProfileDTO>(401, "Unauthorized"));
         }
-
         return Ok(new ApiResponse<UserProfileDTO>(GetUserProfileDTO(user)));
     }
 
     #region Helpers
-    private ApplicationUser? GetUser()
+    private async Task<ApplicationUser?> GetUser()
     {
         var username = User?.Identity?.Name;
         if (string.IsNullOrWhiteSpace(username))
         {
             return null;
         }
-        var user = _repo.ExtendedUserService.GetUserByName(username);
+        var user = await _userManager.FindByNameAsync(username);
         return user;
     }
 
@@ -130,9 +181,12 @@ public class OnboardController : ControllerBase
         return user;
     }
 
-    private static UserProfileDTO GetUserProfileDTO(ApplicationUser user)
+    private UserProfileDTO? GetUserProfileDTO(ApplicationUser? user)
     {
-        return new UserProfileDTO(user.FirstName, user.LastName, user.DisplayName, user.Email, user.PhoneNumber, user.Picture?.FileUrl ?? string.Empty, user.Picture?.PublicId ?? string.Empty);
+        if (user is null) return null;
+        if (string.IsNullOrWhiteSpace(user.UserName)) return null;
+
+        return _repo.ExtendedUserService.GetUserByNameForProfile(user.UserName);
     }
     #endregion
 }

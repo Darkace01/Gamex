@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: ✅ App Settings Variable Substitution
         uses: microsoft/variable-substitution@v1
         with:
@@ -56,7 +56,7 @@ jobs:
     needs: build
     steps:
       - name: 🛜 Download artifact from build job
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: webapp
           path: ${{ env.WEBAPP_PACKAGE_PATH }}

@@ -8,7 +8,7 @@ public class PostServiceTest: TestBase
         // Arrange
         var dbContext = GetSampleData(nameof(GetPost_ShouldReturnPost));
         var postService = MockPostService(dbContext);
-        var postToGet = dbContext.Posts.FirstOrDefault();
+        var postToGet = dbContext.Posts.First();
 
         // Act
         var post = await postService.GetPost(postToGet.Id);
@@ -39,7 +39,7 @@ public class PostServiceTest: TestBase
         };
 
         // Act
-        var saved = await postService.CreatePost(newPost,testUser);
+        var saved = await postService.CreatePostMock(newPost,testUser);
 
         // Assert
         Assert.True(saved);
@@ -68,7 +68,7 @@ public class PostServiceTest: TestBase
         //PostUpdateDTO updatedPost = new(postToUpdate.Id,"Test Post", "Test Post Content",false,null,null,testUser.Id);
 
         // Act
-        var updated = await postService.UpdatePost(updatedPost,testUser);
+        var updated = await postService.UpdatePostMock(updatedPost,testUser);
 
         // Assert
         var updatedPostInDb = dbContext.Posts.FirstOrDefault(p => p.Id == postToUpdate.Id);
@@ -145,6 +145,34 @@ public class PostServiceTest: TestBase
         Assert.NotNull(unArchivedPostInDb);
         Assert.True(unArchived);
         Assert.False(unArchivedPostInDb.IsArchived);
+    }
+    [Fact]
+    public async Task CreatePostWithTags_ShouldCreatePostWithTags()
+    {
+        // Arrange
+        var dbContext = GetSampleData(nameof(CreatePostWithTags_ShouldCreatePostWithTags));
+        var postService = MockPostService(dbContext);
+        var testUser = dbContext.Users.FirstOrDefault();
+        var tags = dbContext.Tags.Take(2).ToList();
+        PostCreateDTO newPost = new()
+        {
+            Title = "Test Post",
+            Content = "Test Post Content",
+            IsArchived = false,
+            PictureId = null,
+            Picture = null,
+            UserId = testUser.Id,
+            TagIds = tags.Select(t => t.Id).ToList()
+        };
+
+        // Act
+        var saved = await postService.CreatePostMock(newPost,testUser);
+
+        // Assert
+        Assert.True(saved);
+        var savedPost = dbContext.Posts.Include(p => p.PostTags).FirstOrDefault(p => p.Title == newPost.Title);
+        Assert.NotNull(savedPost);
+        Assert.Equal(tags.Count, savedPost.PostTags.Count);
     }
     #region Helpers
     private PostService MockPostService(GamexDbContext dbContext)

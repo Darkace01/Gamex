@@ -48,7 +48,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
@@ -91,9 +91,25 @@
                     </div>
                 </div>
                 <div class="col-md-6">
+                    <div class="form-floating mb-3">
+                        <InputTextArea @bind-Value="@Model.Rules" class="form-control" autocomplete="rules" aria-required="true" placeholder="Please enter tournament rules." disabled="@IsLoading" />
+                        <label for="rules" class="form-label">Rules</label>
+                        <ValidationMessage For="@(() => Model.Rules)" class="text-danger" />
+                    </div>
+
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
                     <div class="mb-3">
                         <label for="file-upload" class="form-label">Featured Image</label>
                         <InputFile class="form-control" OnChange="HandleFileUpload" disabled="@IsLoading" id="file-upload" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="cover-file-upload" class="form-label">Cover Image</label>
+                        <InputFile class="form-control" OnChange="HandleCoverFileUpload" disabled="@IsLoading" id="cover-file-upload" />
                     </div>
                 </div>
             </div>
@@ -103,11 +119,6 @@
                 <ValidationMessage For="@(() => Model.Description)" class="text-danger" />
             </div>
 
-            <div class="form-floating mb-3">
-                <InputTextArea @bind-Value="@Model.Rules" class="form-control" autocomplete="rules" aria-required="true" placeholder="Please enter tournament rules." disabled="@IsLoading" />
-                <label for="rules" class="form-label">Rules</label>
-                <ValidationMessage For="@(() => Model.Rules)" class="text-danger" />
-            </div>
             <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">
                 @{
                     if (IsLoading == true)
@@ -129,7 +140,7 @@
 
     private bool IsLoading { get; set; } = false;
     long maxFileSize = 1024 * 1024 * 10;
-    string[] imageFileExtension = { ".jpg", ".jpeg", ".png", ".gif" };
+    string[] imageFileExtension = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
 
     private List<TournamentCategoryDTO> Categories { get; set; } = new();
 
@@ -141,6 +152,7 @@
 
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
     {
+        errorMessage = "";
         try
         {
             if (IsLoading == true) return;
@@ -166,7 +178,7 @@
                 }
 
                 // var formFile = new FormFile(file.OpenReadStream(file.Size), 0, file.Size, file.Name, file.Name);
-                var fileResult = await RepositoryServiceManager.FileStorageService.SaveFile(file, "tournament-picture");
+                var fileResult = await RepositoryServiceManager.FileStorageService.SaveFile(file, AppConstant.TournamentPictureTag);
                 if (fileResult is not null)
                 {
                     var pictureFile = await RepositoryServiceManager.PictureService.CreatePicture(new PictureCreateDTO(fileResult.FileUrl, fileResult.PublicId));
@@ -182,9 +194,54 @@
         }
 
     }
+    private async Task HandleCoverFileUpload(InputFileChangeEventArgs e)
+    {
+        errorMessage = "";
+        try
+        {
+            if (IsLoading == true) return;
+            IsLoading = true;
+            var file = e.File;
+            if (file is not null)
+            {
+                var (isValid, error) = CommonHelpers.CheckFileSize(file, maxFileSize);
+
+                if (!isValid)
+                {
+                    errorMessage = error;
+                    IsLoading = false;
+                    return;
+                }
+
+                var (isImage, errorImage) = CommonHelpers.CheckFileExtension(file, imageFileExtension);
+                if (!isImage)
+                {
+                    errorMessage = errorImage;
+                    IsLoading = false;
+                    return;
+                }
+
+                // var formFile = new FormFile(file.OpenReadStream(file.Size), 0, file.Size, file.Name, file.Name);
+                var fileResult = await RepositoryServiceManager.FileStorageService.SaveFile(file, AppConstant.TournamentCoverPictureTag);
+                if (fileResult is not null)
+                {
+                    var pictureFile = await RepositoryServiceManager.PictureService.CreatePicture(new PictureCreateDTO(fileResult.FileUrl, fileResult.PublicId));
+                    Model!.CoverPictureId = pictureFile.Id;
+                }
+            }
+            IsLoading = false;
+        }
+        catch (Exception ex)
+        {
+            IsLoading = false;
+            errorMessage = ex?.Message;
+        }
+
+    }
 
     private async Task HandleSubmit()
     {
+        errorMessage = "";
         var currentUser = await GetCurrentUser();
         if (Model is not null)
         {
@@ -210,6 +267,7 @@
             catch (Exception)
             {
                 errorMessage = "An error has occured, please contact your administrator for help";
+                IsLoading = false;
             }
         }
     }

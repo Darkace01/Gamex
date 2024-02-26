@@ -1,4 +1,5 @@
 ﻿using Gamex.Common;
+using Microsoft.AspNetCore.Http;
 
 namespace Gamex.DTO;
 
@@ -20,6 +21,9 @@ public class TournamentDTO
     public Guid? PictureId { get; set; }
     public string PictureUrl { get; set; } = string.Empty;
     public string PicturePublicId { get; set; } = string.Empty;
+    public Guid? CoverPictureId { get; set; }
+    public string CoverPictureUrl { get; set; } = string.Empty;
+    public string CoverPicturePublicId { get; set; } = string.Empty;
     public IEnumerable<TournamentCategoryDTO>? Categories { get; set; }
     public IEnumerable<TournamentUserDTO> TournamentUsers { get; set; }
 }
@@ -75,6 +79,9 @@ public class TournamentCreateDTO
     public decimal EntryFee { get; set; }
     public string Rules { get; set; } = string.Empty;
     public Guid? PictureId { get; set; }
+    public IFormFile? Picture { get; set; }
+    public Guid? CoverPictureId { get; set; }
+    public IFormFile? CoverPicture { get; set; }
     public IEnumerable<Guid> CategoryIds { get; set; }
 }
 
@@ -120,5 +127,8 @@ public class TournamentUpdateDTO
     public decimal EntryFee { get; set; }
     public string Rules { get; set; } = string.Empty;
     public Guid? PictureId { get; set; }
+    public IFormFile? Picture { get; set; }
+    public Guid? CoverPictureId { get; set; }
+    public IFormFile? CoverPicture { get; set; }
     public IEnumerable<Guid> CategoryIds { get; set; }
 }

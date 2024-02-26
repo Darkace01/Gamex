@@ -13,7 +13,9 @@ public class Tournament : Entity
     public string Rules { get; set; } = string.Empty;
     public Guid? PictureId { get; set; }
     public Picture? Picture { get; set; }
+    public Guid? CoverPictureId { get; set; }
+    public Picture? CoverPicture { get; set; }
     public List<UserTournament> UserTournaments { get; set; } = [];
-    public ICollection<TournamentCategory> Categories { get; set; } = new List<TournamentCategory>();
+    public List<TournamentCategory> Categories { get; set; } = new List<TournamentCategory>();
     public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 }

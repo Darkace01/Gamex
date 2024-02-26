@@ -1,0 +1,71 @@
+﻿@page "/post-tag"
+@attribute [Authorize(Roles = AppConstant.AdminUserRole)]
+@attribute [StreamRendering]
+@rendermode @(new InteractiveServerRenderMode(prerender: true))
+@inject IRepositoryServiceManager RepositoryServiceManager
+
+<PageTitle>Post Tag</PageTitle>
+
+<div class="row">
+    <div class="col-md-6">
+        <h1>Post Tag</h1>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex justify-content-end">
+            <a href="/post-tag/create" class="btn btn-primary">Create Tag</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <QuickGrid Items="@TagFiltered" Pagination="@pagination" Virtualize="true" @ref="TagGrid">
+            <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.PostCount)" Sortable="true" Title="Number Of Posts"/>
+            <TemplateColumn Title="Actions">
+                <a href="/@context.Id" class="btn btn-primary">Edit</a>
+                <button class="btn btn-danger" @onclick="(() => HandleDelete(context.Id))">Delete</button>
+            </TemplateColumn>
+        </QuickGrid>
+        <Paginator State="@pagination" />
+    </div>
+</div>
+
+@code {
+    QuickGrid<TagDTO>? TagGrid;
+    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+    private IQueryable<TagDTO>? TagList = null;
+    bool IsLoading = false;
+
+    protected override void OnInitialized()
+    {
+        TagList = RepositoryServiceManager.TagService.GetAllTags().ToList().AsQueryable();
+    }
+
+    IQueryable<TagDTO> TagFiltered
+    {
+        get
+        {
+            return TagList ?? Enumerable.Empty<TagDTO>().AsQueryable();
+        }
+    }
+
+    private async Task HandleDelete(Guid? Id)
+    {
+        IsLoading = true;
+        try
+        {
+            if (Id != null && Id.HasValue)
+            {
+                await RepositoryServiceManager.TagService.DeleteTag(Id.Value);
+                TagList = RepositoryServiceManager.TagService.GetAllTags();
+                await TagGrid?.RefreshDataAsync();
+                IsLoading = false;
+            }
+        }
+        catch (Exception)
+        {
+            IsLoading = true;
+        }
+    }
+}

@@ -8,17 +8,19 @@ public class PostDTO
     public string Title { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
     public bool? IsArchived { get; set; } = false;
-    public Guid PictureId { get; set; }
+    public Guid? PictureId { get; set; }
     public string PictureUrl { get; set; } = string.Empty;
     public string PicturePublicId { get; set; } = string.Empty;
+    public DateTime DateCreated { get; set; }
     public UserProfileDTO User { get; set; } = new();
     public IEnumerable<CommentDTO> Comment { get; set; }
+    public IEnumerable<TagDTO> Tag { get; set; }
 
     public PostDTO()
     {
     }
 
-    public PostDTO(Guid id, string title, string content, bool? isArchived,Guid pictureId, string pictureUrl, string picturePublicId, UserProfileDTO user, IEnumerable<CommentDTO> comment)
+    public PostDTO(Guid id, string title, string content, bool? isArchived,Guid? pictureId, string pictureUrl, string picturePublicId, UserProfileDTO user, IEnumerable<CommentDTO> comment, IEnumerable<TagDTO> tag,DateTime dateCreated)
     {
         Id = id;
         Title = title;
@@ -29,6 +31,8 @@ public class PostDTO
         PicturePublicId = picturePublicId;
         User = user;
         Comment = comment;
+        Tag = tag;
+        DateCreated = dateCreated;
     }
 }
 
@@ -40,6 +44,7 @@ public class PostCreateDTO
     public Guid? PictureId { get; set; }
     public IFormFile? Picture { get; set; }
     public string UserId { get; set; }
+    public List<Guid>? TagIds { get; set; }
 }
 
 public class PostUpdateDTO
@@ -51,4 +56,5 @@ public class PostUpdateDTO
     public Guid? PictureId { get; set; }
     public IFormFile Picture { get; set; }
     public string UserId { get; set; }
+    public List<Guid>? TagIds { get; set; }
 }

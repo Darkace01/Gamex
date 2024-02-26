@@ -82,6 +82,8 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         ApplicationUser user = new()
         {
+            FirstName = model.FirstName,
+            LastName = model.LastName,
             Email = model.Email,
             SecurityStamp = Guid.NewGuid().ToString(),
             UserName = model.Username,
@@ -116,8 +118,8 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         if (response.HasError) return BadRequest(new ApiResponse<LoginResponseDTO>(400, response.Message));
 
-        var userExist = await _userManager.FindByEmailAsync(response.Data?.Email);
-        userExist ??= await _userManager.FindByNameAsync(response.Data?.Email);
+        var userExist = await _userManager.FindByEmailAsync(response.Data.Email);
+        userExist ??= await _userManager.FindByNameAsync(response.Data.Email);
 
         if (userExist is not null)
         {
@@ -142,8 +144,8 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         {
             Email = response?.Data?.Email,
             EmailConfirmed = true,
-            FirstName = response.Data?.GivenName,
-            LastName = response.Data?.FamilyName,
+            FirstName = response?.Data?.GivenName ?? string.Empty,
+            LastName = response?.Data?.FamilyName ?? string.Empty,
             SecurityStamp = Guid.NewGuid().ToString(),
             UserName = response?.Data?.Email,
             ExternalAuthInWithGoogle = true,
@@ -166,6 +168,32 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
     }
 
+    [HttpPost("change-password")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO model)
+    {
+        if (model is null) return BadRequest(new ApiResponse<string>(400, "Invalid change password request"));
+
+        if (!ModelState.IsValid) return BadRequest(new ApiResponse<string>(400, "Invalid change password request"));
+
+        var userName = User.Identity?.Name;
+
+        if (string.IsNullOrWhiteSpace(userName)) return BadRequest(new ApiResponse<string>(400, "Invalid change password request"));
+
+        var user = await _userManager.FindByNameAsync(userName);
+
+        if (user == null) return BadRequest(new ApiResponse<string>(400, "Invalid change password request"));
+
+        var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+
+        if (!result.Succeeded) return BadRequest(new ApiResponse<string>(400, "Invalid change password request"));
+
+        return Ok(new ApiResponse<string>(200, "Password changed successfully!"));
+    }
     #region Private Methods
     private async Task<ApiResponse<GoogleJsonWebSignature.Payload>> ValidateUserTokenForGoogle(string token)
     {
@@ -175,7 +203,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         {
             ExpirationTimeClockTolerance = TimeSpan.FromHours(1)
         };
-        GoogleJsonWebSignature.Payload payload = null;
+        GoogleJsonWebSignature.Payload? payload = null;
         bool isValidToken = false;
         var message = string.Empty;
         try
@@ -194,7 +222,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         var response = new ApiResponse<GoogleJsonWebSignature.Payload>()
         {
             HasError = !isValidToken,
-            Data = payload,
+            Data = payload!,
             Message = message
         };
         return response;
@@ -215,7 +243,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         await _userManager.UpdateAsync(user);
 
-        ApiResponse<LoginResponseDTO> loginResponse = new(new LoginResponseDTO(user.Id,accessToken, refreshToken, authToken.ValidTo.Ticks, "Bearer",new UserMiniDTO(user.Email,user.Picture?.FileUrl,user.FirstName,user.LastName)));
+        ApiResponse<LoginResponseDTO> loginResponse = new(new LoginResponseDTO(user.Id, accessToken, refreshToken, authToken.ValidTo.Ticks, "Bearer", new UserMiniDTO(user.Email, user.Picture?.FileUrl, user.FirstName, user.LastName)));
         return loginResponse;
     }
     #endregion

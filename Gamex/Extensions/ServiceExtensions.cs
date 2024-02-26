@@ -10,18 +10,19 @@ public static class ServiceExtensions
     /// <param name="services"></param>
     public static void ConfigureCors(this IServiceCollection services, IConfiguration configuration)
     {
-        var corsOrigins = configuration["CorsOrigins"];
-        string[] originList = [];
-        originList = string.IsNullOrEmpty(corsOrigins) ? (["http://localhost:3000", "https://localhost:3000"]) : corsOrigins.Split(";");
+        //var corsOrigins = configuration["CorsOrigins"];
+        //string[] originList = [];
+        //originList = string.IsNullOrEmpty(corsOrigins) ? (["http://localhost:3000", "https://localhost:3000"]) : corsOrigins.Split(";");
 
         services.AddCors(options =>
         {
             options.AddPolicy("CorsPolicy", builder =>
                            builder.AllowAnyMethod()
                                   .AllowAnyHeader()
-                                  .WithOrigins("*")
-                                  //.SetIsOriginAllowed(origin => true)
-                                  .AllowCredentials());
+                                  .AllowAnyOrigin()
+                                  //.WithOrigins("*")
+                                  .SetIsOriginAllowed(origin => true));
+                                  //.AllowCredentials());
         });
     }
 
@@ -131,7 +132,7 @@ public static class ServiceExtensions
                 ClockSkew = TimeSpan.Zero,
                 ValidAudience = configuration["JWT:ValidAudience"],
                 ValidIssuer = configuration["JWT:ValidIssuer"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]))
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"] ?? throw new ArgumentNullException("JWT:Secret")))
             };
         });
 

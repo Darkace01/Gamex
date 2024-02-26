@@ -1,4 +1,6 @@
-﻿namespace Gamex.Service.Implementation;
+﻿using Gamex.Common;
+
+namespace Gamex.Service.Implementation;
 
 public class TournamentService(GamexDbContext context) : ITournamentService
 {
@@ -23,6 +25,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
         var tournaments = _context.Tournaments
             .AsNoTracking()
             .Include(t => t.Picture)
+            .Include(t => t.CoverPicture)
             .Include(t => t.Categories)
             .Include(t => t.UserTournaments)
             .ThenInclude(ut => ut.User)
@@ -43,7 +46,9 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             Rules = t.Rules,
             PicturePublicId = t.Picture == null ? "" : t.Picture.PublicId,
             PictureUrl = t.Picture == null ? "" : t.Picture.FileUrl,
-            
+            CoverPicturePublicId = t.CoverPicture == null ? "" : t.CoverPicture.PublicId,
+            CoverPictureUrl = t.CoverPicture == null ? "" : t.CoverPicture.FileUrl,
+
             Categories = t.Categories.Select(tc => new TournamentCategoryDTO
             {
                 Id = tc.Id,
@@ -53,6 +58,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             TournamentUsers = t.UserTournaments.Select(ut => new TournamentUserDTO
             {
                 UserId = ut.UserId,
+                CreatorId = ut.CreatorId,
                 DisplayName = ut.User.DisplayName,
                 PictureUrl = ut.User.Picture == null ? "" : ut.User.Picture.FileUrl,
             })
@@ -87,6 +93,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                         EntryFee = tournament.EntryFee,
                         Rules = tournament.Rules,
                         PictureId = tournament.PictureId,
+                        CoverPictureId = tournament.CoverPictureId,
                         Categories = _context.TournamentCategories.Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList(),
                     };
 
@@ -96,6 +103,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                     UserTournament userTournament = new()
                     {
                         UserId = user.Id,
+                        CreatorId = user.Id,
                         TournamentId = newTournament.Id,
                     };
                     await _context.UserTournaments.AddAsync(userTournament);
@@ -109,7 +117,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                         transaction.Rollback();
                     throw;
                 }
-        });
+            });
     }
     /// <summary>
     /// Create a new tournament with the user without using SQL transaction for in-memory database
@@ -135,9 +143,10 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 EntryFee = tournament.EntryFee,
                 Rules = tournament.Rules,
                 PictureId = tournament.PictureId,
+                CoverPictureId = tournament.CoverPictureId,
             };
 
-            if(tournament.CategoryIds != null)
+            if (tournament.CategoryIds != null)
                 newTournament.Categories = _context.TournamentCategories.Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList();
 
             await _context.Tournaments.AddAsync(newTournament);
@@ -146,6 +155,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             UserTournament userTournament = new()
             {
                 UserId = user.Id,
+                CreatorId = user.Id,
                 TournamentId = newTournament.Id,
             };
             await _context.UserTournaments.AddAsync(userTournament);
@@ -167,15 +177,35 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     /// <param name="tournament"></param>
     /// <param name="user"></param>
     /// <returns></returns>
-    public async Task UpdateTournament(TournamentUpdateDTO tournament, ApplicationUser user)
+    public async Task UpdateTournament(TournamentUpdateDTO tournament, ApplicationUser user, CancellationToken cancellationToken = default)
     {
         try
         {
             Tournament? existingTournament = await _context.Tournaments
                 .Include(t => t.UserTournaments)
-                .FirstOrDefaultAsync(t => t.Id == tournament.Id) ?? throw new Exception("Tournament not found");
-            if (existingTournament.UserTournaments.All(ut => ut.UserId != user.Id))
+                .Include(t => t.Categories)
+                .Include(t => t.Picture)
+                .Include(t => t.CoverPicture)
+                .FirstOrDefaultAsync(t => t.Id == tournament.Id,cancellationToken);
+
+            if (existingTournament is null)
+            {
+                throw new Exception("Tournament not found");
+            }
+
+            var adminRoleId = _context.Roles.AsNoTracking().FirstOrDefault(r => r.Name == AppConstant.AdminUserRole)?.Id;
+            List<string> adminUsers = [];
+            if (!string.IsNullOrWhiteSpace(adminRoleId))
+            {
+                adminUsers = await _context.UserRoles.AsNoTracking().Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToListAsync(cancellationToken);
+            }
+
+            bool isAuthorized = existingTournament.UserTournaments.Any(ut => ut.CreatorId != user.Id || adminUsers.Any(x => x == user.Id));
+            if (!isAuthorized)
+            {
                 throw new Exception("You are not authorized to update this tournament");
+            }
+
             existingTournament.Name = tournament.Name;
             existingTournament.Description = tournament.Description;
             existingTournament.IsFeatured = tournament.IsFeatured;
@@ -185,14 +215,28 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             existingTournament.Time = tournament.Time;
             existingTournament.EntryFee = tournament.EntryFee;
             existingTournament.Rules = tournament.Rules;
-            if (tournament.PictureId.HasValue && tournament.PictureId != tournament.PictureId)
+
+            if (tournament.PictureId.HasValue && existingTournament.PictureId != tournament.PictureId)
             {
                 existingTournament.PictureId = tournament.PictureId;
             }
-            if(tournament.CategoryIds != null)
-                existingTournament.Categories = _context.TournamentCategories.Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList();
-            _context.Tournaments.Update(existingTournament);
-            await _context.SaveChangesAsync();
+
+            if (tournament.CoverPictureId.HasValue && existingTournament.CoverPictureId != tournament.CoverPictureId)
+            {
+                existingTournament.CoverPictureId = tournament.CoverPictureId;
+            }
+
+            if (tournament.CategoryIds != null)
+            {
+                var categoryList = _context.TournamentCategories.AsNoTracking().Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList();
+                if (categoryList.Count > 0)
+                {
+                    existingTournament.Categories.Clear();
+                    existingTournament.Categories?.AddRange(categoryList);
+                }
+            }
+
+            await _context.SaveChangesAsync(cancellationToken);
         }
         catch (Exception)
         {
@@ -213,7 +257,13 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             Tournament? existingTournament = await _context.Tournaments
                 .Include(t => t.UserTournaments)
                 .FirstOrDefaultAsync(t => t.Id == id) ?? throw new Exception("Tournament not found");
-            if (existingTournament.UserTournaments.All(ut => ut.UserId != user.Id))
+            var adminRoleId = _context.Roles.AsNoTracking().FirstOrDefault(r => r.Name == AppConstant.AdminUserRole)?.Id;
+            List<string> adminUsers = [];
+            if (!string.IsNullOrWhiteSpace(adminRoleId))
+            {
+                adminUsers = _context.UserRoles.AsNoTracking().Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
+            }
+            if (!existingTournament.UserTournaments.Any(ut => ut.CreatorId != user.Id || adminUsers.Any(x => x == user.Id)))
                 throw new Exception("You are not authorized to delete this tournament");
             _context.Tournaments.Remove(existingTournament);
             await _context.SaveChangesAsync();
