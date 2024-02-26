@@ -13,5 +13,7 @@
         ITournamentCategoryService TournamentCategoryService { get; }
         ITagService TagService { get; }
         ILeaderboardService LeaderboardService { get; }
+        IPaymentService PaymentService { get; }
+        IPaystackPayment PaystackPayment { get; }
     }
 }

@@ -67,4 +67,11 @@ public static class CommonHelpers
         }
         return (true, "File extension is valid");
     }
+    
+    public static string GenerateRandomString(int length, bool uppercase = false, bool specialXter = false)
+    {
+        RandomStringGenerator stringGenerator = new();
+
+        return stringGenerator.NextString(length, true, uppercase, true, specialXter);
+    }
 }

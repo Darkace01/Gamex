@@ -17,6 +17,8 @@ public class RepositoryServiceManager : IRepositoryServiceManager
     private ITournamentCategoryService _tournamentCategoryService;
     private ITagService _tagService;
     private ILeaderboardService _leaderboardService;
+    private IPaymentService _paymentService;
+    private IPaystackPayment _paystackPayment;
 
     public RepositoryServiceManager(GamexDbContext context, IConfiguration config)
     {
@@ -121,6 +123,24 @@ public class RepositoryServiceManager : IRepositoryServiceManager
         {
             _leaderboardService ??= new LeaderboardService(_context);
             return _leaderboardService;
+        }
+    }
+
+    public IPaymentService PaymentService
+    {
+        get
+        {
+            _paymentService ??= new PaymentService(_context);
+            return _paymentService;
+        }
+    }
+
+    public IPaystackPayment PaystackPayment
+    {
+        get
+        {
+            _paystackPayment ??= new PaystackPayment(_configuration);
+            return _paystackPayment;
         }
     }
 }
