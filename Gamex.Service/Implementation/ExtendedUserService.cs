@@ -51,7 +51,8 @@ public class ExtendedUserService(GamexDbContext context) : IExtendedUserService
             .Select(u => new
             {
                 User = u,
-                Picture = _context.Pictures.FirstOrDefault(p => p.Id == u.PictureId)
+                Picture = _context.Pictures.AsNoTracking().FirstOrDefault(p => p.Id == u.PictureId),
+                Balance = _context.PaymentTransactions.AsNoTracking().Where(pt => pt.UserId == u.Id && pt.Status == TransactionStatus.Success).Sum(pt => pt.Amount)
             })
             .Select(u => new UserProfileDTO(
                 u.User.FirstName,
@@ -61,7 +62,7 @@ public class ExtendedUserService(GamexDbContext context) : IExtendedUserService
                 u.User.PhoneNumber,
                 u.Picture.FileUrl,
                 u.Picture.PublicId,
-                0,
+                u.Balance,
                 _context.UserTournaments.Count(ut => ut.UserId == u.User.Id),
                 _context.Posts.Count(post => post.UserId == u.User.Id),
                 _context.Comments.Count(comment => comment.UserId == u.User.Id)
