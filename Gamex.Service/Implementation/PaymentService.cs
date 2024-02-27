@@ -25,6 +25,7 @@ public class PaymentService(GamexDbContext context) : IPaymentService
         if (paymentTransaction != null)
         {
             paymentTransaction.Status = (TransactionStatus)status;
+            paymentTransaction.DateModified = DateTime.Now;
             await _context.SaveChangesAsync(cancellationToken);
         }
     }
@@ -35,6 +36,7 @@ public class PaymentService(GamexDbContext context) : IPaymentService
         if (paymentTransaction != null)
         {
             paymentTransaction.Status = (TransactionStatus)status;
+            paymentTransaction.DateModified = DateTime.Now;
             await _context.SaveChangesAsync(cancellationToken);
         }
     }

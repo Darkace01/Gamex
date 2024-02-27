@@ -39,6 +39,12 @@ public class TransactionController(IRepositoryServiceManager repositoryServiceMa
         paymentTransactionCreateDTO.UserId = user.Id;
         paymentTransactionCreateDTO.Status = Common.TransactionStatus.Pending;
 
+        if(paymentTransactionCreateDTO.TournamentId is not null)
+        {
+            var tournament = await _repositoryServiceManager.TournamentService.GetTournamentById((Guid)paymentTransactionCreateDTO.TournamentId);
+            if(tournament is null) return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(StatusCodes.Status400BadRequest, "Invalid tournament"));
+        }
+
         await _repositoryServiceManager.PaymentService.CreatePaymentTransaction(paymentTransactionCreateDTO);
 
         var paymentTransaction = await _repositoryServiceManager.PaymentService.GetPaymentTransactionsByReference(transactionReference);
