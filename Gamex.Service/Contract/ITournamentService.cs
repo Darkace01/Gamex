@@ -8,7 +8,8 @@
         IQueryable<TournamentDTO> GetAllTournaments();
         IQueryable<TournamentDTO> GetFeaturedTournaments();
         Task<TournamentDTO?> GetTournamentById(Guid id);
-        Task<bool> JoinTournament(Guid id, ApplicationUser user);
+        Task<bool> JoinTournament(Guid id, ApplicationUser user, CancellationToken cancellationToken = default);
+        Task<bool> JoinTournamentMock(Guid id, ApplicationUser user);
         Task UpdateTournament(TournamentUpdateDTO tournament, ApplicationUser user, CancellationToken cancellationToken = default);
     }
 }

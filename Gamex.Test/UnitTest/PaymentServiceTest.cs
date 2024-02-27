@@ -29,7 +29,7 @@ public class PaymentServiceTest : TestBase
         var userId = dbContext.Users.First().Id;
 
         // Act
-        var paymentTransactions = await paymentService.GetPaymentTransactions(userId).ToListAsync();
+        var paymentTransactions = await paymentService.GetPaymentTransactionsByUser(userId).ToListAsync();
 
         // Assert
         Assert.NotNull(paymentTransactions);
@@ -45,7 +45,7 @@ public class PaymentServiceTest : TestBase
         var tournamentId = dbContext.Tournaments.First().Id;
 
         // Act
-        var paymentTransactions = await paymentService.GetPaymentTransactions(tournamentId).ToListAsync();
+        var paymentTransactions = await paymentService.GetPaymentTransactionsByTournament(tournamentId).ToListAsync();
 
         // Assert
         Assert.NotNull(paymentTransactions);

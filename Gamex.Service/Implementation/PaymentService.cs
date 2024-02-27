@@ -72,6 +72,19 @@ public class PaymentService(GamexDbContext context) : IPaymentService
             TransactionReference = x.TransactionReference
         });
     }
+    public IQueryable<PaymentTransactionDTO> GetPaymentTransactionsByTournament(Guid tournamentId)
+    {
+        var paymentTransactions = _context.PaymentTransactions.AsNoTracking().Where(x => x.TournamentId == tournamentId);
+        return paymentTransactions.Select(x => new PaymentTransactionDTO
+        {
+            Id = x.Id,
+            UserId = x.UserId,
+            TournamentId = x.TournamentId,
+            Amount = x.Amount,
+            Status = (Common.TransactionStatus)x.Status,
+            TransactionReference = x.TransactionReference
+        });
+    }
 
     public async Task<PaymentTransactionDTO?> GetPaymentTransactionsByReference(string transactionReference, CancellationToken cancellationToken = default)
     {
