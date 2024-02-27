@@ -1,4 +1,6 @@
 ﻿using Gamex.Common;
+using Gamex.DTO;
+using System.Threading;
 
 namespace Gamex.Service.Implementation;
 
@@ -186,7 +188,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 .Include(t => t.Categories)
                 .Include(t => t.Picture)
                 .Include(t => t.CoverPicture)
-                .FirstOrDefaultAsync(t => t.Id == tournament.Id,cancellationToken);
+                .FirstOrDefaultAsync(t => t.Id == tournament.Id, cancellationToken);
 
             if (existingTournament is null)
             {
@@ -275,15 +277,27 @@ public class TournamentService(GamexDbContext context) : ITournamentService
         }
     }
 
-    public async Task<bool> JoinTournament(Guid id, ApplicationUser user)
+    public async Task<bool> JoinTournamentMock(Guid id, ApplicationUser user)
     {
         try
         {
             Tournament? existingTournament = await _context.Tournaments
                 .Include(t => t.UserTournaments)
                 .FirstOrDefaultAsync(t => t.Id == id) ?? throw new Exception("Tournament not found");
-            //if (existingTournament.UserTournaments.Any(ut => ut.UserId == user.Id))
-            //    throw new Exception("You have already joined this tournament");
+            if (existingTournament.EntryFee > 0)
+            {
+                var paymentTransaction = new PaymentTransaction
+                {
+                    UserId = user.Id,
+                    TournamentId = id,
+                    Amount = -existingTournament.EntryFee,
+                    Status = Models.TransactionStatus.Success,
+                    TransactionReference = CommonHelpers.GenerateRandomString(10)
+                };
+
+                _context.PaymentTransactions.Add(paymentTransaction);
+                await _context.SaveChangesAsync();
+            }
             UserTournament userTournament = new()
             {
                 UserId = user.Id,
@@ -298,7 +312,62 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             throw;
         }
     }
+    public async Task<bool> JoinTournament(Guid id, ApplicationUser user, CancellationToken cancellationToken = default)
+    {
+        var executionStrategy = _context.Database.CreateExecutionStrategy();
+        return await executionStrategy.ExecuteAsync(async () =>
+        {
+            using var transaction = _context.Database.BeginTransaction();
+            bool hasSaved = false;
+            try
+            {
+                Tournament? existingTournament = await _context.Tournaments
+                    .Include(t => t.UserTournaments)
+                    .FirstOrDefaultAsync(t => t.Id == id) ?? throw new Exception("Tournament not found");
 
+                if (existingTournament.UserTournaments.Any(ut => ut.UserId == user.Id))
+                {
+                    return true;
+                }
+
+                //debit the user if the tournament has an entry fee
+                if (existingTournament.EntryFee > 0)
+                {
+                    var paymentTransaction = new PaymentTransaction
+                    {
+                        UserId = user.Id,
+                        TournamentId = id,
+                        Amount = -existingTournament.EntryFee,
+                        Status = Models.TransactionStatus.Success,
+                        TransactionReference = CommonHelpers.GenerateRandomString(10)
+                    };
+
+                    _context.PaymentTransactions.Add(paymentTransaction);
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+
+                UserTournament userTournament = new()
+                {
+                    UserId = user.Id,
+                    TournamentId = existingTournament.Id,
+                };
+
+                await _context.UserTournaments.AddAsync(userTournament);
+                await _context.SaveChangesAsync(cancellationToken);
+                hasSaved = true;
+                await transaction.CommitAsync(cancellationToken);
+                return true;
+            }
+            catch (Exception)
+            {
+                if (hasSaved)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                }
+                throw;
+            }
+        });
+    }
     public IQueryable<TournamentDTO> GetFeaturedTournaments()
     {
         return GetAllTournaments().Where(t => t.IsFeatured);

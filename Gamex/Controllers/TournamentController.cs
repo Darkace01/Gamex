@@ -195,7 +195,7 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status201Created)]
-    public async Task<IActionResult> JoinTournament(Guid id)
+    public async Task<IActionResult> JoinTournament(Guid id, CancellationToken cancellationToken = default)
     {
         var user = await GetUser();
         if (user == null)
@@ -208,7 +208,14 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         if (tournamentExist.TournamentUsers.Any(ut => ut.UserId == user.Id))
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Your are already in this tournament"));
 
-        await _repositoryServiceManager.TournamentService.JoinTournament(id, user);
+        if (tournamentExist.EntryFee > 0)
+        {
+            var userWallet = await _repositoryServiceManager.PaymentService.GetUserBalance(user.Id);
+            if (userWallet < tournamentExist.EntryFee)
+                return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, "You don't have enough balance to join this tournament"));
+        }
+
+        await _repositoryServiceManager.TournamentService.JoinTournament(id, user, cancellationToken);
 
         return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>("Tournament Successfully Joined"));
     }
