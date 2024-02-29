@@ -2,12 +2,13 @@
 [ApiVersion("1.0")]
 [Route("api/v{v:apiversion}/auth")]
 [ApiController]
-public class AuthController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager, IConfiguration configuration, RoleManager<IdentityRole> roleManager) : ControllerBase
+public class AuthController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager, IConfiguration configuration, RoleManager<IdentityRole> roleManager, ISMTPMailService mailService) : ControllerBase
 {
     private readonly IRepositoryServiceManager _repo = repo;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IConfiguration _configuration = configuration;
     private readonly RoleManager<IdentityRole> _roleManager = roleManager;
+    private readonly ISMTPMailService _emailService = mailService;
 
     [HttpPost("login")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -193,6 +194,56 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         if (!result.Succeeded) return BadRequest(new ApiResponse<string>(400, "Invalid change password request"));
 
         return Ok(new ApiResponse<string>(200, "Password changed successfully!"));
+    }
+
+    [HttpPost("forgot-password")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO model)
+    {
+        if (model is null) return BadRequest(new ApiResponse<string>(400, "Invalid forgot password request"));
+
+        if (!ModelState.IsValid) return BadRequest(new ApiResponse<string>(400, "Invalid forgot password request"));
+
+        var responseMessage = "If the email is registered, a password reset link will be sent to the email address provided.";
+
+        var user = await _userManager.FindByEmailAsync(model.Email);
+
+        if (user == null) return BadRequest(new ApiResponse<string>(400, responseMessage));
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        var passwordResetLink = Url.Action("ResetPassword", "Auth", new { Email = model.Email, token }, Request.Scheme);
+
+        // Send email with password reset link
+        _ = await _emailService.SendEmailAsync(model.Email, "Reset Password", passwordResetLink);
+        // _emailService.SendEmail(new EmailDTO { To = model.Email, Subject = "Reset Password", Body = passwordResetLink });
+
+        return Ok(new ApiResponse<string>(200, responseMessage));
+    }
+
+    [HttpPost("reset-password")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO model)
+    {
+        if (model is null) return BadRequest(new ApiResponse<string>(400, "Invalid reset password request"));
+
+        if (!ModelState.IsValid) return BadRequest(new ApiResponse<string>(400, "Invalid reset password request"));
+
+        var user = await _userManager.FindByEmailAsync(model.Email);
+
+        if (user == null) return BadRequest(new ApiResponse<string>(400, "Invalid reset password request"));
+
+        var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+
+        if (!result.Succeeded) return BadRequest(new ApiResponse<string>(400, "Invalid reset password request"));
+
+        return Ok(new ApiResponse<string>(200, "Password reset successfully!"));
     }
     #region Private Methods
     private async Task<ApiResponse<GoogleJsonWebSignature.Payload>> ValidateUserTokenForGoogle(string token)
