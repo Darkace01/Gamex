@@ -15,7 +15,57 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     /// <returns></returns>
     public async Task<TournamentDTO?> GetTournamentById(Guid id)
     {
-        return await GetAllTournaments().FirstOrDefaultAsync(t => t.Id == id);
+        try
+        {
+            var tournaments = _context.Tournaments
+               .AsNoTracking()
+               .Include(t => t.Picture)
+               .Include(t => t.CoverPicture)
+               .Include(t => t.Categories)
+               .Include(t => t.UserTournaments)
+               .ThenInclude(ut => ut.User)
+               .Include(t => t.UserTournaments)
+               .ThenInclude(ut => ut.User.Picture)
+               .AsEnumerable();
+
+            return tournaments.Select(t => new TournamentDTO
+            {
+                Id = t.Id,
+                Name = t.Name,
+                Description = t.Description,
+                IsFeatured = t.IsFeatured,
+                StartDate = t.StartDate,
+                EndDate = t.EndDate,
+                Location = t.Location,
+                Time = t.Time,
+                EntryFee = t.EntryFee,
+                Rules = t.Rules,
+                PicturePublicId = t.Picture == null ? "" : t.Picture.PublicId,
+                PictureUrl = t.Picture == null ? "" : t.Picture.FileUrl,
+                CoverPicturePublicId = t.CoverPicture == null ? "" : t.CoverPicture.PublicId,
+                CoverPictureUrl = t.CoverPicture == null ? "" : t.CoverPicture.FileUrl,
+
+                Categories = t.Categories.Select(tc => new TournamentCategoryDTO
+                {
+                    Id = tc.Id,
+                    Name = tc.Name
+                }),
+
+                TournamentUsers = t.UserTournaments.OrderBy(x => x.Point).Select((ut, index) => new TournamentUserDTO
+                {
+                    UserId = ut.UserId,
+                    CreatorId = ut.CreatorId,
+                    DisplayName = ut.User.DisplayName,
+                    PictureUrl = ut.User.Picture == null ? "" : ut.User.Picture.FileUrl,
+                    Points = ut.Point ?? 0,
+                    Rank = index + 1
+                })
+            }).FirstOrDefault();
+        }
+        catch (Exception)
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -57,13 +107,14 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 Name = tc.Name
             }),
 
-            TournamentUsers = t.UserTournaments.Select(ut => new TournamentUserDTO
-            {
-                UserId = ut.UserId,
-                CreatorId = ut.CreatorId,
-                DisplayName = ut.User.DisplayName,
-                PictureUrl = ut.User.Picture == null ? "" : ut.User.Picture.FileUrl,
-            })
+            //TournamentUsers = t.UserTournaments.Select(ut => new TournamentUserDTO
+            //{
+            //    UserId = ut.UserId,
+            //    CreatorId = ut.CreatorId,
+            //    DisplayName = ut.User.DisplayName,
+            //    PictureUrl = ut.User.Picture == null ? "" : ut.User.Picture.FileUrl,
+            //    Points = ut.Point ?? 0
+            //})
         });
     }
 
