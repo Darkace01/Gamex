@@ -36,6 +36,13 @@ jobs:
           JWT.Secret: ${{ secrets.JWT_SECRET }}
           Paystack.SecretKey: ${{ secrets.PAYSTACK_SECRET_KEY }}
           Paystack.PublicKey: ${{ secrets.PAYSTACK_PUBLIC_KEY }}
+          SMTP.Host: ${{ secrets.SMTP_HOST }}
+          SMTP.Port: ${{ secrets.SMTP_PORT }}
+          SMTP.Username: ${{ secrets.SMTP_USERNAME }}
+          SMTP.Password: ${{ secrets.SMTP_PASSWORD }}
+          SMTP.From: ${{ secrets.SMTP_FROM }}
+          SMTP.DisplayName: ${{ secrets.SMTP_DISPLAYNAME }}
+          SMTP.EnableSSL: ${{ secrets.SMTP_ENABLESSL }}
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
