@@ -6,19 +6,38 @@ public class PostService(GamexDbContext context) : IPostService
 {
     private readonly GamexDbContext _context = context;
 
+    /// <summary>
+    /// Retrieves a single post by its ID.
+    /// </summary>
+    /// <param name="postId">The ID of the post to retrieve.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The post DTO if found, otherwise null.</returns>
     public async Task<PostDTO?> GetPost(Guid postId, CancellationToken cancellationToken = default)
     {
         // TODO: Remove comment for single post
         var post = await _context.Posts.Include(x => x.User).Include(x => x.Picture).Include(x => x.PostTags).ThenInclude(x => x.Tag).Include(x => x.Comments).ThenInclude(x => x.User).AsNoTracking().FirstOrDefaultAsync(x => x.Id == postId, cancellationToken);
         return post is not null ? MapPostToDTO(post) : null;
-        
+
     }
 
+    /// <summary>
+    /// Retrieves all posts.
+    /// </summary>
+    /// <returns>The queryable collection of post DTOs.</returns>
     public IQueryable<PostDTO> GetAllPosts()
     {
         var posts = _context.Posts.Include(x => x.User).Include(x => x.Picture).Include(x => x.PostTags).ThenInclude(x => x.Tag).Include(x => x.Comments).ThenInclude(x => x.User).AsNoTracking();
         return posts.Select(p => MapPostToDTO(p));
     }
+
+    /// <summary>
+    /// Retrieves all posts based on the specified criteria.
+    /// </summary>
+    /// <param name="TagIds">The collection of tag IDs to filter by.</param>
+    /// <param name="take">The number of posts to take.</param>
+    /// <param name="skip">The number of posts to skip.</param>
+    /// <param name="s">The search string to filter by.</param>
+    /// <returns>The queryable collection of post DTOs.</returns>
     public IQueryable<PostDTO> GetAllPosts(IEnumerable<string> TagIds, int take = 10, int skip = 0, string s = "")
     {
         var posts = _context.Posts.Include(x => x.User).Include(x => x.Picture).Include(x => x.PostTags).ThenInclude(x => x.Tag).Include(x => x.Comments).ThenInclude(x => x.User).AsNoTracking();
@@ -34,6 +53,13 @@ public class PostService(GamexDbContext context) : IPostService
         return posts.OrderByDescending(p => p.DateCreated).Skip(skip).Take(take).Select(p => MapPostToDTO(p));
     }
 
+    /// <summary>
+    /// Creates a new post.
+    /// </summary>
+    /// <param name="postCreateDTO">The post creation DTO.</param>
+    /// <param name="user">The user creating the post.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>True if the post is created successfully, otherwise false.</returns>
     public async Task<bool> CreatePost(PostCreateDTO postCreateDTO, ApplicationUser user, CancellationToken cancellationToken = default)
     {
         var executionStrategy = _context.Database.CreateExecutionStrategy();
@@ -82,6 +108,13 @@ public class PostService(GamexDbContext context) : IPostService
             });
         return false;
     }
+
+    /// <summary>
+    /// Creates a new post (mock version).
+    /// </summary>
+    /// <param name="postCreateDTO">The post creation DTO.</param>
+    /// <param name="user">The user creating the post.</param>
+    /// <returns>True if the post is created successfully, otherwise false.</returns>
     public async Task<bool> CreatePostMock(PostCreateDTO postCreateDTO, ApplicationUser user)
     {
         var post = new Post()
@@ -112,6 +145,13 @@ public class PostService(GamexDbContext context) : IPostService
 
     }
 
+    /// <summary>
+    /// Updates an existing post.
+    /// </summary>
+    /// <param name="postUpdateDTO">The post update DTO.</param>
+    /// <param name="user">The user updating the post.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>True if the post is updated successfully, otherwise false.</returns>
     public async Task<bool> UpdatePost(PostUpdateDTO postUpdateDTO, ApplicationUser user, CancellationToken cancellationToken = default)
     {
         var executionStrategy = _context.Database.CreateExecutionStrategy();
@@ -161,6 +201,12 @@ public class PostService(GamexDbContext context) : IPostService
         return false;
     }
 
+    /// <summary>
+    /// Updates an existing post (mock version).
+    /// </summary>
+    /// <param name="postUpdateDTO">The post update DTO.</param>
+    /// <param name="user">The user updating the post.</param>
+    /// <returns>True if the post is updated successfully, otherwise false.</returns>
     public async Task<bool> UpdatePostMock(PostUpdateDTO postUpdateDTO, ApplicationUser user)
     {
         var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postUpdateDTO.Id && p.UserId == user.Id);
@@ -191,6 +237,13 @@ public class PostService(GamexDbContext context) : IPostService
         return false;
     }
 
+    /// <summary>
+    /// Deletes a post by its ID.
+    /// </summary>
+    /// <param name="postId">The ID of the post to delete.</param>
+    /// <param name="user">The user deleting the post.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>True if the post is deleted successfully, otherwise false.</returns>
     public async Task<bool> DeletePost(Guid postId, ApplicationUser user, CancellationToken cancellationToken = default)
     {
         var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postId && p.UserId == user.Id, cancellationToken);
@@ -203,6 +256,12 @@ public class PostService(GamexDbContext context) : IPostService
         return true;
     }
 
+    /// <summary>
+    /// Archives a post by its ID.
+    /// </summary>
+    /// <param name="postId">The ID of the post to archive.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>True if the post is archived successfully, otherwise false.</returns>
     public async Task<bool> ArchivePost(Guid postId, CancellationToken cancellationToken = default)
     {
         var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postId, cancellationToken);
@@ -214,6 +273,12 @@ public class PostService(GamexDbContext context) : IPostService
         return true;
     }
 
+    /// <summary>
+    /// Unarchives a post by its ID.
+    /// </summary>
+    /// <param name="postId">The ID of the post to unarchive.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>True if the post is unarchived successfully, otherwise false.</returns>
     public async Task<bool> UnArchivePost(Guid postId, CancellationToken cancellationToken = default)
     {
         var post = await _context.Posts.FirstOrDefaultAsync(p => p.Id == postId, cancellationToken);
