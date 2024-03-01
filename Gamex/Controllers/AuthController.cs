@@ -2,10 +2,8 @@
 [ApiVersion("1.0")]
 [Route("api/v{v:apiversion}/auth")]
 [ApiController]
-public class AuthController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager, IConfiguration configuration, RoleManager<IdentityRole> roleManager, ISMTPMailService mailService) : ControllerBase
+public class AuthController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager, IConfiguration configuration, RoleManager<IdentityRole> roleManager, ISMTPMailService mailService) : BaseController(userManager, repo)
 {
-    private readonly IRepositoryServiceManager _repo = repo;
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IConfiguration _configuration = configuration;
     private readonly RoleManager<IdentityRole> _roleManager = roleManager;
     private readonly ISMTPMailService _emailService = mailService;
@@ -45,7 +43,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         if (!ModelState.IsValid) return BadRequest(new ApiResponse<LoginResponseDTO>(400, "Invalid refresh token request"));
 
-        var principal = _repo.JWTHelper.GetPrincipalFromExpiredToken(model.AccessToken);
+        var principal = _repositoryServiceManager.JWTHelper.GetPrincipalFromExpiredToken(model.AccessToken);
 
         if (principal == null) return BadRequest(new ApiResponse<LoginResponseDTO>(400, "Invalid refresh token request"));
 
@@ -138,7 +136,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
             return Ok(await GenerateLoginTokenandResponseForUser(userExist));
         }
 
-        var picture = await _repo.PictureService.CreatePicture(new PictureCreateDTO(response.Data?.Picture, ""));
+        var picture = await _repositoryServiceManager.PictureService.CreatePicture(new PictureCreateDTO(response.Data?.Picture, ""));
 
         // Create a new user
         ApplicationUser user = new()
@@ -281,7 +279,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
     private async Task<ApiResponse<LoginResponseDTO>> GenerateLoginTokenandResponseForUser(ApplicationUser user)
     {
         var userRoles = await _userManager.GetRolesAsync(user);
-        var authToken = _repo.JWTHelper.GenerateToken(user, userRoles);
+        var authToken = _repositoryServiceManager.JWTHelper.GenerateToken(user, userRoles);
 
         var accessToken = new JwtSecurityTokenHandler().WriteToken(authToken);
 

@@ -4,6 +4,10 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
 {
     private readonly GamexDbContext _context = context;
 
+    /// <summary>
+    /// Retrieves the leaderboard with player rankings based on points and tournaments.
+    /// </summary>
+    /// <returns>An enumerable collection of LeaderboardDTO objects representing the leaderboard.</returns>
     public IEnumerable<LeaderboardDTO> GetLeaderboard()
     {
         var leaderboard = _context.Users

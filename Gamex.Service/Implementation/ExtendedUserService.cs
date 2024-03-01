@@ -4,6 +4,11 @@ public class ExtendedUserService(GamexDbContext context) : IExtendedUserService
 {
     private readonly GamexDbContext _context = context;
 
+    /// <summary>
+    /// Retrieves a user by their username.
+    /// </summary>
+    /// <param name="username">The username of the user to retrieve.</param>
+    /// <returns>The ApplicationUser object representing the user.</returns>
     public ApplicationUser? GetUserByName(string username)
     {
         var user = from u in _context.Users
@@ -42,6 +47,11 @@ public class ExtendedUserService(GamexDbContext context) : IExtendedUserService
         return user.FirstOrDefault();
     }
 
+    /// <summary>
+    /// Retrieves a user by their username for the user profile.
+    /// </summary>
+    /// <param name="username">The username of the user to retrieve.</param>
+    /// <returns>The UserProfileDTO object representing the user profile.</returns>
     public UserProfileDTO? GetUserByNameForProfile(string username)
     {
 

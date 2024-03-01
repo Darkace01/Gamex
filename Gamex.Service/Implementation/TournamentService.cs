@@ -15,57 +15,55 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     /// <returns></returns>
     public async Task<TournamentDTO?> GetTournamentById(Guid id)
     {
-        try
+        var tournament = await _context.Tournaments
+            .AsNoTracking()
+            .Include(t => t.Picture)
+            .Include(t => t.CoverPicture)
+            .Include(t => t.Categories)
+            .Include(t => t.UserTournaments)
+                .ThenInclude(ut => ut.User.Picture)
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (tournament == null)
         {
-            var tournaments = _context.Tournaments
-               .AsNoTracking()
-               .Include(t => t.Picture)
-               .Include(t => t.CoverPicture)
-               .Include(t => t.Categories)
-               .Include(t => t.UserTournaments)
-               .ThenInclude(ut => ut.User)
-               .Include(t => t.UserTournaments)
-               .ThenInclude(ut => ut.User.Picture)
-               .AsEnumerable();
+            return null;
+        }
 
-            return tournaments.Select(t => new TournamentDTO
+        var tournamentDTO = new TournamentDTO
+        {
+            Id = tournament.Id,
+            Name = tournament.Name,
+            Description = tournament.Description,
+            IsFeatured = tournament.IsFeatured,
+            StartDate = tournament.StartDate,
+            EndDate = tournament.EndDate,
+            Location = tournament.Location,
+            Time = tournament.Time,
+            EntryFee = tournament.EntryFee,
+            Rules = tournament.Rules,
+            PicturePublicId = tournament.Picture?.PublicId ?? "",
+            PictureUrl = tournament.Picture?.FileUrl ?? "",
+            CoverPicturePublicId = tournament.CoverPicture?.PublicId ?? "",
+            CoverPictureUrl = tournament.CoverPicture?.FileUrl ?? "",
+            Categories = tournament.Categories.Select(tc => new TournamentCategoryDTO
             {
-                Id = t.Id,
-                Name = t.Name,
-                Description = t.Description,
-                IsFeatured = t.IsFeatured,
-                StartDate = t.StartDate,
-                EndDate = t.EndDate,
-                Location = t.Location,
-                Time = t.Time,
-                EntryFee = t.EntryFee,
-                Rules = t.Rules,
-                PicturePublicId = t.Picture == null ? "" : t.Picture.PublicId,
-                PictureUrl = t.Picture == null ? "" : t.Picture.FileUrl,
-                CoverPicturePublicId = t.CoverPicture == null ? "" : t.CoverPicture.PublicId,
-                CoverPictureUrl = t.CoverPicture == null ? "" : t.CoverPicture.FileUrl,
-
-                Categories = t.Categories.Select(tc => new TournamentCategoryDTO
-                {
-                    Id = tc.Id,
-                    Name = tc.Name
-                }),
-
-                TournamentUsers = t.UserTournaments.OrderBy(x => x.Point).Select((ut, index) => new TournamentUserDTO
+                Id = tc.Id,
+                Name = tc.Name
+            }),
+            TournamentUsers = tournament.UserTournaments
+                .OrderBy(x => x.Point)
+                .Select((ut, index) => new TournamentUserDTO
                 {
                     UserId = ut.UserId,
                     CreatorId = ut.CreatorId,
                     DisplayName = ut.User.DisplayName,
-                    PictureUrl = ut.User.Picture == null ? "" : ut.User.Picture.FileUrl,
+                    PictureUrl = ut.User.Picture?.FileUrl ?? "",
                     Points = ut.Point ?? 0,
                     Rank = index + 1
                 })
-            }).FirstOrDefault();
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+        };
+
+        return tournamentDTO;
     }
 
     /// <summary>
@@ -239,15 +237,9 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 .Include(t => t.Categories)
                 .Include(t => t.Picture)
                 .Include(t => t.CoverPicture)
-                .FirstOrDefaultAsync(t => t.Id == tournament.Id, cancellationToken);
-
-            if (existingTournament is null)
-            {
-                throw new Exception("Tournament not found");
-            }
-
+                .FirstOrDefaultAsync(t => t.Id == tournament.Id, cancellationToken) ?? throw new Exception("Tournament not found");
             var adminRoleId = _context.Roles.AsNoTracking().FirstOrDefault(r => r.Name == AppConstant.AdminUserRole)?.Id;
-            List<string> adminUsers = [];
+            List<string> adminUsers = new List<string>();
             if (!string.IsNullOrWhiteSpace(adminRoleId))
             {
                 adminUsers = await _context.UserRoles.AsNoTracking().Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToListAsync(cancellationToken);
@@ -279,14 +271,11 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 existingTournament.CoverPictureId = tournament.CoverPictureId;
             }
 
+            // if tournament.Categories is not null, delete he existing categories and add the new ones
             if (tournament.CategoryIds != null)
             {
-                var categoryList = _context.TournamentCategories.AsNoTracking().Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList();
-                if (categoryList.Count > 0)
-                {
-                    existingTournament.Categories.Clear();
-                    existingTournament.Categories?.AddRange(categoryList);
-                }
+                existingTournament.Categories.Clear();
+                existingTournament.Categories = _context.TournamentCategories.Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList();
             }
 
             await _context.SaveChangesAsync(cancellationToken);
@@ -327,7 +316,12 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             throw;
         }
     }
-
+    /// <summary>
+    /// Join a tournament mock for unit testing without a transaction
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="user"></param>
+    /// <returns></returns>
     public async Task<bool> JoinTournamentMock(Guid id, ApplicationUser user)
     {
         try
@@ -363,6 +357,13 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             throw;
         }
     }
+    /// <summary>
+    /// Join a tournament
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="user"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Returns true if the user successfully joins the tournament, otherwise false</returns>
     public async Task<bool> JoinTournament(Guid id, ApplicationUser user, CancellationToken cancellationToken = default)
     {
         var executionStrategy = _context.Database.CreateExecutionStrategy();
@@ -419,6 +420,87 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             }
         });
     }
+
+    /// <summary>
+    /// Joins a tournament with a transaction reference
+    /// </summary>
+    /// <param name="id">The ID of the tournament</param>
+    /// <param name="user">The user joining the tournament</param>
+    /// <param name="transactionReference">The transaction reference</param>
+    /// <param name="cancellationToken">The cancellation token</param>
+    /// <returns>Returns true if the user successfully joins the tournament, otherwise false</returns>
+    public async Task<bool> JoinTournamentWithTransactionReference(Guid id, ApplicationUser user, string transactionReference = "", CancellationToken cancellationToken = default)
+    {
+        var executionStrategy = _context.Database.CreateExecutionStrategy();
+        return await executionStrategy.ExecuteAsync(async () =>
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                Tournament? existingTournament = await _context.Tournaments
+                    .Include(t => t.UserTournaments)
+                    .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+
+                if (existingTournament == null)
+                {
+                    throw new Exception("Tournament not found");
+                }
+
+                if (existingTournament.UserTournaments.Any(ut => ut.UserId == user.Id))
+                {
+                    return true;
+                }
+                Guid? creditId = null;
+                if (!string.IsNullOrWhiteSpace(transactionReference))
+                {
+                    var creditPaymentTransaction = await _context.PaymentTransactions.FirstOrDefaultAsync(x => x.TransactionReference == transactionReference && x.Status == Models.TransactionStatus.Pending, cancellationToken);
+                    if (creditPaymentTransaction != null)
+                    {
+                        creditPaymentTransaction.Status = Models.TransactionStatus.Success;
+                        creditPaymentTransaction.DateModified = DateTime.Now;
+                        creditId = creditPaymentTransaction.Id;
+                    }
+                }
+
+                //debit the user if the tournament has an entry fee
+                if (existingTournament.EntryFee > 0)
+                {
+                    var debitPaymentTransaction = new PaymentTransaction
+                    {
+                        UserId = user.Id,
+                        TournamentId = id,
+                        Amount = -existingTournament.EntryFee,
+                        Status = Models.TransactionStatus.Success,
+                        TransactionReference = CommonHelpers.GenerateRandomString(10)
+                    };
+
+                    _context.PaymentTransactions.Add(debitPaymentTransaction);
+                }
+
+                UserTournament userTournament = new()
+                {
+                    UserId = user.Id,
+                    TournamentId = existingTournament.Id,
+                    PaymentTransactionId = creditId,
+                    DateJoined = DateTime.Now
+                };
+
+                _context.UserTournaments.Add(userTournament);
+                await _context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                return true;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
+        });
+    }
+    /// <summary>
+    /// Gets the featured tournaments
+    /// </summary>
+    /// <returns></returns>
     public IQueryable<TournamentDTO> GetFeaturedTournaments()
     {
         return GetAllTournaments().Where(t => t.IsFeatured);

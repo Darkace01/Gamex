@@ -132,3 +132,9 @@ public class TournamentUpdateDTO
     public IFormFile? CoverPicture { get; set; }
     public IEnumerable<Guid> CategoryIds { get; set; }
 }
+
+
+public class JoinTournamentDTO
+{
+    public string Reference { get; set; } = string.Empty;
+}
