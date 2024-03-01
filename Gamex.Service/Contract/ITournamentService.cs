@@ -61,6 +61,15 @@
         /// <param name="user">The user joining the tournament.</param>
         /// <returns>A task representing the asynchronous operation. The result is true if the user successfully joins the tournament, otherwise false.</returns>
         Task<bool> JoinTournamentMock(Guid id, ApplicationUser user);
+        /// <summary>
+        /// Joins a tournament with a transaction reference
+        /// </summary>
+        /// <param name="id">The ID of the tournament</param>
+        /// <param name="user">The user joining the tournament</param>
+        /// <param name="transactionReference">The transaction reference</param>
+        /// <param name="cancellationToken">The cancellation token</param>
+        /// <returns>Returns true if the user successfully joins the tournament, otherwise false</returns>
+        Task<bool> JoinTournamentWithTransactionReference(Guid id, ApplicationUser user, string transactionReference = "", CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates a tournament.

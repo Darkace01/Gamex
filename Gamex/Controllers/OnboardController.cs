@@ -1,13 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
-
-namespace Gamex.Controllers;
+﻿namespace Gamex.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{v:apiversion}/onboard")]
 [ApiController]
-public class OnboardController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager) : ControllerBase
+public class OnboardController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager) : BaseController(userManager, repo)
 {
-    private readonly IRepositoryServiceManager _repo = repo;
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
 
     [HttpPost]
     [Authorize]
@@ -30,7 +26,7 @@ public class OnboardController(IRepositoryServiceManager repo, UserManager<Appli
 
         if (!string.IsNullOrWhiteSpace(user.Picture?.PublicId))
         {
-            await _repo.FileStorageService.DeleteFile(user.Picture.PublicId);
+            await _repositoryServiceManager.FileStorageService.DeleteFile(user.Picture.PublicId);
         }
 
         var existingDisplayName = await _userManager.Users.AsNoTracking().AnyAsync(u => u.DisplayName == model.DisplayName && u.Id != user.Id);
@@ -57,16 +53,16 @@ public class OnboardController(IRepositoryServiceManager repo, UserManager<Appli
         //{
         //    if (!string.IsNullOrWhiteSpace(user.Picture?.FileUrl))
         //    {
-        //        var uploadResult = await _repo.FileStorageService.SaveFile(model.ProfilePicture, "profile-picture");
+        //        var uploadResult = await _repositoryServiceManager.FileStorageService.SaveFile(model.ProfilePicture, "profile-picture");
         //        if (uploadResult is not null)
         //        {
-        //            await _repo.PictureService.UpdatePicture(new PictureUpdateDTO(user.PictureId, uploadResult.FileUrl, uploadResult.PublicId));
+        //            await _repositoryServiceManager.PictureService.UpdatePicture(new PictureUpdateDTO(user.PictureId, uploadResult.FileUrl, uploadResult.PublicId));
         //        }
         //    }
         //    else
         //    {
-        //        var uploadResult = await _repo.FileStorageService.SaveFile(model.ProfilePicture, "profile-picture");
-        //        var savePicture = await _repo.PictureService.CreatePicture(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId));
+        //        var uploadResult = await _repositoryServiceManager.FileStorageService.SaveFile(model.ProfilePicture, "profile-picture");
+        //        var savePicture = await _repositoryServiceManager.PictureService.CreatePicture(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId));
 
         //        trackedUser.PictureId = savePicture.Id;
         //    }
@@ -85,7 +81,7 @@ public class OnboardController(IRepositoryServiceManager repo, UserManager<Appli
         }
 
         user = await GetUser();
-        if(user is null)
+        if (user is null)
         {
             return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<UserProfileDTO>(500, "Internal server error"));
         }
@@ -114,10 +110,10 @@ public class OnboardController(IRepositoryServiceManager repo, UserManager<Appli
 
         if (!string.IsNullOrWhiteSpace(user.Picture?.PublicId))
         {
-            await _repo.FileStorageService.DeleteFile(user.Picture.PublicId);
+            await _repositoryServiceManager.FileStorageService.DeleteFile(user.Picture.PublicId);
         }
 
-        var uploadResult = await _repo.FileStorageService.SaveFile(file, AppConstant.ProfilePictureTag);
+        var uploadResult = await _repositoryServiceManager.FileStorageService.SaveFile(file, AppConstant.ProfilePictureTag);
 
         if (uploadResult is null)
         {
@@ -126,11 +122,11 @@ public class OnboardController(IRepositoryServiceManager repo, UserManager<Appli
 
         if (!string.IsNullOrWhiteSpace(user.Picture?.FileUrl))
         {
-            await _repo.PictureService.UpdatePicture(new PictureUpdateDTO(user.PictureId, uploadResult.FileUrl, uploadResult.PublicId));
+            await _repositoryServiceManager.PictureService.UpdatePicture(new PictureUpdateDTO(user.PictureId, uploadResult.FileUrl, uploadResult.PublicId));
         }
         else
         {
-            var savePicture = await _repo.PictureService.CreatePicture(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId));
+            var savePicture = await _repositoryServiceManager.PictureService.CreatePicture(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId));
             user.PictureId = savePicture.Id;
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
@@ -159,17 +155,6 @@ public class OnboardController(IRepositoryServiceManager repo, UserManager<Appli
     }
 
     #region Helpers
-    private async Task<ApplicationUser?> GetUser()
-    {
-        var username = User?.Identity?.Name;
-        if (string.IsNullOrWhiteSpace(username))
-        {
-            return null;
-        }
-        var user = await _userManager.FindByNameAsync(username);
-        return user;
-    }
-
     private async Task<ApplicationUser?> GetUserWithTracking()
     {
         var username = User?.Identity?.Name;
@@ -186,7 +171,7 @@ public class OnboardController(IRepositoryServiceManager repo, UserManager<Appli
         if (user is null) return null;
         if (string.IsNullOrWhiteSpace(user.UserName)) return null;
 
-        return _repo.ExtendedUserService.GetUserByNameForProfile(user.UserName);
+        return _repositoryServiceManager.ExtendedUserService.GetUserByNameForProfile(user.UserName);
     }
     #endregion
 }

@@ -363,8 +363,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     /// <param name="id"></param>
     /// <param name="user"></param>
     /// <param name="cancellationToken"></param>
-    /// <returns> 
-    /// </returns>
+    /// <returns>Returns true if the user successfully joins the tournament, otherwise false</returns>
     public async Task<bool> JoinTournament(Guid id, ApplicationUser user, CancellationToken cancellationToken = default)
     {
         var executionStrategy = _context.Database.CreateExecutionStrategy();
@@ -417,6 +416,83 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 {
                     await transaction.RollbackAsync(cancellationToken);
                 }
+                throw;
+            }
+        });
+    }
+
+    /// <summary>
+    /// Joins a tournament with a transaction reference
+    /// </summary>
+    /// <param name="id">The ID of the tournament</param>
+    /// <param name="user">The user joining the tournament</param>
+    /// <param name="transactionReference">The transaction reference</param>
+    /// <param name="cancellationToken">The cancellation token</param>
+    /// <returns>Returns true if the user successfully joins the tournament, otherwise false</returns>
+    public async Task<bool> JoinTournamentWithTransactionReference(Guid id, ApplicationUser user, string transactionReference = "", CancellationToken cancellationToken = default)
+    {
+        var executionStrategy = _context.Database.CreateExecutionStrategy();
+        return await executionStrategy.ExecuteAsync(async () =>
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                Tournament? existingTournament = await _context.Tournaments
+                    .Include(t => t.UserTournaments)
+                    .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+
+                if (existingTournament == null)
+                {
+                    throw new Exception("Tournament not found");
+                }
+
+                if (existingTournament.UserTournaments.Any(ut => ut.UserId == user.Id))
+                {
+                    return true;
+                }
+                Guid? creditId = null;
+                if (!string.IsNullOrWhiteSpace(transactionReference))
+                {
+                    var creditPaymentTransaction = await _context.PaymentTransactions.FirstOrDefaultAsync(x => x.TransactionReference == transactionReference && x.Status == Models.TransactionStatus.Pending, cancellationToken);
+                    if (creditPaymentTransaction != null)
+                    {
+                        creditPaymentTransaction.Status = Models.TransactionStatus.Success;
+                        creditPaymentTransaction.DateModified = DateTime.Now;
+                        creditId = creditPaymentTransaction.Id;
+                    }
+                }
+
+                //debit the user if the tournament has an entry fee
+                if (existingTournament.EntryFee > 0)
+                {
+                    var debitPaymentTransaction = new PaymentTransaction
+                    {
+                        UserId = user.Id,
+                        TournamentId = id,
+                        Amount = -existingTournament.EntryFee,
+                        Status = Models.TransactionStatus.Success,
+                        TransactionReference = CommonHelpers.GenerateRandomString(10)
+                    };
+
+                    _context.PaymentTransactions.Add(debitPaymentTransaction);
+                }
+
+                UserTournament userTournament = new()
+                {
+                    UserId = user.Id,
+                    TournamentId = existingTournament.Id,
+                    PaymentTransactionId = creditId,
+                    DateJoined = DateTime.Now
+                };
+
+                _context.UserTournaments.Add(userTournament);
+                await _context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                return true;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync(cancellationToken);
                 throw;
             }
         });
