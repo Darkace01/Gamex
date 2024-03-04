@@ -1,5 +1,6 @@
 ﻿using Gamex.Common;
 using Gamex.DTO;
+using Gamex.Models;
 using System.Threading;
 
 namespace Gamex.Service.Implementation;
@@ -45,6 +46,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             PictureUrl = tournament.Picture?.FileUrl ?? "",
             CoverPicturePublicId = tournament.CoverPicture?.PublicId ?? "",
             CoverPictureUrl = tournament.CoverPicture?.FileUrl ?? "",
+            AvailableSlot = tournament.AvailableSlot ?? 0,
             Categories = tournament.Categories.Select(tc => new TournamentCategoryDTO
             {
                 Id = tc.Id,
@@ -55,6 +57,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 .Select((ut, index) => new TournamentUserDTO
                 {
                     UserId = ut.UserId,
+                    Email = ut.User.Email,
                     CreatorId = ut.CreatorId,
                     DisplayName = ut.User.DisplayName,
                     PictureUrl = ut.User.Picture?.FileUrl ?? "",
@@ -98,7 +101,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             PictureUrl = t.Picture == null ? "" : t.Picture.FileUrl,
             CoverPicturePublicId = t.CoverPicture == null ? "" : t.CoverPicture.PublicId,
             CoverPictureUrl = t.CoverPicture == null ? "" : t.CoverPicture.FileUrl,
-
+            AvailableSlot = t.AvailableSlot ?? 0,
             Categories = t.Categories.Select(tc => new TournamentCategoryDTO
             {
                 Id = tc.Id,
@@ -329,6 +332,11 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             Tournament? existingTournament = await _context.Tournaments
                 .Include(t => t.UserTournaments)
                 .FirstOrDefaultAsync(t => t.Id == id) ?? throw new Exception("Tournament not found");
+
+            if (existingTournament.AvailableSlot <= existingTournament.UserTournaments.Count)
+            {
+                throw new Exception("Tournament is full");
+            }
             if (existingTournament.EntryFee > 0)
             {
                 var paymentTransaction = new PaymentTransaction
@@ -380,6 +388,11 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 if (existingTournament.UserTournaments.Any(ut => ut.UserId == user.Id))
                 {
                     return true;
+                }
+
+                if(existingTournament.AvailableSlot < existingTournament.UserTournaments.Count)
+                {
+                    throw new Exception("Tournament is full");
                 }
 
                 //debit the user if the tournament has an entry fee
@@ -449,6 +462,11 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 if (existingTournament.UserTournaments.Any(ut => ut.UserId == user.Id))
                 {
                     return true;
+                }
+
+                if (existingTournament.AvailableSlot < existingTournament.UserTournaments.Count)
+                {
+                    throw new Exception("Tournament is full");
                 }
                 Guid? creditId = null;
                 if (!string.IsNullOrWhiteSpace(transactionReference))
