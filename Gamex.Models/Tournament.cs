@@ -15,6 +15,7 @@ public class Tournament : Entity
     public Picture? Picture { get; set; }
     public Guid? CoverPictureId { get; set; }
     public Picture? CoverPicture { get; set; }
+    public int? AvailableSlot { get; set; } = 1000;
     public List<UserTournament> UserTournaments { get; set; } = [];
     public List<TournamentCategory> Categories { get; set; } = new List<TournamentCategory>();
     public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();

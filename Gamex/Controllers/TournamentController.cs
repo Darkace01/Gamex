@@ -204,6 +204,9 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         if (tournamentExist.TournamentUsers.Any(ut => ut.UserId == user.Id))
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Your are already in this tournament"));
 
+        if(tournamentExist.AvailableSlot < tournamentExist.TournamentUsers.Count())
+            return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, "Tournament is full"));
+
         if (tournamentExist.EntryFee > 0)
         {
             var userWallet = await _repositoryServiceManager.PaymentService.GetUserBalance(user.Id);

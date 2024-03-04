@@ -24,6 +24,14 @@ public class TournamentDTO
     public Guid? CoverPictureId { get; set; }
     public string CoverPictureUrl { get; set; } = string.Empty;
     public string CoverPicturePublicId { get; set; } = string.Empty;
+    public int AvailableSlot { get; set; }
+    public int TotalRegistered
+    {
+        get
+        {
+            return TournamentUsers.Count();
+        }
+    }
     public IEnumerable<TournamentCategoryDTO>? Categories { get; set; }
     public IEnumerable<TournamentUserDTO> TournamentUsers { get; set; }
 }
