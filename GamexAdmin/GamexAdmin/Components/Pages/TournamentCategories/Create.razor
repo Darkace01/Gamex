@@ -4,7 +4,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
-@rendermode InteractiveAuto
+@rendermode @(new InteractiveServerRenderMode(prerender: true))
 <div class="row">
     <div class="col-md-6">
         <h1>Create Tournament Category</h1>

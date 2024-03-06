@@ -4,7 +4,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
-@rendermode InteractiveAuto
+@rendermode @(new InteractiveServerRenderMode(prerender: true))
 <div class="row">
     <div class="col-md-6">
         <h1>Create Tournament</h1>
@@ -88,13 +88,13 @@
                         <InputNumber @bind-Value="@Model.EntryFee" class="form-control" autocomplete="entry fee" aria-required="true" placeholder="Please enter tournament Entry Fee." disabled="@IsLoading" />
                         <label for="entryFee" class="form-label">Entry Fee</label>
                         <ValidationMessage For="@(() => Model.EntryFee)" class="text-danger" />
-                    </div>
+                    </div>  
                 </div>
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
-                        <InputTextArea @bind-Value="@Model.Rules" class="form-control" autocomplete="rules" aria-required="true" placeholder="Please enter tournament rules." disabled="@IsLoading" />
-                        <label for="rules" class="form-label">Rules</label>
-                        <ValidationMessage For="@(() => Model.Rules)" class="text-danger" />
+                        <InputNumber @bind-Value="@Model.AvailableSlot" class="form-control" autocomplete="availableSlot" aria-required="true" placeholder="Please enter tournament rules." disabled="@IsLoading" />
+                        <label for="availableSlot" class="form-label">AvailableSlot</label>
+                        <ValidationMessage For="@(() => Model.AvailableSlot)" class="text-danger" />
                     </div>
 
                 </div>
@@ -117,6 +117,11 @@
                 <InputTextArea @bind-Value="@Model.Description" class="form-control" autocomplete="description" aria-required="true" placeholder="Please enter tournament description." disabled="@IsLoading" />
                 <label for="description" class="form-label">Description</label>
                 <ValidationMessage For="@(() => Model.Description)" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
+                <InputTextArea @bind-Value="@Model.Rules" class="form-control" autocomplete="rules" aria-required="true" placeholder="Please enter tournament description." disabled="@IsLoading" />
+                <label for="rules" class="form-label">Rules</label>
+                <ValidationMessage For="@(() => Model.Rules)" class="text-danger" />
             </div>
 
             <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">

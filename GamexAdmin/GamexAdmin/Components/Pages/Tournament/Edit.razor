@@ -4,7 +4,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @inject IRepositoryServiceManager RepositoryServiceManager
-@rendermode InteractiveAuto
+@rendermode @(new InteractiveServerRenderMode(prerender: true))
 
 <div class="row">
     <div class="col-md-6">
@@ -98,9 +98,9 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
-                        <InputTextArea @bind-Value="@Model.Rules" class="form-control" autocomplete="rules" aria-required="true" placeholder="Please enter tournament rules." rows="4" disabled="@IsLoading" />
-                        <label for="rules" class="form-label">Rules</label>
-                        <ValidationMessage For="@(() => Model.Rules)" class="text-danger" />
+                        <InputNumber @bind-Value="@Model.AvailableSlot" class="form-control" autocomplete="availableslot" aria-required="true" placeholder="Please enter total number of users that can join." disabled="@IsLoading" />
+                        <label for="availableslot" class="form-label">AvailableSlot</label>
+                        <ValidationMessage For="@(() => Model.AvailableSlot)" class="text-danger" />
                     </div>
                 </div>
             </div>
@@ -182,6 +182,7 @@
                     EntryFee = tournament.EntryFee,
                     PictureId = tournament.PictureId,
                     CoverPictureId = tournament.CoverPictureId,
+                    AvailableSlot = tournament.AvailableSlot,
                     CategoryIds = tournament.Categories?.Select(x => (Guid)x.Id).ToList()
                 };
 
