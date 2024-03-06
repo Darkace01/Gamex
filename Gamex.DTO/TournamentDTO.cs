@@ -29,7 +29,7 @@ public class TournamentDTO
     {
         get
         {
-            return TournamentUsers.Count();
+            return TournamentUsers != null ? TournamentUsers.Count() : 0;
         }
     }
     public IEnumerable<TournamentCategoryDTO>? Categories { get; set; }
