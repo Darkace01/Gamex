@@ -1,8 +1,19 @@
-﻿namespace Gamex.Service.Implementation;
+﻿using Gamex.Common;
 
-public class ExtendedUserService(GamexDbContext context) : IExtendedUserService
+namespace Gamex.Service.Implementation;
+
+public class ExtendedUserService : IExtendedUserService
 {
-    private readonly GamexDbContext _context = context;
+    private readonly GamexDbContext _context;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ExtendedUserService"/> class.
+    /// </summary>
+    /// <param name="context">The GamexDbContext.</param>
+    public ExtendedUserService(GamexDbContext context)
+    {
+        _context = context;
+    }
 
     /// <summary>
     /// Retrieves a user by their username.
@@ -54,7 +65,6 @@ public class ExtendedUserService(GamexDbContext context) : IExtendedUserService
     /// <returns>The UserProfileDTO object representing the user profile.</returns>
     public UserProfileDTO? GetUserByNameForProfile(string username)
     {
-
         var user = _context.Users
             .AsNoTracking()
             .Where(u => u.UserName == username)
@@ -62,7 +72,7 @@ public class ExtendedUserService(GamexDbContext context) : IExtendedUserService
             {
                 User = u,
                 Picture = _context.Pictures.AsNoTracking().FirstOrDefault(p => p.Id == u.PictureId),
-                Balance = _context.PaymentTransactions.AsNoTracking().Where(pt => pt.UserId == u.Id && pt.Status == TransactionStatus.Success).Sum(pt => pt.Amount)
+                Balance = _context.PaymentTransactions.AsNoTracking().Where(pt => pt.UserId == u.Id && pt.Status == Models.TransactionStatus.Success).Sum(pt => pt.Amount)
             })
             .Select(u => new UserProfileDTO(
                 u.User.FirstName,
@@ -80,5 +90,57 @@ public class ExtendedUserService(GamexDbContext context) : IExtendedUserService
             .FirstOrDefault();
 
         return user;
+    }
+
+    /// <summary>
+    /// Generates a user confirmation code.
+    /// </summary>
+    /// <param name="userId">The user ID.</param>
+    /// <returns>The generated UserConfirmationCodeDTO object.</returns>
+    public async Task<UserConfirmationCodeDTO> GenerateUserConfirmationCode(string userId)
+    {
+        var token = new UserConfirmationCode()
+        {
+            UserId = userId,
+            Code = CommonHelpers.GenerateRandomNumbers(6).ToString(),
+            ExpiryDate = DateTime.Now.AddMinutes(30),
+        };
+
+        _context.UserConfirmationCodes.Add(token);
+        await _context.SaveChangesAsync();
+
+        return new UserConfirmationCodeDTO
+        {
+            Id = token.Id,
+            Code = token.Code,
+            ExpiryDate = token.ExpiryDate,
+            IsUsed = token.IsUsed,
+            UserId = token.UserId,
+        };
+    }
+
+    /// <summary>
+    /// Verifies a user confirmation code.
+    /// </summary>
+    /// <param name="userId">The user ID.</param>
+    /// <param name="code">The confirmation code.</param>
+    /// <returns>True if the code is valid and not expired; otherwise, false.</returns>
+    public async Task<bool> VerifyUserConfirmationCode(string userId, string code)
+    {
+        var userConfirmationCode = await _context.UserConfirmationCodes.FirstOrDefaultAsync(x => x.UserId == userId && x.Code == code);
+        if (userConfirmationCode == null)
+        {
+            return false;
+        }
+        if (userConfirmationCode.ExpiryDate < DateTime.Now)
+        {
+            return false;
+        }
+
+        userConfirmationCode.IsUsed = true;
+        _context.UserConfirmationCodes.Update(userConfirmationCode);
+
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

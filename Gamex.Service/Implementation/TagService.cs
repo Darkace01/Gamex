@@ -9,18 +9,13 @@ namespace Gamex.Service.Implementation;
 /// <summary>
 /// Service class for managing tags.
 /// </summary>
-public class TagService : ITagService
+/// <remarks>
+/// Initializes a new instance of the <see cref="TagService"/> class.
+/// </remarks>
+/// <param name="context">The database context.</param>
+public class TagService(GamexDbContext context) : ITagService
 {
-    private readonly GamexDbContext _context;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TagService"/> class.
-    /// </summary>
-    /// <param name="context">The database context.</param>
-    public TagService(GamexDbContext context)
-    {
-        _context = context;
-    }
+    private readonly GamexDbContext _context = context;
 
     /// <summary>
     /// Gets all tags.
