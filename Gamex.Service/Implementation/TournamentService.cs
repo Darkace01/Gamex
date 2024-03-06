@@ -148,6 +148,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                         Rules = tournament.Rules,
                         PictureId = tournament.PictureId,
                         CoverPictureId = tournament.CoverPictureId,
+                        AvailableSlot = tournament.AvailableSlot,
                         Categories = _context.TournamentCategories.Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList(),
                     };
 
@@ -198,6 +199,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 Rules = tournament.Rules,
                 PictureId = tournament.PictureId,
                 CoverPictureId = tournament.CoverPictureId,
+                AvailableSlot = tournament.AvailableSlot,
             };
 
             if (tournament.CategoryIds != null)
@@ -263,6 +265,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             existingTournament.Time = tournament.Time;
             existingTournament.EntryFee = tournament.EntryFee;
             existingTournament.Rules = tournament.Rules;
+            existingTournament.AvailableSlot = tournament.AvailableSlot;
 
             if (tournament.PictureId.HasValue && existingTournament.PictureId != tournament.PictureId)
             {

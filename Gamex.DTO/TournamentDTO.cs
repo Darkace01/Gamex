@@ -86,6 +86,7 @@ public class TournamentCreateDTO
     public string TimeString { get; set; } = string.Empty;
     public decimal EntryFee { get; set; }
     public string Rules { get; set; } = string.Empty;
+    public int AvailableSlot { get; set; } = 99;
     public Guid? PictureId { get; set; }
     public IFormFile? Picture { get; set; }
     public Guid? CoverPictureId { get; set; }
@@ -134,6 +135,7 @@ public class TournamentUpdateDTO
     public string TimeString { get; set; } = string.Empty;
     public decimal EntryFee { get; set; }
     public string Rules { get; set; } = string.Empty;
+    public int AvailableSlot { get; set; }
     public Guid? PictureId { get; set; }
     public IFormFile? Picture { get; set; }
     public Guid? CoverPictureId { get; set; }
