@@ -195,7 +195,7 @@
         catch (Exception ex)
         {
             IsLoading = false;
-            errorMessage = ex?.Message;
+            errorMessage = ex?.Message ?? "An Error occured";
         }
 
     }
@@ -239,7 +239,7 @@
         catch (Exception ex)
         {
             IsLoading = false;
-            errorMessage = ex?.Message;
+            errorMessage = ex?.Message ?? "An Error occured";
         }
 
     }
@@ -252,6 +252,11 @@
         {
             try
             {
+                if(currentUser is null)
+                {
+                    errorMessage = "Please sign in again";
+                    return;
+                }
                 if (IsLoading == true) return;
                 IsLoading = true;
                 var startDateStr = Model.StartDateForm.HasValue ? Model.StartDateForm.Value.ToString("dd/MM/yyyy") : "";
@@ -277,7 +282,7 @@
         }
     }
 
-    private async Task<ApplicationUser> GetCurrentUser()
+    private async Task<ApplicationUser?> GetCurrentUser()
     {
         var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var userClaim = authenticationState.User;
