@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Gamex.Data;
 
-public class GamexDbContext : IdentityDbContext<ApplicationUser>
+public class GamexDbContext(DbContextOptions<GamexDbContext> options) : IdentityDbContext<ApplicationUser>(options)
 {
     public DbSet<Tournament> Tournaments { get; set; }
     public DbSet<Picture> Pictures { get; set; }
@@ -15,10 +15,7 @@ public class GamexDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<PostTag> PostTags { get; set; }
-
-    public GamexDbContext(DbContextOptions<GamexDbContext> options) : base(options)
-    {
-    }
+    public DbSet<UserConfirmationCode> UserConfirmationCodes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

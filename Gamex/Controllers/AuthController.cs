@@ -211,12 +211,12 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         if (user == null) return BadRequest(new ApiResponse<string>(400, responseMessage));
 
-        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var token = await _repositoryServiceManager.ExtendedUserService.GenerateUserConfirmationCode(user.Id);
 
-        var passwordResetLink = Url.Action("ResetPassword", "Auth", new { Email = model.Email, token }, Request.Scheme);
+        var message = $"Please find your password resent code : {token.Code}";
 
         // Send email with password reset link
-        _ = await _emailService.SendEmailAsync(model.Email, "Reset Password", passwordResetLink);
+        _ = await _emailService.SendEmailAsync(model.Email, "Reset Password", message);
         // _emailService.SendEmail(new EmailDTO { To = model.Email, Subject = "Reset Password", Body = passwordResetLink });
 
         return Ok(new ApiResponse<string>(200, responseMessage));
@@ -237,7 +237,13 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         if (user == null) return BadRequest(new ApiResponse<string>(400, "Invalid reset password request"));
 
-        var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+        var isValidCode = await _repositoryServiceManager.ExtendedUserService.VerifyUserConfirmationCode(user.Id, model.Code);
+
+        if (!isValidCode) return BadRequest(new ApiResponse<string>(400, "Invalid reset password request"));
+
+        var passwordResetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        var result = await _userManager.ResetPasswordAsync(user, passwordResetToken, model.NewPassword);
 
         if (!result.Succeeded) return BadRequest(new ApiResponse<string>(400, "Invalid reset password request"));
 
