@@ -127,17 +127,14 @@ public class ExtendedUserService : IExtendedUserService
     /// <returns>True if the code is valid and not expired; otherwise, false.</returns>
     public async Task<bool> VerifyUserConfirmationCode(string userId, string code)
     {
-        var userConfirmationCode = await _context.UserConfirmationCodes.FirstOrDefaultAsync(x => x.UserId == userId && x.Code == code);
-        if (userConfirmationCode == null)
-        {
-            return false;
-        }
-        if (userConfirmationCode.ExpiryDate < DateTime.Now)
+        var userConfirmationCode = await _context.UserConfirmationCodes.FirstOrDefaultAsync(x => x.Code == code && x.ExpiryDate < DateTime.Now && x.UserId == userId);
+        if (userConfirmationCode is null)
         {
             return false;
         }
 
         userConfirmationCode.IsUsed = true;
+        userConfirmationCode.DateModified = DateTime.Now;
         _context.UserConfirmationCodes.Update(userConfirmationCode);
 
         await _context.SaveChangesAsync();
