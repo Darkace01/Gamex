@@ -2,7 +2,7 @@ name: Build and deploy .NET Core application to Web App gamex-admin
 on:
   push:
     branches:
-    - main
+    - admin
 env:
   AZURE_WEBAPP_NAME: gamex-admin
   AZURE_WEBAPP_PACKAGE_PATH: GamexAdmin/GamexAdmin/published
