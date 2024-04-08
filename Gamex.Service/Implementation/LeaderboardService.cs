@@ -17,7 +17,7 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
              .Select(g => new LeaderboardDTO
              {
                  PlayerId = g.Key,
-                 PlayerName = g.First().DisplayName,
+                 PlayerName = g.First().DisplayName ?? $"{g.First().FirstName} {g.First().LastName}",
                  PlayerProfilePictureUrl = g.First().Picture != null ? g.First().Picture.FileUrl : "",
                  Tournaments = g.First().UserTournaments.Count,
                  Points = g.First().UserTournaments.Sum(ut => ut.Point ?? 0)
