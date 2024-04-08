@@ -123,6 +123,11 @@
                 <label for="rules" class="form-label">Rules</label>
                 <ValidationMessage For="@(() => Model.Rules)" class="text-danger" />
             </div>
+            <div class="form-floating mb-3">
+                <InputTextArea @bind-Value="@Model.Prize" class="form-control" autocomplete="prizes" aria-required="true" placeholder="Please enter tournament prizes." rows="4" disabled="@IsLoading" />
+                <label for="rules" class="form-label">Prize</label>
+                <ValidationMessage For="@(() => Model.Prize)" class="text-danger" />
+            </div>
 
             <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">
                 @{
@@ -286,7 +291,7 @@
     {
         var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var userClaim = authenticationState.User;
-        var user = await UserManager.GetUserAsync(userClaim);
+        var user = await UserManager.FindByNameAsync(userClaim.Identity?.Name);
         return user;
     }
 }

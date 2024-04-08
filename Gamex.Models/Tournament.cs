@@ -11,6 +11,7 @@ public class Tournament : Entity
     public DateTime? Time { get; set; }
     public decimal EntryFee { get; set; }
     public string Rules { get; set; } = string.Empty;
+    public string Prize { get; set; } = string.Empty;
     public Guid? PictureId { get; set; }
     public Picture? Picture { get; set; }
     public Guid? CoverPictureId { get; set; }
