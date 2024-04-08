@@ -123,7 +123,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         if (userExist is not null)
         {
             // Return a token for the user
-            if (userExist.ExternalAuthInWithGoogle == false)
+            if (userExist.ExternalAuthInWithGoogle)
             {
                 userExist.ExternalAuthInWithGoogle = true;
                 userExist.EmailConfirmed = true;
@@ -141,14 +141,15 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         // Create a new user
         ApplicationUser user = new()
         {
-            Email = response?.Data?.Email,
+            Email = response.Data?.Email,
             EmailConfirmed = true,
-            FirstName = response?.Data?.GivenName ?? string.Empty,
-            LastName = response?.Data?.FamilyName ?? string.Empty,
+            FirstName = response.Data?.GivenName ?? string.Empty,
+            LastName = response.Data?.FamilyName ?? string.Empty,
             SecurityStamp = Guid.NewGuid().ToString(),
-            UserName = response?.Data?.Email,
+            UserName = response.Data?.Email,
             ExternalAuthInWithGoogle = true,
             PictureId = picture.Id,
+            DisplayName = response.Data?.Name,
             //ReceivePushNotification = true
         };
 

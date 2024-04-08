@@ -124,7 +124,7 @@
     {
         var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var userClaim = authenticationState.User;
-        var user = await UserManager.GetUserAsync(userClaim);
+        var user = await UserManager.FindByNameAsync(userClaim.Identity?.Name);
         return user!;
     }
 
