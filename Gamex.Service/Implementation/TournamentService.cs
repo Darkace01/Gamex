@@ -42,6 +42,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             Time = tournament.Time,
             EntryFee = tournament.EntryFee,
             Rules = tournament.Rules,
+            Prize = tournament.Prize,
             PicturePublicId = tournament.Picture?.PublicId ?? "",
             PictureUrl = tournament.Picture?.FileUrl ?? "",
             CoverPicturePublicId = tournament.CoverPicture?.PublicId ?? "",
@@ -97,6 +98,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             Time = t.Time,
             EntryFee = t.EntryFee,
             Rules = t.Rules,
+            Prize = t.Prize,
             PicturePublicId = t.Picture == null ? "" : t.Picture.PublicId,
             PictureUrl = t.Picture == null ? "" : t.Picture.FileUrl,
             CoverPicturePublicId = t.CoverPicture == null ? "" : t.CoverPicture.PublicId,
@@ -146,6 +148,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                         Time = tournament.Time,
                         EntryFee = tournament.EntryFee,
                         Rules = tournament.Rules,
+                        Prize = tournament.Prize,
                         PictureId = tournament.PictureId,
                         CoverPictureId = tournament.CoverPictureId,
                         AvailableSlot = tournament.AvailableSlot,
@@ -197,6 +200,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 Time = tournament.Time,
                 EntryFee = tournament.EntryFee,
                 Rules = tournament.Rules,
+                Prize = tournament.Prize,
                 PictureId = tournament.PictureId,
                 CoverPictureId = tournament.CoverPictureId,
                 AvailableSlot = tournament.AvailableSlot,
@@ -250,6 +254,11 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 adminUsers = await _context.UserRoles.AsNoTracking().Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToListAsync(cancellationToken);
             }
 
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
             bool isAuthorized = existingTournament.UserTournaments.Any(ut => ut.CreatorId != user.Id || adminUsers.Any(x => x == user.Id));
             if (!isAuthorized)
             {
@@ -265,6 +274,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             existingTournament.Time = tournament.Time;
             existingTournament.EntryFee = tournament.EntryFee;
             existingTournament.Rules = tournament.Rules;
+            existingTournament.Prize = tournament.Prize;
             existingTournament.AvailableSlot = tournament.AvailableSlot;
 
             if (tournament.PictureId.HasValue && existingTournament.PictureId != tournament.PictureId)
