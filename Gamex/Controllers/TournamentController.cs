@@ -212,7 +212,7 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
             var userWallet = await _repositoryServiceManager.PaymentService.GetUserBalance(user.Id);
             if (userWallet > tournamentExist.EntryFee)
             {
-                if (model is not null)
+                if (model is not null && string.IsNullOrWhiteSpace(model.Reference))
                 {
                     var transactionStatus = await ValidateAndVerifyTransactionReference(model.Reference, cancellationToken);
                     if (transactionStatus.StatusCode != StatusCodes.Status200OK)
