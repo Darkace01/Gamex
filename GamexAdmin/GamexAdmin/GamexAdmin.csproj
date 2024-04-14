@@ -8,6 +8,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="appsettings.Production.json" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\..\Gamex.Common\Gamex.Common.csproj" />
 		<ProjectReference Include="..\..\Gamex.Data\Gamex.Data.csproj" />
 		<ProjectReference Include="..\..\Gamex.DTO\Gamex.DTO.csproj" />

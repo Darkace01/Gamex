@@ -90,7 +90,7 @@
     private List<TagDTO> Tags { get; set; } = new();
 
     private bool IsLoading { get; set; } = false;
-    long maxFileSize = 1024 * 1024 * 10;
+    long maxFileSize = 1024 * 1024 * 30;
     string[] imageFileExtension = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
 
     protected override async Task OnInitializedAsync()
