@@ -28,6 +28,20 @@ public class TournamentDTO
     public IEnumerable<TournamentUserDTO> TournamentUsers { get; set; }
 }
 
+public class TournamentMiniDTO
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+
+    public TournamentMiniDTO(Guid id, string name, string description)
+    {
+        Id = id;
+        Name = name;
+        Description = description;
+    }
+}
+
 public class PaginatedTournamentDTO
 {
     public IEnumerable<TournamentDTO> Tournaments { get; set; }

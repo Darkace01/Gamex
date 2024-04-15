@@ -96,7 +96,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         var result = await _userManager.CreateAsync(user, model.Password);
 
-        if (!result.Succeeded) return BadRequest(new ApiResponse<string>(400, $"User creation failed! Please check user details and try again. {result?.Errors?.FirstOrDefault()?.Description}"));
+        if (!result.Succeeded) return BadRequest(new ApiResponse<string>(400, $"User creation failed! Please check user details and try again. {result.Errors?.FirstOrDefault()?.Description}"));
 
         await _userManager.AddToRoleAsync(user, AppConstant.PublicUserRole);
 
