@@ -87,9 +87,10 @@
 
         var isAdmin = false;
         var userRole = await RoleManager.FindByNameAsync(AppConstant.AdminUserRole);
+        ApplicationUser? user = null;
         if (userRole != null)
         {
-            var user = await UserManager.FindByEmailAsync(Input.Email);
+            user = await UserManager.FindByEmailAsync(Input.Email);
             if (user != null)
             {
                 var userRoles = await UserManager.GetRolesAsync(user);
@@ -117,7 +118,7 @@
             errorMessage = "Error: Invalid login attempt.";
             return;
         }
-        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
+        var result = await SignInManager.PasswordSignInAsync(user?.UserName ?? Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
         if (result.Succeeded)
         {
             Logger.LogInformation("User logged in.");

@@ -240,6 +240,35 @@ public class TestBase
         dbContext.PostTags.AddRange(postTags);
         dbContext.SaveChanges();
 
+        // PaymentTransaction
+        List<PaymentTransaction> paymentTransactions =
+        [
+            new() {
+                UserId = user1.Id,
+                Amount = 100,
+                Status = TransactionStatus.Success,
+                TransactionReference = "TransactionReference 1"
+            },
+            new ()
+            {
+                UserId = user1.Id,
+                Amount = 200,
+                Status = TransactionStatus.Failed,
+                TransactionReference = "TransactionReference 2"
+            },
+            new ()
+            {
+                UserId = user2.Id,
+                Amount = 300,
+                Status = TransactionStatus.Pending,
+                TransactionReference = "TransactionReference 3",
+                TournamentId = tournaments.First().Id
+            }
+        ];
+
+        dbContext.PaymentTransactions.AddRange(paymentTransactions);
+        dbContext.SaveChanges();
+
         return dbContext;
     }
 }

@@ -1,13 +1,9 @@
-﻿using Gamex.DTO;
-
-namespace Gamex.Controllers;
+﻿namespace Gamex.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{v:apiversion}/tournaments")]
 [ApiController]
-public class TournamentController(IRepositoryServiceManager repositoryServiceManager, UserManager<ApplicationUser> userManager) : ControllerBase
+public class TournamentController(IRepositoryServiceManager repositoryServiceManager, UserManager<ApplicationUser> userManager) : BaseController(userManager, repositoryServiceManager)
 {
-    private readonly IRepositoryServiceManager _repositoryServiceManager = repositoryServiceManager;
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
 
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -31,7 +27,7 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
             tournaments = tournaments.Where(t => t.Name.Contains(s) || t.Description.Contains(s) || t.Location.Contains(s) || t.Rules.Contains(s) ||
                                                             (t.Categories.Any() && t.Categories.Any(x => x.Name.Contains(s))));
 
-        var tournamentList = await tournaments.Skip(skip).Take(take).ToListAsync(cancellationToken);
+        var tournamentList = await tournaments.Skip(skip).Take(take).OrderBy(x => x.Name).ToListAsync(cancellationToken);
         PaginationDTO<TournamentDTO> paginatedTournament = new(tournamentList, Math.Ceiling((decimal)totalNumber / take), skip, take, totalNumber);
 
         return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<TournamentDTO>>(paginatedTournament));
@@ -208,7 +204,7 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status201Created)]
-    public async Task<IActionResult> JoinTournament(Guid id)
+    public async Task<IActionResult> JoinTournament([FromRoute] Guid id, [FromBody] JoinTournamentDTO? model = null, CancellationToken cancellationToken = default)
     {
         var user = await GetUser();
         if (user == null)
@@ -221,7 +217,28 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         if (tournamentExist.TournamentUsers.Any(ut => ut.UserId == user.Id))
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Your are already in this tournament"));
 
-        await _repositoryServiceManager.TournamentService.JoinTournament(id, user);
+        if(tournamentExist.AvailableSlot < tournamentExist.TournamentUsers.Count())
+            return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, "Tournament is full"));
+
+        if (tournamentExist.EntryFee > 0)
+        {
+            var userWallet = await _repositoryServiceManager.PaymentService.GetUserBalance(user.Id);
+            if (userWallet > tournamentExist.EntryFee)
+            {
+                if (model is not null && string.IsNullOrWhiteSpace(model.Reference))
+                {
+                    var transactionStatus = await ValidateAndVerifyTransactionReference(model.Reference, cancellationToken);
+                    if (transactionStatus.StatusCode != StatusCodes.Status200OK)
+                        return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(transactionStatus.StatusCode, transactionStatus.Message));
+                }
+                else
+                {
+                    return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, "You don't have enough balance to join this tournament"));
+                }
+            }
+        }
+
+        await _repositoryServiceManager.TournamentService.JoinTournamentWithTransactionReference(id, user, model?.Reference, cancellationToken);
 
         return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>("Tournament Successfully Joined"));
     }
@@ -233,7 +250,7 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
     public IActionResult GetFeaturedTournaments([FromQuery] int take = 10)
     {
         var tournaments = _repositoryServiceManager.TournamentService.GetFeaturedTournaments();
-        tournaments = tournaments.Take(take).OrderByDescending(t => t.Name);
+        tournaments = tournaments.Take(take).OrderBy(x => x.Name).OrderByDescending(t => t.Name);
         return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<TournamentDTO>>(tournaments));
     }
 
@@ -246,16 +263,4 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         var categories = _repositoryServiceManager.TournamentCategoryService.GetAllCategories();
         return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<TournamentCategoryDTO>>(categories));
     }
-    #region Helpers
-    private async Task<ApplicationUser?> GetUser()
-    {
-        var username = User?.Identity?.Name;
-        if (string.IsNullOrWhiteSpace(username))
-        {
-            return null;
-        }
-        var user = await _userManager.FindByNameAsync(username);
-        return user;
-    }
-    #endregion
 }

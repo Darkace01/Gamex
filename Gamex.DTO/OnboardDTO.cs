@@ -48,7 +48,7 @@ public class UserProfileDTO
         ProfilePicturePublicId = profilePicturePublicId;
     }
 
-    public UserProfileDTO(string firstName, string lastName, string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId, decimal walletBalance, int activeTournaments, int post, int comments)
+    public UserProfileDTO(string firstName, string lastName, string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId, decimal? walletBalance, int activeTournaments, int post, int comments)
     {
         FirstName = firstName;
         LastName = lastName;
@@ -57,7 +57,7 @@ public class UserProfileDTO
         PhoneNumber = phoneNumber;
         ProfilePictureUrl = profilePictureUrl;
         ProfilePicturePublicId = profilePicturePublicId;
-        WalletBalance = walletBalance;
+        WalletBalance = walletBalance ?? 0;
         ActiveTournaments = activeTournaments;
         Post = post;
         Comments = comments;

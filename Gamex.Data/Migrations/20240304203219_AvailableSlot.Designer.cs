@@ -4,6 +4,7 @@ using Gamex.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Gamex.Data.Migrations
 {
     [DbContext(typeof(GamexDbContext))]
-    partial class GamexDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240304203219_AvailableSlot")]
+    partial class AvailableSlot
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -341,10 +344,6 @@ namespace Gamex.Data.Migrations
                     b.Property<Guid?>("PictureId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Prize")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Rules")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -383,39 +382,6 @@ namespace Gamex.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TournamentCategories");
-                });
-
-            modelBuilder.Entity("Gamex.Models.UserConfirmationCode", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DateModified")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ExpiryDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsUsed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserConfirmationCodes");
                 });
 
             modelBuilder.Entity("Gamex.Models.UserTournament", b =>
@@ -696,17 +662,6 @@ namespace Gamex.Data.Migrations
                     b.Navigation("CoverPicture");
 
                     b.Navigation("Picture");
-                });
-
-            modelBuilder.Entity("Gamex.Models.UserConfirmationCode", b =>
-                {
-                    b.HasOne("Gamex.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Gamex.Models.UserTournament", b =>

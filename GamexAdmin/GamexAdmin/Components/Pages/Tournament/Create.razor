@@ -4,7 +4,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
-@rendermode InteractiveAuto
+@rendermode @(new InteractiveServerRenderMode(prerender: true))
 <div class="row">
     <div class="col-md-6">
         <h1>Create Tournament</h1>
@@ -88,13 +88,13 @@
                         <InputNumber @bind-Value="@Model.EntryFee" class="form-control" autocomplete="entry fee" aria-required="true" placeholder="Please enter tournament Entry Fee." disabled="@IsLoading" />
                         <label for="entryFee" class="form-label">Entry Fee</label>
                         <ValidationMessage For="@(() => Model.EntryFee)" class="text-danger" />
-                    </div>
+                    </div>  
                 </div>
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
-                        <InputTextArea @bind-Value="@Model.Rules" class="form-control" autocomplete="rules" aria-required="true" placeholder="Please enter tournament rules." disabled="@IsLoading" />
-                        <label for="rules" class="form-label">Rules</label>
-                        <ValidationMessage For="@(() => Model.Rules)" class="text-danger" />
+                        <InputNumber @bind-Value="@Model.AvailableSlot" class="form-control" autocomplete="availableSlot" aria-required="true" placeholder="Please enter tournament rules." disabled="@IsLoading" />
+                        <label for="availableSlot" class="form-label">AvailableSlot</label>
+                        <ValidationMessage For="@(() => Model.AvailableSlot)" class="text-danger" />
                     </div>
 
                 </div>
@@ -118,6 +118,16 @@
                 <label for="description" class="form-label">Description</label>
                 <ValidationMessage For="@(() => Model.Description)" class="text-danger" />
             </div>
+            <div class="form-floating mb-3">
+                <InputTextArea @bind-Value="@Model.Rules" class="form-control" autocomplete="rules" aria-required="true" placeholder="Please enter tournament description." disabled="@IsLoading" />
+                <label for="rules" class="form-label">Rules</label>
+                <ValidationMessage For="@(() => Model.Rules)" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
+                <InputTextArea @bind-Value="@Model.Prize" class="form-control" autocomplete="prizes" aria-required="true" placeholder="Please enter tournament prizes." rows="4" disabled="@IsLoading" />
+                <label for="rules" class="form-label">Prize</label>
+                <ValidationMessage For="@(() => Model.Prize)" class="text-danger" />
+            </div>
 
             <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">
                 @{
@@ -139,7 +149,6 @@
     private string CategoryId { get; set; } = "";
 
     private bool IsLoading { get; set; } = false;
-    long maxFileSize = 1024 * 1024 * 10;
     string[] imageFileExtension = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
 
     private List<TournamentCategoryDTO> Categories { get; set; } = new();
@@ -160,7 +169,7 @@
             var file = e.File;
             if (file is not null)
             {
-                var (isValid, error) = CommonHelpers.CheckFileSize(file, maxFileSize);
+                var (isValid, error) = CommonHelpers.CheckFileSize(file, AppConstant.MaxFileSize);
 
                 if (!isValid)
                 {
@@ -190,7 +199,7 @@
         catch (Exception ex)
         {
             IsLoading = false;
-            errorMessage = ex?.Message;
+            errorMessage = ex?.Message ?? "An Error occured";
         }
 
     }
@@ -204,7 +213,7 @@
             var file = e.File;
             if (file is not null)
             {
-                var (isValid, error) = CommonHelpers.CheckFileSize(file, maxFileSize);
+                var (isValid, error) = CommonHelpers.CheckFileSize(file, AppConstant.MaxFileSize);
 
                 if (!isValid)
                 {
@@ -234,7 +243,7 @@
         catch (Exception ex)
         {
             IsLoading = false;
-            errorMessage = ex?.Message;
+            errorMessage = ex?.Message ?? "An Error occured";
         }
 
     }
@@ -247,6 +256,11 @@
         {
             try
             {
+                if(currentUser is null)
+                {
+                    errorMessage = "Please sign in again";
+                    return;
+                }
                 if (IsLoading == true) return;
                 IsLoading = true;
                 var startDateStr = Model.StartDateForm.HasValue ? Model.StartDateForm.Value.ToString("dd/MM/yyyy") : "";
@@ -272,11 +286,11 @@
         }
     }
 
-    private async Task<ApplicationUser> GetCurrentUser()
+    private async Task<ApplicationUser?> GetCurrentUser()
     {
         var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var userClaim = authenticationState.User;
-        var user = await UserManager.GetUserAsync(userClaim);
+        var user = await UserManager.FindByNameAsync(userClaim.Identity?.Name);
         return user;
     }
 }

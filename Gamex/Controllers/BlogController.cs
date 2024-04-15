@@ -1,25 +1,19 @@
-﻿using Gamex.DTO;
-using Microsoft.AspNetCore.Identity;
-
-namespace Gamex.Controllers;
+﻿namespace Gamex.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{v:apiversion}/blog")]
 [ApiController]
-public class BlogController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager) : ControllerBase
+public class BlogController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager) : BaseController(userManager, repo)
 {
-    private readonly IRepositoryServiceManager _repo = repo;
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
-
     [HttpGet("posts")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<PaginationDTO<PostDTO>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPosts([FromQuery] IEnumerable<string> TagIds, [FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "", CancellationToken cancellationToken = default)
     {
-        var posts = _repo.PostService.GetAllPosts();
+        var posts = _repositoryServiceManager.PostService.GetAllPosts();
         var totalNumber = await posts.CountAsync(cancellationToken);
 
-        var postList = await _repo.PostService.GetAllPosts(TagIds, take, skip, s).ToListAsync(cancellationToken);
+        var postList = await _repositoryServiceManager.PostService.GetAllPosts(TagIds, take, skip, s).ToListAsync(cancellationToken);
 
         PaginationDTO<PostDTO> pagination = new(postList, Math.Ceiling((decimal)posts.Count() / take), skip, take, totalNumber);
         return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<PostDTO>>(pagination));
@@ -32,7 +26,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(typeof(ApiResponse<PostDTO>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPost(Guid id, CancellationToken cancellationToken = default)
     {
-        var post = await _repo.PostService.GetPost(id, cancellationToken);
+        var post = await _repositoryServiceManager.PostService.GetPost(id, cancellationToken);
         if (post == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<PostDTO>(404, "Post not found"));
 
@@ -55,15 +49,15 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
 
         if (postCreateDTO.Picture is not null)
         {
-            var uploadResult = await _repo.FileStorageService.SaveFile(postCreateDTO.Picture, AppConstant.PostPictureTag);
+            var uploadResult = await _repositoryServiceManager.FileStorageService.SaveFile(postCreateDTO.Picture, AppConstant.PostPictureTag);
             if (uploadResult is not null)
             {
-                var pictureFile = await _repo.PictureService.CreatePicture(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId));
+                var pictureFile = await _repositoryServiceManager.PictureService.CreatePicture(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId));
                 postCreateDTO.PictureId = pictureFile.Id;
             }
         }
 
-        await _repo.PostService.CreatePost(postCreateDTO, user, cancellationToken);
+        await _repositoryServiceManager.PostService.CreatePost(postCreateDTO, user, cancellationToken);
 
         return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>("Post Successfully Created"));
     }
@@ -82,7 +76,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
         if (user == null)
             return Unauthorized(new ApiResponse<string>(401, "Unauthorized"));
 
-        var postToUpdate = await _repo.PostService.GetPost(id, cancellationToken);
+        var postToUpdate = await _repositoryServiceManager.PostService.GetPost(id, cancellationToken);
         if (postToUpdate == null)
             return NotFound(new ApiResponse<string>(404, "Post not found"));
 
@@ -91,29 +85,29 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
 
         if (postUpdateDTO.Picture is not null)
         {
-            var uploadResult = await _repo.FileStorageService.SaveFile(postUpdateDTO.Picture, AppConstant.PostPictureTag);
+            var uploadResult = await _repositoryServiceManager.FileStorageService.SaveFile(postUpdateDTO.Picture, AppConstant.PostPictureTag);
             if (uploadResult is not null)
             {
                 if (!string.IsNullOrWhiteSpace(postToUpdate.PicturePublicId))
                 {
-                    await _repo.FileStorageService.DeleteFile(postToUpdate.PicturePublicId);
+                    await _repositoryServiceManager.FileStorageService.DeleteFile(postToUpdate.PicturePublicId);
                 }
 
                 if (!string.IsNullOrWhiteSpace(uploadResult.PublicId))
                 {
-                    var pictureFileToUpdate = await _repo.PictureService.GetPictureByPublicId(uploadResult.PublicId);
-                    await _repo.PictureService.UpdatePicture(new PictureUpdateDTO(pictureFileToUpdate.Id, uploadResult.FileUrl, uploadResult.PublicId));
+                    var pictureFileToUpdate = await _repositoryServiceManager.PictureService.GetPictureByPublicId(uploadResult.PublicId);
+                    await _repositoryServiceManager.PictureService.UpdatePicture(new PictureUpdateDTO(pictureFileToUpdate.Id, uploadResult.FileUrl, uploadResult.PublicId));
                     postUpdateDTO.PictureId = pictureFileToUpdate.Id;
                 }
                 else
                 {
-                    var pictureFile = await _repo.PictureService.CreatePicture(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId));
+                    var pictureFile = await _repositoryServiceManager.PictureService.CreatePicture(new PictureCreateDTO(uploadResult.FileUrl, uploadResult.PublicId));
                     postUpdateDTO.PictureId = pictureFile.Id;
                 }
             }
         }
 
-        await _repo.PostService.UpdatePost(postUpdateDTO, user, cancellationToken);
+        await _repositoryServiceManager.PostService.UpdatePost(postUpdateDTO, user, cancellationToken);
 
         return StatusCode(StatusCodes.Status200OK, new ApiResponse<string>("Post Successfully Updated"));
     }
@@ -129,14 +123,14 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
         if (user == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        var postToDelete = await _repo.PostService.GetPost(id, cancellationToken);
+        var postToDelete = await _repositoryServiceManager.PostService.GetPost(id, cancellationToken);
         if (postToDelete == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Post not found"));
 
         if (postToDelete.User.Email != user.Email)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        await _repo.PostService.DeletePost(id, user, cancellationToken);
+        await _repositoryServiceManager.PostService.DeletePost(id, user, cancellationToken);
 
         return StatusCode(StatusCodes.Status204NoContent, new ApiResponse<string>("Post Successfully Deleted"));
     }
@@ -147,7 +141,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(typeof(ApiResponse<PaginationDTO<CommentDTO>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPostComments(Guid id, [FromQuery] int take = 10, [FromQuery] int skip = 0, CancellationToken cancellationToken = default)
     {
-        var comments = _repo.CommentService.GetAllCommentByPostId(id);
+        var comments = _repositoryServiceManager.CommentService.GetAllCommentByPostId(id);
         var totalNumber = await comments.CountAsync(cancellationToken);
 
         var commentList = await comments.Skip(skip).Take(take).OrderByDescending(x => x.DateCreated).ToListAsync(cancellationToken);
@@ -161,7 +155,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(typeof(ApiResponse<PaginationDTO<CommentDTO>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetComments([FromQuery] int take = 10, [FromQuery] int skip = 0, CancellationToken cancellationToken = default)
     {
-        var comments = _repo.CommentService.GetAllComments();
+        var comments = _repositoryServiceManager.CommentService.GetAllComments();
         var totalNumber = await comments.CountAsync(cancellationToken);
 
         var commentList = await comments.Skip(skip).Take(take).OrderByDescending(x => x.DateCreated).ToListAsync(cancellationToken);
@@ -175,7 +169,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(typeof(ApiResponse<CommentDTO>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetComment(Guid id, CancellationToken cancellationToken = default)
     {
-        var comment = await _repo.CommentService.GetCommentById(id, cancellationToken);
+        var comment = await _repositoryServiceManager.CommentService.GetCommentById(id, cancellationToken);
         if (comment == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<CommentDTO>(404, "Comment not found"));
 
@@ -196,7 +190,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
         if (user == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        await _repo.CommentService.CreateComment(commentCreateDTO, user.Id, cancellationToken);
+        await _repositoryServiceManager.CommentService.CreateComment(commentCreateDTO, user.Id, cancellationToken);
 
         return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>("Comment Successfully Created"));
     }
@@ -215,14 +209,14 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
         if (user == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        var commentToUpdate = await _repo.CommentService.GetCommentById(id, cancellationToken);
+        var commentToUpdate = await _repositoryServiceManager.CommentService.GetCommentById(id, cancellationToken);
         if (commentToUpdate == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Comment not found"));
 
         if (commentToUpdate.User.Email != user.Email)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        await _repo.CommentService.UpdateComment(commentUpdateDTO, cancellationToken);
+        await _repositoryServiceManager.CommentService.UpdateComment(commentUpdateDTO, cancellationToken);
 
         return StatusCode(StatusCodes.Status204NoContent, new ApiResponse<string>("Comment Successfully Updated"));
     }
@@ -238,14 +232,14 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
         if (user == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        var commentToDelete = await _repo.CommentService.GetCommentById(id, cancellationToken);
+        var commentToDelete = await _repositoryServiceManager.CommentService.GetCommentById(id, cancellationToken);
         if (commentToDelete == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Comment not found"));
 
         if (commentToDelete.User.Email != user.Email)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
-        await _repo.CommentService.DeleteComment(id, cancellationToken);
+        await _repositoryServiceManager.CommentService.DeleteComment(id, cancellationToken);
 
         return StatusCode(StatusCodes.Status204NoContent, new ApiResponse<string>("Comment Successfully Deleted"));
     }
@@ -256,7 +250,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(typeof(ApiResponse<IEnumerable<TagDTO>>), StatusCodes.Status200OK)]
     public IActionResult GetTags()
     {
-        var tags = _repo.TagService.GetAllTags();
+        var tags = _repositoryServiceManager.TagService.GetAllTags();
         return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<TagDTO>>(tags));
     }
 
@@ -266,7 +260,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(typeof(ApiResponse<TagDTO>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTag(Guid id)
     {
-        var tag = await _repo.TagService.GetTagById(id);
+        var tag = await _repositoryServiceManager.TagService.GetTagById(id);
         if (tag == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<TagDTO>(404, "Tag not found"));
 
@@ -283,23 +277,12 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
         if (!ModelState.IsValid)
             return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, "Invalid model object"));
 
-        var tagExist = await _repo.TagService.GetTagByName(tagCreateDTO.Name);
+        var tagExist = await _repositoryServiceManager.TagService.GetTagByName(tagCreateDTO.Name);
         if (tagExist != null)
             return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, "Tag already exist"));
 
-        var tag = await _repo.TagService.CreateTag(tagCreateDTO);
+        var tag = await _repositoryServiceManager.TagService.CreateTag(tagCreateDTO);
 
         return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>("Tag Successfully Created"));
     }
-
-    #region Helpers
-    private async Task<ApplicationUser?> GetUser()
-    {
-        var username = User?.Identity?.Name;
-        if (username is null)
-            return null;
-        var user = await _userManager.FindByNameAsync(username);
-        return user;
-    }
-    #endregion
 }

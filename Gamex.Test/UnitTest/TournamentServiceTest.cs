@@ -126,7 +126,7 @@ public class TournamentServiceTest : TestBase
         var testUser = dbContext.Users.FirstOrDefault(x => x.Email == "user2@email.com");
 
         // Act
-        await tournamentService.JoinTournament(tournamentToJoin.Id, testUser);
+        await tournamentService.JoinTournamentMock(tournamentToJoin.Id, testUser);
 
         // Assert
         var joinedTournamentInDb = dbContext.UserTournaments.FirstOrDefault(t => t.TournamentId == tournamentToJoin.Id && t.UserId == testUser.Id);
