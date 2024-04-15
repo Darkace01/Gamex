@@ -6,15 +6,21 @@ using System.Threading.Tasks;
 
 namespace Gamex.Service.Implementation;
 
-public class TagService : ITagService
+/// <summary>
+/// Service class for managing tags.
+/// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="TagService"/> class.
+/// </remarks>
+/// <param name="context">The database context.</param>
+public class TagService(GamexDbContext context) : ITagService
 {
-    private readonly GamexDbContext _context;
+    private readonly GamexDbContext _context = context;
 
-    public TagService(GamexDbContext context)
-    {
-        _context = context;
-    }
-
+    /// <summary>
+    /// Gets all tags.
+    /// </summary>
+    /// <returns>The collection of all tags.</returns>
     public IQueryable<TagDTO> GetAllTags()
     {
         var tags = _context.Tags.Include(t => t.PostTags)
@@ -29,6 +35,11 @@ public class TagService : ITagService
         return tags;
     }
 
+    /// <summary>
+    /// Gets a tag by its ID.
+    /// </summary>
+    /// <param name="id">The ID of the tag.</param>
+    /// <returns>The tag with the specified ID, or null if not found.</returns>
     public async Task<TagDTO?> GetTagById(Guid id)
     {
         var tag = await _context.Tags.Include(t => t.PostTags)
@@ -44,6 +55,11 @@ public class TagService : ITagService
         return tag;
     }
 
+    /// <summary>
+    /// Creates a new tag.
+    /// </summary>
+    /// <param name="tagCreateDTO">The DTO containing the tag information.</param>
+    /// <returns>The created tag.</returns>
     public async Task<TagDTO?> CreateTag(TagCreateDTO tagCreateDTO)
     {
         var tag = new Tag
@@ -62,6 +78,11 @@ public class TagService : ITagService
         };
     }
 
+    /// <summary>
+    /// Updates a tag.
+    /// </summary>
+    /// <param name="tagUpdateDTO">The DTO containing the updated tag information.</param>
+    /// <returns>True if the tag was updated successfully, false otherwise.</returns>
     public async Task<bool> UpdateTag(TagUpdateDTO tagUpdateDTO)
     {
         var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == tagUpdateDTO.Id);
@@ -78,6 +99,11 @@ public class TagService : ITagService
         return true;
     }
 
+    /// <summary>
+    /// Deletes a tag by its ID.
+    /// </summary>
+    /// <param name="id">The ID of the tag to delete.</param>
+    /// <returns>True if the tag was deleted successfully, false otherwise.</returns>
     public async Task<bool> DeleteTag(Guid id)
     {
         var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Id == id);
@@ -92,6 +118,12 @@ public class TagService : ITagService
 
         return true;
     }
+
+    /// <summary>
+    /// Gets a tag by its name.
+    /// </summary>
+    /// <param name="name">The name of the tag.</param>
+    /// <returns>The tag with the specified name.</returns>
     public async Task<TagDTO> GetTagByName(string name)
     {
         var tag = await _context.Tags.Include(t => t.PostTags)

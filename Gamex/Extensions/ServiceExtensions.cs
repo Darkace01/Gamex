@@ -45,6 +45,7 @@ public static class ServiceExtensions
     public static void ConfigureRepository(this IServiceCollection services)
     {
         services.AddScoped<IRepositoryServiceManager, RepositoryServiceManager>();
+        services.AddScoped<ISMTPMailService, SMTPMailService>();
     }
 
     /// <summary>

@@ -1,11 +1,11 @@
 # This workflow will build a .NET project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
 
-name: 🧪Staging API Deployment
+name: ❤️‍🔥Live API Deployment
 
 on:
-  push:
-    branches: ['main']
+  pull_request:
+    branches: ['live']
 env:
   SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 8.0.x
   SWASHBUCKLE_DOTNET_CORE_VERSION: 8.0.x
@@ -31,9 +31,9 @@ jobs:
           Cloudinary.Url: ${{ secrets.CLOUDINARY_URL }}
           Authentication.Google.ClientId: ${{ secrets.GOOGLE_CLIENTID }}
           Authentication.Google.ClientSecret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          Authentication.Google.MobileClientId: ${{ secrets.GOOGLE_MOBILE_CLIENTID }}
-          ConnectionStrings.DefaultConnection: ${{ secrets.DB_CONNECTION }}
-          JWT.Secret: ${{ secrets.JWT_SECRET }}
+          Authentication.Google.MobileClientId: ${{ secrets.GOOGLE_CLIENTID }}
+          ConnectionStrings.DefaultConnection: ${{ secrets.DB_CONNECTION_LIVE }}
+          JWT.Secret: ${{ secrets.JWT_SECRET_LIVE }}
           Paystack.SecretKey: ${{ secrets.PAYSTACK_SECRET_KEY }}
           Paystack.PublicKey: ${{ secrets.PAYSTACK_PUBLIC_KEY }}
           SMTP.Host: ${{ secrets.SMTP_HOST }}
@@ -74,9 +74,9 @@ jobs:
         with:
           server: 66.23.234.6
           # Ftp username
-          username: ${{ secrets.FTP_USERNAME }}
+          username: ${{ secrets.FTP_USERNAME_LIVE }}
           # Ftp password
-          password: ${{ secrets.FTP_PASSWORD }}
+          password: ${{ secrets.FTP_PASSWORD_LIVE }}
           # The remote folder location of your FTP server
           server-dir: /
           local-dir: ${{ env.WEBAPP_PACKAGE_PATH }}/

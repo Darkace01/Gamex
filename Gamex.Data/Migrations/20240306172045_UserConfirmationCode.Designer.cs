@@ -4,6 +4,7 @@ using Gamex.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Gamex.Data.Migrations
 {
     [DbContext(typeof(GamexDbContext))]
-    partial class GamexDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240306172045_UserConfirmationCode")]
+    partial class UserConfirmationCode
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -340,10 +343,6 @@ namespace Gamex.Data.Migrations
 
                     b.Property<Guid?>("PictureId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Prize")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Rules")
                         .IsRequired()

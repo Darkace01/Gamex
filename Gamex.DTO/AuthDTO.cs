@@ -89,3 +89,21 @@ public class ChangePasswordDTO
     [Required]
     public string ConfirmPassword { get; set; }
 }
+
+public class ForgotPasswordDTO
+{
+    [Required]
+    public string Email { get; set; }
+}
+
+public class ResetPasswordDTO
+{
+    [Required]
+    public string Code { get; set; }
+    [Required]
+    public string NewPassword { get; set; }
+    [Required]
+    public string ConfirmPassword { get; set; }
+    [Required]
+    public string Email { get; set; }
+}

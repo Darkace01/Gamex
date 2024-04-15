@@ -90,7 +90,6 @@
     private List<TagDTO> Tags { get; set; } = new();
 
     private bool IsLoading { get; set; } = false;
-    long maxFileSize = 1024 * 1024 * 10;
     string[] imageFileExtension = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
 
     protected override async Task OnInitializedAsync()
@@ -140,7 +139,7 @@
     {
         var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var userClaim = authenticationState.User;
-        var user = await UserManager.GetUserAsync(userClaim);
+        var user = await UserManager.FindByNameAsync(userClaim.Identity?.Name);
         return user!;
     }
 
@@ -154,7 +153,7 @@
 
             if (file is not null)
             {
-                var (isValid, error) = CommonHelpers.CheckFileSize(file, maxFileSize);
+                var (isValid, error) = CommonHelpers.CheckFileSize(file, AppConstant.MaxFileSize);
 
                 if (!isValid)
                 {

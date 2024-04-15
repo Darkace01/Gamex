@@ -4,7 +4,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @inject IRepositoryServiceManager RepositoryServiceManager
-@rendermode InteractiveAuto
+@rendermode @(new InteractiveServerRenderMode(prerender: true))
 
 <div class="row">
     <div class="col-md-6">
@@ -98,9 +98,9 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-floating mb-3">
-                        <InputTextArea @bind-Value="@Model.Rules" class="form-control" autocomplete="rules" aria-required="true" placeholder="Please enter tournament rules." rows="4" disabled="@IsLoading" />
-                        <label for="rules" class="form-label">Rules</label>
-                        <ValidationMessage For="@(() => Model.Rules)" class="text-danger" />
+                        <InputNumber @bind-Value="@Model.AvailableSlot" class="form-control" autocomplete="availableslot" aria-required="true" placeholder="Please enter total number of users that can join." disabled="@IsLoading" />
+                        <label for="availableslot" class="form-label">AvailableSlot</label>
+                        <ValidationMessage For="@(() => Model.AvailableSlot)" class="text-danger" />
                     </div>
                 </div>
             </div>
@@ -130,6 +130,11 @@
                 <label for="rules" class="form-label">Rules</label>
                 <ValidationMessage For="@(() => Model.Rules)" class="text-danger" />
             </div>
+            <div class="form-floating mb-3">
+                <InputTextArea @bind-Value="@Model.Prize" class="form-control" autocomplete="prizes" aria-required="true" placeholder="Please enter tournament prizes." rows="4" disabled="@IsLoading" />
+                <label for="rules" class="form-label">Prize</label>
+                <ValidationMessage For="@(() => Model.Prize)" class="text-danger" />
+            </div>
 
             <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">
                 @{
@@ -157,7 +162,6 @@
     private string CategoryId { get; set; } = "";
 
     private bool IsLoading { get; set; } = false;
-    long maxFileSize = 1024 * 1024 * 10;
     string[] imageFileExtension = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
 
     private List<TournamentCategoryDTO> Categories { get; set; } = new();
@@ -182,6 +186,7 @@
                     EntryFee = tournament.EntryFee,
                     PictureId = tournament.PictureId,
                     CoverPictureId = tournament.CoverPictureId,
+                    AvailableSlot = tournament.AvailableSlot,
                     CategoryIds = tournament.Categories?.Select(x => (Guid)x.Id).ToList()
                 };
 
@@ -199,7 +204,7 @@
             var file = e.File;
             if (file is not null)
             {
-                var (isValid, error) = CommonHelpers.CheckFileSize(file, maxFileSize);
+                var (isValid, error) = CommonHelpers.CheckFileSize(file, AppConstant.MaxFileSize);
 
                 if (!isValid)
                 {
@@ -243,7 +248,7 @@
             var file = e.File;
             if (file is not null)
             {
-                var (isValid, error) = CommonHelpers.CheckFileSize(file, maxFileSize);
+                var (isValid, error) = CommonHelpers.CheckFileSize(file, AppConstant.MaxFileSize);
 
                 if (!isValid)
                 {
@@ -317,7 +322,7 @@
     {
         var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var userClaim = authenticationState.User;
-        var user = await UserManager.GetUserAsync(userClaim);
+        var user = await UserManager.FindByNameAsync(userClaim.Identity?.Name);
         return user;
     }
 }

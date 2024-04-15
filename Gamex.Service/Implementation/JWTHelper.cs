@@ -1,16 +1,25 @@
 ﻿namespace Gamex.Service.Implementation;
 
+/// <summary>
+/// Helper class for generating and validating JWT tokens.
+/// </summary>
 public class JWTHelper(IConfiguration configuration) : IJWTHelper
 {
     private readonly IConfiguration _configuration = configuration;
 
+    /// <summary>
+    /// Generates a JWT token for the specified user with the given roles.
+    /// </summary>
+    /// <param name="user">The user for whom the token is generated.</param>
+    /// <param name="userRoles">The roles assigned to the user.</param>
+    /// <returns>The generated JWT token.</returns>
     public JwtSecurityToken GenerateToken(ApplicationUser user, IList<string> userRoles)
     {
         var authClaims = new List<Claim>
-                {
-                    new(ClaimTypes.Name, user.UserName),
-                    new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                };
+        {
+            new(ClaimTypes.Name, user.UserName),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        };
 
         foreach (var userRole in userRoles)
         {
@@ -26,9 +35,14 @@ public class JWTHelper(IConfiguration configuration) : IJWTHelper
             expires: DateTime.Now.AddMinutes(tokenValidityInMinutes),
             claims: authClaims,
             signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-            );
+        );
     }
 
+    /// <summary>
+    /// Retrieves the principal from an expired JWT token.
+    /// </summary>
+    /// <param name="token">The expired JWT token.</param>
+    /// <returns>The principal extracted from the token.</returns>
     public ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token)
     {
         var tokenValidationParameters = new TokenValidationParameters
