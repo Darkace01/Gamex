@@ -14,4 +14,8 @@ public class AppConstant
 
     //Files
     public const long MaxFileSize = 5 * 1024 * 1024; // 5MB
+
+    //
+    //_ = Guid.TryParse("00000000-0000-0000-0000-000000000000", out var defualtTournamentId);
+    public static Guid DefaultTournamentId = Guid.Parse("00000000-0000-0000-0000-000000000000");
 }
