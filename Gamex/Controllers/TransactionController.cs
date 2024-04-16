@@ -31,7 +31,10 @@ public class TransactionController(IRepositoryServiceManager repositoryServiceMa
         paymentTransactionCreateDTO.TransactionReference = transactionReference;
         paymentTransactionCreateDTO.UserId = user.Id;
         paymentTransactionCreateDTO.Status = Common.TransactionStatus.Pending;
-
+        if (paymentTransactionCreateDTO.TournamentId.Equals(AppConstant.DefaultTournamentId))
+        {
+            paymentTransactionCreateDTO.TournamentId = null;
+        }
         if (paymentTransactionCreateDTO.TournamentId is not null)
         {
             var tournament = await _repositoryServiceManager.TournamentService.GetTournamentById((Guid)paymentTransactionCreateDTO.TournamentId);
@@ -71,7 +74,7 @@ public class TransactionController(IRepositoryServiceManager repositoryServiceMa
         }
         await _repositoryServiceManager.PaymentService.UpdatePaymentTransactionStatus(transactionReference, Common.TransactionStatus.Success);
 
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaymentTransactionDTO>(transactionStatus.Data, 200, "Transaction updated"));
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaymentTransactionDTO>(transactionStatus.Data, 200, "Wallet has been successfuly funded."));
     }
 
 }
