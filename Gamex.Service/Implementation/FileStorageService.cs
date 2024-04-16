@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
+﻿using Gamex.Common;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Gamex.Service.Implementation;
 
@@ -53,7 +54,7 @@ public class FileStorageService(Cloudinary cloudinary) : IFileStorageService
     {
         var uploadParams = new ImageUploadParams()
         {
-            File = new FileDescription(file.Name, file.OpenReadStream()),
+            File = new FileDescription(file.Name, file.OpenReadStream(maxAllowedSize:AppConstant.MaxFileSize)),
             UniqueFilename = true,
             Tags = tag
         };

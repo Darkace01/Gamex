@@ -187,48 +187,39 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     {
         //using var transaction = _context.Database.BeginTransaction();
         //bool hasSaved = false;
-        try
-        {
-            Tournament newTournament = new()
-            {
-                Name = tournament.Name,
-                Description = tournament.Description,
-                IsFeatured = tournament.IsFeatured,
-                StartDate = tournament.StartDate,
-                EndDate = tournament.EndDate,
-                Location = tournament.Location,
-                Time = tournament.Time,
-                EntryFee = tournament.EntryFee,
-                Rules = tournament.Rules,
-                Prize = tournament.Prize,
-                PictureId = tournament.PictureId,
-                CoverPictureId = tournament.CoverPictureId,
-                AvailableSlot = tournament.AvailableSlot,
-            };
 
-            if (tournament.CategoryIds != null)
-                newTournament.Categories = _context.TournamentCategories.Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList();
-
-            await _context.Tournaments.AddAsync(newTournament);
-            await _context.SaveChangesAsync();
-            //hasSaved = true;
-            UserTournament userTournament = new()
-            {
-                UserId = user.Id,
-                CreatorId = user.Id,
-                TournamentId = newTournament.Id,
-            };
-            await _context.UserTournaments.AddAsync(userTournament);
-            await _context.SaveChangesAsync();
-            //hasSaved = true;
-            //transaction.Commit();
-        }
-        catch (Exception)
+        Tournament newTournament = new()
         {
-            //if (hasSaved)
-            //    transaction.Rollback();
-            throw;
-        }
+            Name = tournament.Name,
+            Description = tournament.Description,
+            IsFeatured = tournament.IsFeatured,
+            StartDate = tournament.StartDate,
+            EndDate = tournament.EndDate,
+            Location = tournament.Location,
+            Time = tournament.Time,
+            EntryFee = tournament.EntryFee,
+            Rules = tournament.Rules,
+            Prize = tournament.Prize,
+            PictureId = tournament.PictureId,
+            CoverPictureId = tournament.CoverPictureId,
+            AvailableSlot = tournament.AvailableSlot,
+        };
+
+        if (tournament.CategoryIds != null)
+            newTournament.Categories = _context.TournamentCategories.Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList();
+
+        await _context.Tournaments.AddAsync(newTournament);
+        await _context.SaveChangesAsync();
+        //hasSaved = true;
+        UserTournament userTournament = new()
+        {
+            UserId = user.Id,
+            CreatorId = user.Id,
+            TournamentId = newTournament.Id,
+        };
+        await _context.UserTournaments.AddAsync(userTournament);
+        await _context.SaveChangesAsync();
+
     }
 
     /// <summary>
@@ -239,67 +230,61 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     /// <returns></returns>
     public async Task UpdateTournament(TournamentUpdateDTO tournament, ApplicationUser user, CancellationToken cancellationToken = default)
     {
-        try
+
+        Tournament? existingTournament = await _context.Tournaments
+            .Include(t => t.UserTournaments)
+            .Include(t => t.Categories)
+            .Include(t => t.Picture)
+            .Include(t => t.CoverPicture)
+            .FirstOrDefaultAsync(t => t.Id == tournament.Id, cancellationToken) ?? throw new Exception("Tournament not found");
+        var adminRoleId = _context.Roles.AsNoTracking().FirstOrDefault(r => r.Name == AppConstant.AdminUserRole)?.Id;
+        List<string> adminUsers = new List<string>();
+        if (!string.IsNullOrWhiteSpace(adminRoleId))
         {
-            Tournament? existingTournament = await _context.Tournaments
-                .Include(t => t.UserTournaments)
-                .Include(t => t.Categories)
-                .Include(t => t.Picture)
-                .Include(t => t.CoverPicture)
-                .FirstOrDefaultAsync(t => t.Id == tournament.Id, cancellationToken) ?? throw new Exception("Tournament not found");
-            var adminRoleId = _context.Roles.AsNoTracking().FirstOrDefault(r => r.Name == AppConstant.AdminUserRole)?.Id;
-            List<string> adminUsers = new List<string>();
-            if (!string.IsNullOrWhiteSpace(adminRoleId))
-            {
-                adminUsers = await _context.UserRoles.AsNoTracking().Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToListAsync(cancellationToken);
-            }
-
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            bool isAuthorized = existingTournament.UserTournaments.Any(ut => ut.CreatorId != user.Id || adminUsers.Any(x => x == user.Id));
-            if (!isAuthorized)
-            {
-                throw new Exception("You are not authorized to update this tournament");
-            }
-
-            existingTournament.Name = tournament.Name;
-            existingTournament.Description = tournament.Description;
-            existingTournament.IsFeatured = tournament.IsFeatured;
-            existingTournament.StartDate = tournament.StartDate;
-            existingTournament.EndDate = tournament.EndDate;
-            existingTournament.Location = tournament.Location;
-            existingTournament.Time = tournament.Time;
-            existingTournament.EntryFee = tournament.EntryFee;
-            existingTournament.Rules = tournament.Rules;
-            existingTournament.Prize = tournament.Prize;
-            existingTournament.AvailableSlot = tournament.AvailableSlot;
-
-            if (tournament.PictureId.HasValue && existingTournament.PictureId != tournament.PictureId)
-            {
-                existingTournament.PictureId = tournament.PictureId;
-            }
-
-            if (tournament.CoverPictureId.HasValue && existingTournament.CoverPictureId != tournament.CoverPictureId)
-            {
-                existingTournament.CoverPictureId = tournament.CoverPictureId;
-            }
-
-            // if tournament.Categories is not null, delete he existing categories and add the new ones
-            if (tournament.CategoryIds != null)
-            {
-                existingTournament.Categories.Clear();
-                existingTournament.Categories = _context.TournamentCategories.Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList();
-            }
-
-            await _context.SaveChangesAsync(cancellationToken);
+            adminUsers = await _context.UserRoles.AsNoTracking().Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToListAsync(cancellationToken);
         }
-        catch (Exception)
+
+        if (user == null)
         {
-            throw;
+            throw new ArgumentNullException(nameof(user));
         }
+
+        bool isAuthorized = existingTournament.UserTournaments.Any(ut => ut.CreatorId != user.Id || adminUsers.Any(x => x == user.Id));
+        if (!isAuthorized)
+        {
+            throw new Exception("You are not authorized to update this tournament");
+        }
+
+        existingTournament.Name = tournament.Name;
+        existingTournament.Description = tournament.Description;
+        existingTournament.IsFeatured = tournament.IsFeatured;
+        existingTournament.StartDate = tournament.StartDate;
+        existingTournament.EndDate = tournament.EndDate;
+        existingTournament.Location = tournament.Location;
+        existingTournament.Time = tournament.Time;
+        existingTournament.EntryFee = tournament.EntryFee;
+        existingTournament.Rules = tournament.Rules;
+        existingTournament.Prize = tournament.Prize;
+        existingTournament.AvailableSlot = tournament.AvailableSlot;
+
+        if (tournament.PictureId.HasValue && existingTournament.PictureId != tournament.PictureId)
+        {
+            existingTournament.PictureId = tournament.PictureId;
+        }
+
+        if (tournament.CoverPictureId.HasValue && existingTournament.CoverPictureId != tournament.CoverPictureId)
+        {
+            existingTournament.CoverPictureId = tournament.CoverPictureId;
+        }
+
+        // if tournament.Categories is not null, delete he existing categories and add the new ones
+        if (tournament.CategoryIds != null)
+        {
+            existingTournament.Categories.Clear();
+            existingTournament.Categories = _context.TournamentCategories.Where(tc => tournament.CategoryIds.Contains(tc.Id)).ToList();
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <summary>
@@ -403,7 +388,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                     return true;
                 }
 
-                if(existingTournament.AvailableSlot < existingTournament.UserTournaments.Count)
+                if (existingTournament.AvailableSlot < existingTournament.UserTournaments.Count)
                 {
                     throw new Exception("Tournament is full");
                 }

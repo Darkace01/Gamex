@@ -33,6 +33,19 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<TournamentDTO>>(paginatedTournament));
     }
 
+    [HttpGet("mini")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<IEnumerable<TournamentMiniDTO>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetMinimumTournament()
+    {
+        var miniTournament = await _repositoryServiceManager.TournamentService.GetAllTournaments()
+            .Select(x => new TournamentMiniDTO(x.Id, x.Name, x.Description))
+            .ToListAsync();
+
+        return Ok(new ApiResponse<IEnumerable<TournamentMiniDTO>>(miniTournament));
+    }
+
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -212,7 +225,7 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
             var userWallet = await _repositoryServiceManager.PaymentService.GetUserBalance(user.Id);
             if (userWallet > tournamentExist.EntryFee)
             {
-                if (model is not null)
+                if (model is not null && string.IsNullOrWhiteSpace(model.Reference))
                 {
                     var transactionStatus = await ValidateAndVerifyTransactionReference(model.Reference, cancellationToken);
                     if (transactionStatus.StatusCode != StatusCodes.Status200OK)

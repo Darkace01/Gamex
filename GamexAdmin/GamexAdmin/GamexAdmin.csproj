@@ -8,13 +8,17 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="appsettings.Production.json" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\..\Gamex.Common\Gamex.Common.csproj" />
 		<ProjectReference Include="..\..\Gamex.Data\Gamex.Data.csproj" />
 		<ProjectReference Include="..\..\Gamex.DTO\Gamex.DTO.csproj" />
 		<ProjectReference Include="..\..\Gamex.Models\Gamex.Models.csproj" />
 		<ProjectReference Include="..\..\Gamex.Service\Gamex.Service.csproj" />
 		<ProjectReference Include="..\GamexAdmin.Client\GamexAdmin.Client.csproj" />
-		<PackageReference Include="Azure.Identity" Version="1.10.2" />
+		<PackageReference Include="Azure.Identity" Version="1.11.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="8.0.1" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" Version="8.0.1" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0" />
