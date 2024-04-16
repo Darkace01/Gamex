@@ -20,6 +20,7 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
                  PlayerName = g.First().DisplayName == "" ? g.First().FirstName + " " + g.First().LastName : g.First().DisplayName,
                  PlayerProfilePictureUrl = g.First().Picture != null ? g.First().Picture.FileUrl : "",
                  Tournaments = g.First().UserTournaments.Count,
+                 TournamentList = g.First().UserTournaments.Select(ut => new TournamentMiniDTO(ut.TournamentId, ut.Tournament.Name, ut.Tournament.Description)).ToList(),
                  Points = g.First().UserTournaments.Sum(ut => ut.Point ?? 0)
              })
              .OrderByDescending(l => l.Points)
@@ -33,7 +34,8 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
                 PlayerName = l.PlayerName,
                 PlayerProfilePictureUrl = l.PlayerProfilePictureUrl,
                 Tournaments = l.Tournaments,
-                Points = l.Points
+                Points = l.Points,
+                TournamentList = l.TournamentList
             });
         return leaderboard;
     }
