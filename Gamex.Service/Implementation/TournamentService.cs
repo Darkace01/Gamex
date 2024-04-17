@@ -323,45 +323,45 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     /// <param name="id"></param>
     /// <param name="user"></param>
     /// <returns></returns>
-    public async Task<bool> JoinTournamentMock(Guid id, ApplicationUser user)
+    public async Task<(bool, string)> JoinTournamentMock(Guid id, ApplicationUser user)
     {
-        try
+        Tournament? existingTournament = await _context.Tournaments
+            .Include(t => t.UserTournaments)
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (existingTournament == null)
         {
-            Tournament? existingTournament = await _context.Tournaments
-                .Include(t => t.UserTournaments)
-                .FirstOrDefaultAsync(t => t.Id == id) ?? throw new Exception("Tournament not found");
+            return (false, "Tournament not found");
+        }
 
-            if (existingTournament.AvailableSlot <= existingTournament.UserTournaments.Count)
-            {
-                throw new Exception("Tournament is full");
-            }
-            if (existingTournament.EntryFee > 0)
-            {
-                var paymentTransaction = new PaymentTransaction
-                {
-                    UserId = user.Id,
-                    TournamentId = id,
-                    Amount = -existingTournament.EntryFee,
-                    Status = Models.TransactionStatus.Success,
-                    TransactionReference = CommonHelpers.GenerateRandomString(10)
-                };
+        if (existingTournament.AvailableSlot <= existingTournament.UserTournaments.Count)
+        {
+            return (false, "Tournament is full");
+        }
 
-                _context.PaymentTransactions.Add(paymentTransaction);
-                await _context.SaveChangesAsync();
-            }
-            UserTournament userTournament = new()
+        if (existingTournament.EntryFee > 0)
+        {
+            var paymentTransaction = new PaymentTransaction
             {
                 UserId = user.Id,
-                TournamentId = existingTournament.Id,
+                TournamentId = id,
+                Amount = -existingTournament.EntryFee,
+                Status = Models.TransactionStatus.Success,
+                TransactionReference = CommonHelpers.GenerateRandomString(10)
             };
-            await _context.UserTournaments.AddAsync(userTournament);
+
+            _context.PaymentTransactions.Add(paymentTransaction);
             await _context.SaveChangesAsync();
-            return true;
         }
-        catch (Exception)
+
+        UserTournament userTournament = new()
         {
-            throw;
-        }
+            UserId = user.Id,
+            TournamentId = existingTournament.Id,
+        };
+        await _context.UserTournaments.AddAsync(userTournament);
+        await _context.SaveChangesAsync();
+        return (true, "You have successfully joined the tournament");
     }
     /// <summary>
     /// Join a tournament
@@ -370,7 +370,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     /// <param name="user"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>Returns true if the user successfully joins the tournament, otherwise false</returns>
-    public async Task<bool> JoinTournament(Guid id, ApplicationUser user, CancellationToken cancellationToken = default)
+    public async Task<(bool, string)> JoinTournament(Guid id, ApplicationUser user, CancellationToken cancellationToken = default)
     {
         var executionStrategy = _context.Database.CreateExecutionStrategy();
         return await executionStrategy.ExecuteAsync(async () =>
@@ -381,16 +381,21 @@ public class TournamentService(GamexDbContext context) : ITournamentService
             {
                 Tournament? existingTournament = await _context.Tournaments
                     .Include(t => t.UserTournaments)
-                    .FirstOrDefaultAsync(t => t.Id == id) ?? throw new Exception("Tournament not found");
+                    .FirstOrDefaultAsync(t => t.Id == id);
 
-                if (existingTournament.UserTournaments.Any(ut => ut.UserId == user.Id))
+                if (existingTournament == null)
                 {
-                    return true;
+                    return (false, "Tournament not found");
+                }
+
+                if (existingTournament.UserTournaments.Exists(ut => ut.UserId == user.Id))
+                {
+                    return (true, "You've already joined the tournament");
                 }
 
                 if (existingTournament.AvailableSlot < existingTournament.UserTournaments.Count)
                 {
-                    throw new Exception("Tournament is full");
+                    return (false, "Tournament is full");
                 }
 
                 //debit the user if the tournament has an entry fee
@@ -419,7 +424,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 await _context.SaveChangesAsync(cancellationToken);
                 hasSaved = true;
                 await transaction.CommitAsync(cancellationToken);
-                return true;
+                return (true, "You have successfully joined the tournament");
             }
             catch (Exception)
             {
@@ -439,8 +444,8 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     /// <param name="user">The user joining the tournament</param>
     /// <param name="transactionReference">The transaction reference</param>
     /// <param name="cancellationToken">The cancellation token</param>
-    /// <returns>Returns true if the user successfully joins the tournament, otherwise false</returns>
-    public async Task<bool> JoinTournamentWithTransactionReference(Guid id, ApplicationUser user, string transactionReference = "", CancellationToken cancellationToken = default)
+    /// <returns>Returns a tuple with a boolean indicating if the user successfully joins the tournament and a string message</returns>
+    public async Task<(bool, string)> JoinTournamentWithTransactionReference(Guid id, ApplicationUser user, string transactionReference = "", CancellationToken cancellationToken = default)
     {
         var executionStrategy = _context.Database.CreateExecutionStrategy();
         return await executionStrategy.ExecuteAsync(async () =>
@@ -454,19 +459,19 @@ public class TournamentService(GamexDbContext context) : ITournamentService
 
                 if (existingTournament == null)
                 {
-                    throw new Exception("Tournament not found");
+                    return (false, "Tournament is not found");
                 }
 
-                if (existingTournament.UserTournaments.Any(ut => ut.UserId == user.Id))
+                if (existingTournament.UserTournaments.Exists(ut => ut.UserId == user.Id))
                 {
-                    return true;
+                    return (true, "You've already joined the tournament");
                 }
 
-                if (existingTournament.AvailableSlot < existingTournament.UserTournaments.Count)
+                if (existingTournament.AvailableSlot <= existingTournament.UserTournaments.Count)
                 {
-                    throw new Exception("Tournament is full");
+                    return (false, "Tournament is full");
                 }
-                Guid? creditId = null;
+                Guid? debitId = null;
                 if (!string.IsNullOrWhiteSpace(transactionReference))
                 {
                     var creditPaymentTransaction = await _context.PaymentTransactions.FirstOrDefaultAsync(x => x.TransactionReference == transactionReference && x.Status == Models.TransactionStatus.Pending, cancellationToken);
@@ -474,7 +479,6 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                     {
                         creditPaymentTransaction.Status = Models.TransactionStatus.Success;
                         creditPaymentTransaction.DateModified = DateTime.Now;
-                        creditId = creditPaymentTransaction.Id;
                     }
                 }
 
@@ -491,20 +495,21 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                     };
 
                     _context.PaymentTransactions.Add(debitPaymentTransaction);
+                    debitId = debitPaymentTransaction.Id;
                 }
 
                 UserTournament userTournament = new()
                 {
                     UserId = user.Id,
                     TournamentId = existingTournament.Id,
-                    PaymentTransactionId = creditId,
-                    DateJoined = DateTime.Now
+                    PaymentTransactionId = debitId,
+                    DateJoined = DateTime.Now,
                 };
 
                 _context.UserTournaments.Add(userTournament);
                 await _context.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
-                return true;
+                return (true, "You have successfully joined the tournament");
             }
             catch (Exception)
             {
