@@ -217,7 +217,7 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         if (tournamentExist.TournamentUsers.Any(ut => ut.UserId == user.Id))
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Your are already in this tournament"));
 
-        if(tournamentExist.AvailableSlot < tournamentExist.TournamentUsers.Count())
+        if (tournamentExist.AvailableSlot < tournamentExist.TournamentUsers.Count())
             return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, "Tournament is full"));
 
         if (tournamentExist.EntryFee > 0)
@@ -234,9 +234,11 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
             }
         }
 
-        await _repositoryServiceManager.TournamentService.JoinTournamentWithTransactionReference(id, user, model?.Reference, cancellationToken);
+        (bool isSuccessful, string message) = await _repositoryServiceManager.TournamentService.JoinTournamentWithTransactionReference(id, user, model?.Reference, cancellationToken);
 
-        return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>("Tournament Successfully Joined"));
+        if (!isSuccessful) return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, message));
+
+        return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>(message));
     }
 
     [HttpGet("featured")]

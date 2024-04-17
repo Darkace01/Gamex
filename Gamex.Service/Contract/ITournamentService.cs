@@ -52,7 +52,7 @@
         /// <param name="user">The user joining the tournament.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task representing the asynchronous operation. The result is true if the user successfully joins the tournament, otherwise false.</returns>
-        Task<bool> JoinTournament(Guid id, ApplicationUser user, CancellationToken cancellationToken = default);
+        Task<(bool, string)> JoinTournament(Guid id, ApplicationUser user, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Joins a tournament for testing purposes.
@@ -60,7 +60,7 @@
         /// <param name="id">The ID of the tournament to join.</param>
         /// <param name="user">The user joining the tournament.</param>
         /// <returns>A task representing the asynchronous operation. The result is true if the user successfully joins the tournament, otherwise false.</returns>
-        Task<bool> JoinTournamentMock(Guid id, ApplicationUser user);
+        Task<(bool, string)> JoinTournamentMock(Guid id, ApplicationUser user);
         /// <summary>
         /// Joins a tournament with a transaction reference
         /// </summary>
@@ -68,8 +68,8 @@
         /// <param name="user">The user joining the tournament</param>
         /// <param name="transactionReference">The transaction reference</param>
         /// <param name="cancellationToken">The cancellation token</param>
-        /// <returns>Returns true if the user successfully joins the tournament, otherwise false</returns>
-        Task<bool> JoinTournamentWithTransactionReference(Guid id, ApplicationUser user, string transactionReference = "", CancellationToken cancellationToken = default);
+        /// <returns>Returns a tuple with a boolean indicating if the user successfully joins the tournament and a string message</returns>
+        Task<(bool, string)> JoinTournamentWithTransactionReference(Guid id, ApplicationUser user, string transactionReference = "", CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates a tournament.
