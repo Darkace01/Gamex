@@ -225,15 +225,11 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
             var userWallet = await _repositoryServiceManager.PaymentService.GetUserBalance(user.Id);
             if (userWallet > tournamentExist.EntryFee)
             {
-                if (model is not null && string.IsNullOrWhiteSpace(model.Reference))
+                if (model is not null && !string.IsNullOrWhiteSpace(model.Reference))
                 {
                     var transactionStatus = await ValidateAndVerifyTransactionReference(model.Reference, cancellationToken);
                     if (transactionStatus.StatusCode != StatusCodes.Status200OK)
                         return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(transactionStatus.StatusCode, transactionStatus.Message));
-                }
-                else
-                {
-                    return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, "You don't have enough balance to join this tournament"));
                 }
             }
         }
