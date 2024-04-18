@@ -12,6 +12,7 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
     {
         var leaderboard = _context.Users
              .AsNoTracking()
+             .Where(x => x.EmailConfirmed)
              .Include(ut => ut.UserTournaments)
              .GroupBy(ut => ut.Id)
              .Select(g => new LeaderboardDTO
@@ -48,6 +49,7 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
     {
         var leaderboard = _context.Users
             .AsNoTracking()
+            .Where(x => x.EmailConfirmed)
             .Include(ut => ut.UserTournaments)
             .Where(ut => ut.UserTournaments.Any(ut => ut.TournamentId == tournamentId))
             .GroupBy(ut => ut.Id)
