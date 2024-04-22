@@ -9,4 +9,6 @@ public class LeaderboardDTO
     public int Tournaments { get; set; }
     public List<TournamentMiniDTO> TournamentList { get; set; }
     public int Points { get; set; }
+    public int Win { get; set; }
+    public int Loss { get; set; }
 }
