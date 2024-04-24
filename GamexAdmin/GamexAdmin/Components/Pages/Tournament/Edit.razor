@@ -40,15 +40,18 @@
                     <div class="mb-3">
                         <label for="categories" class="form-label">Categories</label>
                         <InputSelect @bind-Value="@CategoryId" class="form-select" multiple="true" disabled="@IsLoading">
-                            @foreach (var category in Categories.Where(x => Model.CategoryIds.Any(y => y == x.Id)))
+                            @if (Model.CategoryIds is not null)
                             {
-                                @* var selected = Model.CategoryIds.Any(x => x == category.Id) ? "selected" : ""; *@
-                                <option value="@category.Id" selected>@category.Name</option>
-                            }
-                            @foreach (var category in Categories.Where(x => !Model.CategoryIds.Any(y => y == x.Id)))
-                            {
-                                @* var selected = Model.CategoryIds.Any(x => x == category.Id) ? "selected" : ""; *@
-                                <option value="@category.Id">@category.Name</option>
+                                @foreach (var category in Categories.Where(x => Model.CategoryIds.Any(y => y == x.Id)))
+                                {
+                                    @* var selected = Model.CategoryIds.Any(x => x == category.Id) ? "selected" : ""; *@
+                                    <option value="@category.Id" selected>@category.Name</option>
+                                }
+                                @foreach (var category in Categories.Where(x => !Model.CategoryIds.Any(y => y == x.Id)))
+                                {
+                                    @* var selected = Model.CategoryIds.Any(x => x == category.Id) ? "selected" : ""; *@
+                                    <option value="@category.Id">@category.Name</option>
+                                }
                             }
                         </InputSelect>
                         <ValidationMessage For="@(() =>CategoryId)" class="text-danger" />

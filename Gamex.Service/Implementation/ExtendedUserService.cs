@@ -83,7 +83,7 @@ public class ExtendedUserService : IExtendedUserService
                 u.Picture.FileUrl,
                 u.Picture.PublicId,
                 u.Balance,
-                _context.UserTournaments.Count(ut => ut.UserId == u.User.Id),
+                _context.UserTournaments.Count(ut => ut.UserId == u.User.Id && ut.WaitList == true),
                 _context.Posts.Count(post => post.UserId == u.User.Id),
                 _context.Comments.Count(comment => comment.UserId == u.User.Id)
             ))

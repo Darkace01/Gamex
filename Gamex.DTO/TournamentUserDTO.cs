@@ -9,4 +9,5 @@ public class TournamentUserDTO
     public string PictureUrl { get; set; } = string.Empty;
     public int Points { get; set; }
     public int Rank { get; set; }
+    public bool IsInWaitList { get; set; }
 }

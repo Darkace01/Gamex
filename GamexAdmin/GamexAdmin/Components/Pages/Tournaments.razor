@@ -42,14 +42,18 @@
             <PropertyColumn Property="@(p => p.Location)" Sortable="true" />
             <TemplateColumn Title="Categories">
                 <div class="d-flex justify-content-between">
-                    @foreach (var category in context.Categories)
+                    @if (context.Categories is not null)
                     {
-                        <span class="badge bg-primary">@category.Name</span>
+                        foreach (var category in context.Categories)
+                        {
+                            <span class="badge bg-primary">@category.Name</span>
+                        }
                     }
                 </div>
             </TemplateColumn>
             <TemplateColumn Title="Actions">
                 <a href="/tournaments/edit/@context.Id" class="btn btn-primary">Edit</a>
+                <a href="/tournaments/manage-users/@context.Id" class="btn btn-info">Manage</a>
                 <button class="btn btn-danger" @onclick="(() => HandleDelete(context))">Delete</button>
             </TemplateColumn>
         </QuickGrid>
@@ -60,6 +64,7 @@
     private IQueryable<TournamentDTO> TournamentList = null;
     QuickGrid<TournamentDTO> TournamentGrid;
     PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+    private bool IsLoading { get; }
 
     protected override void OnInitialized()
     {
