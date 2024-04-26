@@ -21,7 +21,8 @@ public class TransactionController(IRepositoryServiceManager repositoryServiceMa
         {
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
         }
-
+        if (!user.EmailConfirmed)
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Please confirm your email address to join the tournament"));
         if (paymentTransactionCreateDTO.Amount <= 0)
         {
             return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, "Invalid amount"));
