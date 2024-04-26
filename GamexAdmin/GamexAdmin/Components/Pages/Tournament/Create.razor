@@ -149,7 +149,6 @@
     private string CategoryId { get; set; } = "";
 
     private bool IsLoading { get; set; } = false;
-    long maxFileSize = 1024 * 1024 * 10;
     string[] imageFileExtension = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
 
     private List<TournamentCategoryDTO> Categories { get; set; } = new();
@@ -170,7 +169,7 @@
             var file = e.File;
             if (file is not null)
             {
-                var (isValid, error) = CommonHelpers.CheckFileSize(file, maxFileSize);
+                var (isValid, error) = CommonHelpers.CheckFileSize(file, AppConstant.MaxFileSize);
 
                 if (!isValid)
                 {
@@ -214,7 +213,7 @@
             var file = e.File;
             if (file is not null)
             {
-                var (isValid, error) = CommonHelpers.CheckFileSize(file, maxFileSize);
+                var (isValid, error) = CommonHelpers.CheckFileSize(file, AppConstant.MaxFileSize);
 
                 if (!isValid)
                 {

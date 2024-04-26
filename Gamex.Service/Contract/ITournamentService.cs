@@ -44,6 +44,14 @@
         /// <param name="id">The ID of the tournament to retrieve.</param>
         /// <returns>A task representing the asynchronous operation. The result is the TournamentDTO if found, otherwise null.</returns>
         Task<TournamentDTO?> GetTournamentById(Guid id);
+        Task<TournamentUserUpdateDTO?> GetTournamentUserDetail(Guid id, string userId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets the tournament users by tournament id
+        /// </summary>
+        /// <param name="id">The id of the tournament</param>
+        /// <returns>The tournament users</returns>
+        IQueryable<TournamentUserDTO> GetTournamentUsers(Guid id);
 
         /// <summary>
         /// Joins a tournament.
@@ -52,7 +60,7 @@
         /// <param name="user">The user joining the tournament.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task representing the asynchronous operation. The result is true if the user successfully joins the tournament, otherwise false.</returns>
-        Task<bool> JoinTournament(Guid id, ApplicationUser user, CancellationToken cancellationToken = default);
+        Task<(bool, string)> JoinTournament(Guid id, ApplicationUser user, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Joins a tournament for testing purposes.
@@ -60,7 +68,7 @@
         /// <param name="id">The ID of the tournament to join.</param>
         /// <param name="user">The user joining the tournament.</param>
         /// <returns>A task representing the asynchronous operation. The result is true if the user successfully joins the tournament, otherwise false.</returns>
-        Task<bool> JoinTournamentMock(Guid id, ApplicationUser user);
+        Task<(bool, string)> JoinTournamentMock(Guid id, ApplicationUser user);
         /// <summary>
         /// Joins a tournament with a transaction reference
         /// </summary>
@@ -68,8 +76,8 @@
         /// <param name="user">The user joining the tournament</param>
         /// <param name="transactionReference">The transaction reference</param>
         /// <param name="cancellationToken">The cancellation token</param>
-        /// <returns>Returns true if the user successfully joins the tournament, otherwise false</returns>
-        Task<bool> JoinTournamentWithTransactionReference(Guid id, ApplicationUser user, string transactionReference = "", CancellationToken cancellationToken = default);
+        /// <returns>Returns a tuple with a boolean indicating if the user successfully joins the tournament and a string message</returns>
+        Task<(bool, string)> JoinTournamentWithTransactionReference(Guid id, ApplicationUser user, string transactionReference = "", CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Updates a tournament.
@@ -79,5 +87,16 @@
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         Task UpdateTournament(TournamentUpdateDTO tournament, ApplicationUser user, CancellationToken cancellationToken = default);
+        Task<(bool, string)> UpdateUserTournamentDetails(TournamentUserUpdateDTO model, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Updates the waitlist status of a user in a tournament.
+        /// </summary>
+        /// <param name="id">The ID of the tournament.</param>
+        /// <param name="user">The user whose waitlist status needs to be updated.</param>
+        /// <param name="passedWaitList">The new waitlist status of the user.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task UpdateUserWaitListStatus(Guid id, string userId, bool passedWaitList, CancellationToken cancellationToken = default);
     }
 }

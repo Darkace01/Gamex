@@ -33,6 +33,19 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<TournamentDTO>>(paginatedTournament));
     }
 
+    [HttpGet("mini")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<IEnumerable<TournamentMiniDTO>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetMinimumTournament()
+    {
+        var miniTournament = await _repositoryServiceManager.TournamentService.GetAllTournaments()
+            .Select(x => new TournamentMiniDTO(x.Id, x.Name, x.Description))
+            .ToListAsync();
+
+        return Ok(new ApiResponse<IEnumerable<TournamentMiniDTO>>(miniTournament));
+    }
+
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -197,6 +210,9 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         if (user == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
+        if (!user.EmailConfirmed)
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Please confirm your email address to join the tournament"));
+
         var tournamentExist = await _repositoryServiceManager.TournamentService.GetTournamentById(id);
         if (tournamentExist == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Tournament not found"));
@@ -204,7 +220,7 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         if (tournamentExist.TournamentUsers.Any(ut => ut.UserId == user.Id))
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Your are already in this tournament"));
 
-        if(tournamentExist.AvailableSlot < tournamentExist.TournamentUsers.Count())
+        if (tournamentExist.AvailableSlot < tournamentExist.TournamentUsers.Count())
             return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, "Tournament is full"));
 
         if (tournamentExist.EntryFee > 0)
@@ -212,22 +228,20 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
             var userWallet = await _repositoryServiceManager.PaymentService.GetUserBalance(user.Id);
             if (userWallet > tournamentExist.EntryFee)
             {
-                if (model is not null)
+                if (model is not null && !string.IsNullOrWhiteSpace(model.Reference))
                 {
                     var transactionStatus = await ValidateAndVerifyTransactionReference(model.Reference, cancellationToken);
                     if (transactionStatus.StatusCode != StatusCodes.Status200OK)
                         return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(transactionStatus.StatusCode, transactionStatus.Message));
                 }
-                else
-                {
-                    return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, "You don't have enough balance to join this tournament"));
-                }
             }
         }
 
-        await _repositoryServiceManager.TournamentService.JoinTournamentWithTransactionReference(id, user, model?.Reference, cancellationToken);
+        (bool isSuccessful, string message) = await _repositoryServiceManager.TournamentService.JoinTournamentWithTransactionReference(id, user, model?.Reference, cancellationToken);
 
-        return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>("Tournament Successfully Joined"));
+        if (!isSuccessful) return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(400, message));
+
+        return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>(message));
     }
 
     [HttpGet("featured")]

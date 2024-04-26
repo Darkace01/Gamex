@@ -1,0 +1,130 @@
+﻿@page "/tournaments/manage-users/{Id}/{UserId}"
+@attribute [Authorize(Roles = AppConstant.AdminUserRole)]
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IRepositoryServiceManager RepositoryServiceManager
+@rendermode @(new InteractiveServerRenderMode(prerender: true))
+
+<div class="row">
+    <div class="col-md-6">
+        <h1>Manage Tournament</h1>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex justify-content-end">
+            <a href="/tournaments/manage-users/@Id" class="btn btn-secondary">Go Back</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5><b>User</b> @Model?.DisplayName @Model?.Email</h5>
+        <h4><b>Tournament</b>: @Model?.TournamentName</h4>
+    </div>
+
+    <div class="card-body">
+        <EditForm Model="@Model" OnValidSubmit="HandleSubmit" FormName="EditTournamentUserDetail" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="alert alert-danger" role="alert" />
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @errorMessage
+                </div>
+            }
+            @* public int Points { get; set; }
+            public bool IsInWaitList { get; set; }
+            public bool Win { get; set; }
+            public bool Loss { get; set; } *@
+
+            <div class="form-group">
+                <label for="Points" class="form-label">Points</label>
+                <InputNumber id="Points" class="form-control" @bind-Value="Model.Points" />
+                <ValidationMessage For="@(() => Model.Points)" class="text-danger" />
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="IsInWaitList" class="form-label">Is In Wait List</label>
+                        <InputCheckbox id="IsInWaitList" class="form-check-input" @bind-Value="Model.IsInWaitList" />
+                        <ValidationMessage For="@(() => Model.IsInWaitList)" class="text-danger" />
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="Win" class="form-label">Win</label>
+                        <InputCheckbox id="Win" class="form-check-input" @bind-Value="Model.Win" />
+                        <ValidationMessage For="@(() => Model.Win)" class="text-danger" />
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="Loss" class="form-label">Loss</label>
+                        <InputCheckbox id="Loss" class="form-check-input" @bind-Value="Model.Loss" />
+                        <ValidationMessage For="@(() => Model.Loss)" class="text-danger" />
+                    </div>
+                </div>
+            </div>
+
+
+
+            <button type="submit" class="btn btn-primary" disabled="@IsLoading">Submit</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    [Parameter]
+    public string UserId { get; set; }
+
+    public Guid TournamentId { get; set; }
+
+    public string errorMessage { get; set; } = "";
+    private bool IsLoading { get; set; } = false;
+
+    [SupplyParameterFromForm]
+    public TournamentUserUpdateDTO? Model { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Model ??= new();
+        try
+        {
+            if (Guid.TryParse(Id, out var tournamentId))
+            {
+                TournamentId = tournamentId;
+            }
+
+            Model = await RepositoryServiceManager.TournamentService.GetTournamentUserDetail(TournamentId, UserId);
+            if (Model is null)
+                NavigationManager.NavigateTo($"/tournaments/manage-users/{Id}");
+        }
+        catch (Exception ex)
+        {
+
+            throw ex;
+        }
+
+    }
+
+    public async Task HandleSubmit()
+    {
+        try
+        {
+            IsLoading = true;
+            if (Model is not null)
+            {
+                await RepositoryServiceManager.TournamentService.UpdateUserTournamentDetails(Model);
+            }
+            IsLoading = false;
+            NavigationManager.NavigateTo($"/tournaments/manage-users/{Id}");
+        }
+        catch (Exception)
+        {
+            errorMessage = "An error has occured, please contact the administrator for help.";
+        }
+    }
+}

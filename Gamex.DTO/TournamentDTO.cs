@@ -33,8 +33,23 @@ public class TournamentDTO
             return TournamentUsers != null ? TournamentUsers.Count() : 0;
         }
     }
+    public int TotalRegisteredCount { get; set; }
     public IEnumerable<TournamentCategoryDTO>? Categories { get; set; }
     public IEnumerable<TournamentUserDTO> TournamentUsers { get; set; }
+}
+
+public class TournamentMiniDTO
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+
+    public TournamentMiniDTO(Guid id, string name, string description)
+    {
+        Id = id;
+        Name = name;
+        Description = description;
+    }
 }
 
 public class PaginatedTournamentDTO

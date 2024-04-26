@@ -8,9 +8,20 @@ public class LeaderboardController(IRepositoryServiceManager repo, UserManager<A
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<IEnumerable<LeaderboardDTO>>), StatusCodes.Status200OK)]
-    public IActionResult GetLeaderboard()
+    public IActionResult GetLeaderboard([FromQuery]string tournamentId = "")
     {
-        var leaderboard = _repositoryServiceManager.LeaderboardService.GetLeaderboard();
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<LeaderboardDTO>>(leaderboard));
+        if (string.IsNullOrWhiteSpace(tournamentId))
+        {
+            var leaderboard = _repositoryServiceManager.LeaderboardService.GetLeaderboard();
+            return Ok(new ApiResponse<IEnumerable<LeaderboardDTO>>(leaderboard));
+        }
+
+        if (Guid.TryParse(tournamentId, out Guid tournamentGuid))
+        {
+            var leaderboardWithTournamentFilter = _repositoryServiceManager.LeaderboardService.GetLeaderboardWithTournamentFilter(tournamentGuid);
+            return Ok(new ApiResponse<IEnumerable<LeaderboardDTO>>(leaderboardWithTournamentFilter));
+        }
+
+        return BadRequest("Invalid tournamentId");
     }
 }

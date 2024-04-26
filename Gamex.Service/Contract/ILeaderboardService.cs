@@ -1,4 +1,5 @@
-﻿namespace Gamex.Service.Contract
+﻿
+namespace Gamex.Service.Contract
 {
     public interface ILeaderboardService
     {
@@ -7,5 +8,6 @@
         /// </summary>
         /// <returns>The collection of leaderboard DTOs.</returns>
         IEnumerable<LeaderboardDTO> GetLeaderboard();
+        IEnumerable<LeaderboardDTO> GetLeaderboardWithTournamentFilter(Guid tournamentId);
     }
 }

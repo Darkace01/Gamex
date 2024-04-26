@@ -6,7 +6,7 @@ public class PaymentTransactionDTO
 {
     public Guid Id { get; set; }
     public string UserId { get; set; } = string.Empty;
-    public Guid? TournamentId { get; set; }
+    public Guid? TournamentId { get; set; } = null;
     public decimal? Amount { get; set; }
     public TransactionStatus Status { get; set; } = TransactionStatus.Pending;
     public string TransactionReference { get; set; } = "";
@@ -14,7 +14,7 @@ public class PaymentTransactionDTO
 public class PaymentTransactionCreateDTO
 {
     public string UserId { get; set; } = string.Empty;
-    public Guid? TournamentId { get; set; }
+    public Guid? TournamentId { get; set; } = null;
     public decimal? Amount { get; set; }
     public TransactionStatus Status { get; set; } = TransactionStatus.Pending;
     public string TransactionReference { get; set; } = "";
