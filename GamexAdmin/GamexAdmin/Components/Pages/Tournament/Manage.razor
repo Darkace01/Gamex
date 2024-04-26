@@ -28,9 +28,16 @@
             }
         }
         <QuickGrid Items="@TournamentUsersFiltered" Pagination="@pagination" Virtualize="true" @ref="TournamentGrid">
-            <PropertyColumn Property="@(p => p.DisplayName)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.DisplayName)" Sortable="true">
+                <ColumnOptions>
+                    <div class="search-box">
+                        <input type="search" autofocus @bind="nameFilter" @bind:event="oninput" placeholder="Display name..." />
+                    </div>
+                </ColumnOptions>
+            </PropertyColumn>
             <PropertyColumn Property="@(p => p.Email)" Sortable="true" />
-            <TemplateColumn Title="Wait List Status">
+            <PropertyColumn Property="@(p => p.Points)" Sortable="true" />
+            <TemplateColumn Title="Wait List Status" Sortable="true">
                 @{
                     if (context.IsInWaitList)
                     {
@@ -41,6 +48,9 @@
                         <span class="badge bg-primary">In Tournament</span>
                     }
                 }
+            </TemplateColumn>
+            <TemplateColumn Title="Manager User">
+                <a href="/tournaments/manage-users/@Id/@context.UserId" class="btn btn-primary">Manage User Details</a>
             </TemplateColumn>
             <TemplateColumn Title="Actions">
                 @{
@@ -75,26 +85,28 @@
     public Guid TournamentId { get; set; }
 
     public string errorMessage { get; set; } = "";
-    private bool IsLoading { get; set; }
+    private bool IsLoading { get; set; } = false;
     PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+    string nameFilter = string.Empty;
     QuickGrid<TournamentUserDTO> TournamentGrid;
 
     private IQueryable<TournamentUserDTO>? TournamentUsers { get; set; }
 
-    IQueryable<TournamentUserDTO> TournamentUsersFiltered => TournamentUsers ?? Enumerable.Empty<TournamentUserDTO>().AsQueryable();
+    IQueryable<TournamentUserDTO> TournamentUsersFiltered => TournamentUsers?.Where(x => x.DisplayName.Contains(nameFilter, StringComparison.CurrentCultureIgnoreCase)) ?? Enumerable.Empty<TournamentUserDTO>().AsQueryable();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         if (Guid.TryParse(Id, out var tournamentId))
         {
             TournamentId = tournamentId;
         }
-        LoadTournamentUsers();
+        await LoadTournamentUsers();
     }
 
-    private void LoadTournamentUsers()
+    private async Task LoadTournamentUsers()
     {
-        TournamentUsers = RepositoryServiceManager.TournamentService.GetTournamentUsers(TournamentId).ToList().AsQueryable();
+        var tournamentUsersList = await RepositoryServiceManager.TournamentService.GetTournamentUsers(TournamentId).ToListAsync();
+        TournamentUsers = tournamentUsersList.AsQueryable();
     }
 
     private async Task HandleDelete(TournamentUserDTO tournamentUser)
@@ -121,9 +133,9 @@
         {
             IsLoading = true;
             await RepositoryServiceManager.TournamentService.UpdateUserWaitListStatus(TournamentId, tournamentUser.UserId, status, cancellationToken);
-            // OnInitialized();
-            LoadTournamentUsers();
             IsLoading = false;
+            NavigationManager.Refresh(forceReload: true);
+            // LoadTournamentUsers();
         }
         catch (Exception)
         {

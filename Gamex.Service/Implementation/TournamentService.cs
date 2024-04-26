@@ -64,7 +64,9 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                     PictureUrl = ut.User.Picture?.FileUrl ?? "",
                     Points = ut.Point ?? 0,
                     Rank = index + 1,
-                    IsInWaitList = ut.WaitList == false
+                    IsInWaitList = ut.WaitList == false,
+                    Win = ut.Win ?? false,
+                    Loss = ut.Loss ?? false
                 })
         };
 
@@ -110,6 +112,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 Id = tc.Id,
                 Name = tc.Name
             }),
+            TotalRegisteredCount = t.UserTournaments.Count()
 
             //TournamentUsers = t.UserTournaments.Select(ut => new TournamentUserDTO
             //{
@@ -549,7 +552,9 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 DisplayName = ut.User.DisplayName,
                 PictureUrl = ut.User.Picture != null ? ut.User.Picture.FileUrl : "",
                 Points = ut.Point ?? 0,
-                IsInWaitList = ut.WaitList == false
+                IsInWaitList = ut.WaitList == false,
+                Loss = ut.Loss ?? false,
+                Win = ut.Win ?? false
             });
     }
 
@@ -571,5 +576,46 @@ public class TournamentService(GamexDbContext context) : ITournamentService
 
         userTournament.WaitList = passedWaitList;
         await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<(bool, string)> UpdateUserTournamentDetails(TournamentUserUpdateDTO model, CancellationToken cancellationToken = default)
+    {
+        var userTournament = await _context.UserTournaments.FirstOrDefaultAsync(ut => ut.TournamentId == model.TournamentId && ut.UserId == model.UserId, cancellationToken);
+
+        if (userTournament is null)
+        {
+            return (false, "User tournament not found.");
+        }
+
+        userTournament.Point = model.Points;
+        userTournament.WaitList = !model.IsInWaitList;
+        userTournament.Loss = model.Loss;
+        userTournament.Win = model.Win;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return (true, "User tournament updated.");
+    }
+
+    public async Task<TournamentUserUpdateDTO?> GetTournamentUserDetail(Guid id,string userId, CancellationToken cancellationToken = default)
+    {
+        var tournament = await _context.UserTournaments
+            .AsNoTracking()
+            .Include(ut => ut.User)
+            .Where(ut => ut.TournamentId == id && ut.UserId == userId)
+            .Select((ut) => new TournamentUserUpdateDTO
+            {
+                UserId = ut.UserId,
+                Points = ut.Point ?? 0,
+                IsInWaitList = ut.WaitList == false,
+                Loss = ut.Loss ?? false,
+                Win = ut.Win ?? false,
+                TournamentId = id,
+                DisplayName = ut.User.DisplayName,
+                Email = ut.User.Email,
+                TournamentName = ut.Tournament.Name
+            //}).FirstOrDefault();
+            }).FirstOrDefaultAsync(cancellationToken);
+        return tournament;
     }
 }

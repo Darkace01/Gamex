@@ -40,6 +40,7 @@
                 </div>
             </TemplateColumn>
             <PropertyColumn Property="@(p => p.Location)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.TotalRegisteredCount)" Title="Registered Users" Sortable="true" />
             <TemplateColumn Title="Categories">
                 <div class="d-flex justify-content-between">
                     @if (context.Categories is not null)

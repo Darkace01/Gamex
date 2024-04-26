@@ -44,6 +44,7 @@
         /// <param name="id">The ID of the tournament to retrieve.</param>
         /// <returns>A task representing the asynchronous operation. The result is the TournamentDTO if found, otherwise null.</returns>
         Task<TournamentDTO?> GetTournamentById(Guid id);
+        Task<TournamentUserUpdateDTO?> GetTournamentUserDetail(Guid id, string userId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets the tournament users by tournament id
@@ -86,6 +87,8 @@
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         Task UpdateTournament(TournamentUpdateDTO tournament, ApplicationUser user, CancellationToken cancellationToken = default);
+        Task<(bool, string)> UpdateUserTournamentDetails(TournamentUserUpdateDTO model, CancellationToken cancellationToken = default);
+
         /// <summary>
         /// Updates the waitlist status of a user in a tournament.
         /// </summary>
