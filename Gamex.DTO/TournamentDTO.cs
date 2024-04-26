@@ -33,6 +33,7 @@ public class TournamentDTO
             return TournamentUsers != null ? TournamentUsers.Count() : 0;
         }
     }
+    public int TotalRegisteredCount { get; set; }
     public IEnumerable<TournamentCategoryDTO>? Categories { get; set; }
     public IEnumerable<TournamentUserDTO> TournamentUsers { get; set; }
 }

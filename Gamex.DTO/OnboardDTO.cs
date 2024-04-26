@@ -32,12 +32,13 @@ public class UserProfileDTO
     public int ActiveTournaments { get; set; }
     public int Post { get; set; }
     public int Comments { get; set; }
+    public bool ConfirmedEmail { get; set; }
 
     public UserProfileDTO()
     {
     }
 
-    public UserProfileDTO(string firstName,string lastName,string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId)
+    public UserProfileDTO(string firstName,string lastName,string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId,bool confirmedEmail)
     {
         FirstName = firstName;
         LastName = lastName;
@@ -46,9 +47,10 @@ public class UserProfileDTO
         PhoneNumber = phoneNumber;
         ProfilePictureUrl = profilePictureUrl;
         ProfilePicturePublicId = profilePicturePublicId;
+        ConfirmedEmail = confirmedEmail;
     }
 
-    public UserProfileDTO(string firstName, string lastName, string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId, decimal? walletBalance, int activeTournaments, int post, int comments)
+    public UserProfileDTO(string firstName, string lastName, string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId, decimal? walletBalance, int activeTournaments, int post, int comments, bool confirmedEmail)
     {
         FirstName = firstName;
         LastName = lastName;
@@ -61,5 +63,6 @@ public class UserProfileDTO
         ActiveTournaments = activeTournaments;
         Post = post;
         Comments = comments;
+        ConfirmedEmail = confirmedEmail;
     }
 }

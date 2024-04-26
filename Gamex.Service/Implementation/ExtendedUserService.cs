@@ -83,9 +83,10 @@ public class ExtendedUserService : IExtendedUserService
                 u.Picture.FileUrl,
                 u.Picture.PublicId,
                 u.Balance,
-                _context.UserTournaments.Count(ut => ut.UserId == u.User.Id),
+                _context.UserTournaments.Count(ut => ut.UserId == u.User.Id && ut.WaitList == true),
                 _context.Posts.Count(post => post.UserId == u.User.Id),
-                _context.Comments.Count(comment => comment.UserId == u.User.Id)
+                _context.Comments.Count(comment => comment.UserId == u.User.Id),
+                u.User.EmailConfirmed
             ))
             .FirstOrDefault();
 
@@ -127,7 +128,7 @@ public class ExtendedUserService : IExtendedUserService
     /// <returns>True if the code is valid and not expired; otherwise, false.</returns>
     public async Task<bool> VerifyUserConfirmationCode(string userId, string code)
     {
-        var userConfirmationCode = await _context.UserConfirmationCodes.FirstOrDefaultAsync(x => x.Code == code && x.ExpiryDate < DateTime.Now && x.UserId == userId);
+        var userConfirmationCode = await _context.UserConfirmationCodes.FirstOrDefaultAsync(x => x.Code == code && x.ExpiryDate > DateTime.Now && x.UserId == userId);
         if (userConfirmationCode is null)
         {
             return false;

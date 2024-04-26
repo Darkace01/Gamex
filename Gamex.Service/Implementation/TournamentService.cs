@@ -63,7 +63,10 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                     DisplayName = ut.User.DisplayName,
                     PictureUrl = ut.User.Picture?.FileUrl ?? "",
                     Points = ut.Point ?? 0,
-                    Rank = index + 1
+                    Rank = index + 1,
+                    IsInWaitList = ut.WaitList == false,
+                    Win = ut.Win ?? false,
+                    Loss = ut.Loss ?? false
                 })
         };
 
@@ -109,6 +112,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 Id = tc.Id,
                 Name = tc.Name
             }),
+            TotalRegisteredCount = t.UserTournaments.Count()
 
             //TournamentUsers = t.UserTournaments.Select(ut => new TournamentUserDTO
             //{
@@ -525,5 +529,93 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     public IQueryable<TournamentDTO> GetFeaturedTournaments()
     {
         return GetAllTournaments().Where(t => t.IsFeatured);
+    }
+
+    /// <summary>
+    /// Gets the tournament users by tournament id
+    /// </summary>
+    /// <param name="id">The id of the tournament</param>
+    /// <returns>The tournament users</returns>
+    public IQueryable<TournamentUserDTO> GetTournamentUsers(Guid id)
+    {
+        return _context.UserTournaments
+            .AsNoTracking()
+            .Include(ut => ut.User)
+            .Include(ut => ut.User.Picture)
+            .Where(ut => ut.TournamentId == id)
+            .OrderBy(x => x.Point)
+            .Select((ut) => new TournamentUserDTO
+            {
+                UserId = ut.UserId,
+                Email = ut.User.Email,
+                CreatorId = ut.CreatorId,
+                DisplayName = ut.User.DisplayName,
+                PictureUrl = ut.User.Picture != null ? ut.User.Picture.FileUrl : "",
+                Points = ut.Point ?? 0,
+                IsInWaitList = ut.WaitList == false,
+                Loss = ut.Loss ?? false,
+                Win = ut.Win ?? false
+            });
+    }
+
+    /// <summary>
+    /// Updates the waitlist status of a user in a tournament.
+    /// </summary>
+    /// <param name="id">The ID of the tournament.</param>
+    /// <param name="user">The user whose waitlist status needs to be updated.</param>
+    /// <param name="passedWaitList">The new waitlist status of the user.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task UpdateUserWaitListStatus(Guid id, string userId, bool passedWaitList, CancellationToken cancellationToken = default)
+    {
+        var userTournament = await _context.UserTournaments.FirstOrDefaultAsync(ut => ut.TournamentId == id && ut.UserId == userId, cancellationToken);
+        if (userTournament == null)
+        {
+            throw new Exception("User not found in the tournament");
+        }
+
+        userTournament.WaitList = passedWaitList;
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<(bool, string)> UpdateUserTournamentDetails(TournamentUserUpdateDTO model, CancellationToken cancellationToken = default)
+    {
+        var userTournament = await _context.UserTournaments.FirstOrDefaultAsync(ut => ut.TournamentId == model.TournamentId && ut.UserId == model.UserId, cancellationToken);
+
+        if (userTournament is null)
+        {
+            return (false, "User tournament not found.");
+        }
+
+        userTournament.Point = model.Points;
+        userTournament.WaitList = !model.IsInWaitList;
+        userTournament.Loss = model.Loss;
+        userTournament.Win = model.Win;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return (true, "User tournament updated.");
+    }
+
+    public async Task<TournamentUserUpdateDTO?> GetTournamentUserDetail(Guid id,string userId, CancellationToken cancellationToken = default)
+    {
+        var tournament = await _context.UserTournaments
+            .AsNoTracking()
+            .Include(ut => ut.User)
+            .Where(ut => ut.TournamentId == id && ut.UserId == userId)
+            .Select((ut) => new TournamentUserUpdateDTO
+            {
+                UserId = ut.UserId,
+                Points = ut.Point ?? 0,
+                IsInWaitList = ut.WaitList == false,
+                Loss = ut.Loss ?? false,
+                Win = ut.Win ?? false,
+                TournamentId = id,
+                DisplayName = ut.User.DisplayName,
+                Email = ut.User.Email,
+                TournamentName = ut.Tournament.Name
+            //}).FirstOrDefault();
+            }).FirstOrDefaultAsync(cancellationToken);
+        return tournament;
     }
 }

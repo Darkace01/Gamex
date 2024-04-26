@@ -210,6 +210,9 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         if (user == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
 
+        if (!user.EmailConfirmed)
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Please confirm your email address to join the tournament"));
+
         var tournamentExist = await _repositoryServiceManager.TournamentService.GetTournamentById(id);
         if (tournamentExist == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Tournament not found"));

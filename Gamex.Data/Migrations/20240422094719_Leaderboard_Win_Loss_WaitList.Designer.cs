@@ -4,6 +4,7 @@ using Gamex.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Gamex.Data.Migrations
 {
     [DbContext(typeof(GamexDbContext))]
-    partial class GamexDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240422094719_Leaderboard_Win_Loss_WaitList")]
+    partial class Leaderboard_Win_Loss_WaitList
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

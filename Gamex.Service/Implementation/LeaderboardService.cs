@@ -12,8 +12,8 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
     {
         var leaderboard = _context.Users
              .AsNoTracking()
-             .Where(x => x.EmailConfirmed)
              .Include(ut => ut.UserTournaments)
+             .Where(x => x.EmailConfirmed && x.UserTournaments.Any(ut => ut.WaitList ?? false))
              .GroupBy(ut => ut.Id)
              .Select(g => new LeaderboardDTO
              {
@@ -22,7 +22,9 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
                  PlayerProfilePictureUrl = g.First().Picture != null ? g.First().Picture.FileUrl : "",
                  Tournaments = g.First().UserTournaments.Count,
                  TournamentList = g.First().UserTournaments.Select(ut => new TournamentMiniDTO(ut.TournamentId, ut.Tournament.Name, ut.Tournament.Description)).ToList(),
-                 Points = g.First().UserTournaments.Sum(ut => ut.Point ?? 0)
+                 Points = g.First().UserTournaments.Sum(ut => ut.Point ?? 0),
+                 Win = g.First().UserTournaments.Count(ut => ut.Win ?? false),
+                 Loss = g.First().UserTournaments.Count(ut => ut.Loss ?? false)
              })
              .OrderByDescending(l => l.Points)
             .ThenBy(l => l.Tournaments)
@@ -36,7 +38,9 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
                 PlayerProfilePictureUrl = l.PlayerProfilePictureUrl,
                 Tournaments = l.Tournaments,
                 Points = l.Points,
-                TournamentList = l.TournamentList
+                TournamentList = l.TournamentList,
+                Win = l.Win,
+                Loss = l.Loss
             });
         return leaderboard;
     }
@@ -49,8 +53,8 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
     {
         var leaderboard = _context.Users
             .AsNoTracking()
-            .Where(x => x.EmailConfirmed)
             .Include(ut => ut.UserTournaments)
+            .Where(x => x.EmailConfirmed && x.UserTournaments.Any(ut => ut.WaitList ?? false))
             .Where(ut => ut.UserTournaments.Any(ut => ut.TournamentId == tournamentId))
             .GroupBy(ut => ut.Id)
             .Select(g => new LeaderboardDTO
@@ -59,22 +63,27 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
                 PlayerName = g.First().DisplayName == "" ? g.First().FirstName + " " + g.First().LastName : g.First().DisplayName,
                 PlayerProfilePictureUrl = g.First().Picture != null ? g.First().Picture.FileUrl : "",
                 Tournaments = g.First().UserTournaments.Count,
-                Points = g.First().UserTournaments.Sum(ut => ut.Point ?? 0)
+                TournamentList = g.First().UserTournaments.Select(ut => new TournamentMiniDTO(ut.TournamentId, ut.Tournament.Name, ut.Tournament.Description)).ToList(),
+                Points = g.First().UserTournaments.Sum(ut => ut.Point ?? 0),
+                Win = g.First().UserTournaments.Count(ut => ut.Win ?? false),
+                Loss = g.First().UserTournaments.Count(ut => ut.Loss ?? false)
             })
             .OrderByDescending(l => l.Points)
-            .ThenBy(l => l.Tournaments)
-            .ThenBy(l => l.PlayerName)
-            .AsEnumerable()
-            .Select((l, index) => new LeaderboardDTO
-            {
-                Rank = index + 1,
-                PlayerId = l.PlayerId,
-                PlayerName = l.PlayerName,
-                PlayerProfilePictureUrl = l.PlayerProfilePictureUrl,
-                Tournaments = l.Tournaments,
-                Points = l.Points
-            });
+           .ThenBy(l => l.Tournaments)
+           .ThenBy(l => l.PlayerName)
+           .AsEnumerable()
+           .Select((l, index) => new LeaderboardDTO
+           {
+               Rank = index + 1,
+               PlayerId = l.PlayerId,
+               PlayerName = l.PlayerName,
+               PlayerProfilePictureUrl = l.PlayerProfilePictureUrl,
+               Tournaments = l.Tournaments,
+               Points = l.Points,
+               TournamentList = l.TournamentList,
+               Win = l.Win,
+               Loss = l.Loss
+           });
         return leaderboard;
-
     }
 }

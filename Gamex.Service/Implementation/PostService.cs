@@ -292,11 +292,11 @@ public class PostService(GamexDbContext context) : IPostService
 
     private static PostDTO MapPostToDTO(Post post)
     {
-        var comments = post.Comments?.Select(c => new CommentDTO(c.Id, c.Title, c.Content, c.IsArchived, new UserProfileDTO(c.User?.FirstName, c.User?.LastName, c.User?.DisplayName, c.User?.Email, c?.User?.PhoneNumber, c?.User?.Picture?.FileUrl, c?.User?.Picture?.PublicId), c.PostId, c.DateCreated));
+        var comments = post.Comments?.Select(c => new CommentDTO(c.Id, c.Title, c.Content, c.IsArchived, new UserProfileDTO(c.User?.FirstName, c.User?.LastName, c.User?.DisplayName, c.User?.Email, c?.User?.PhoneNumber, c?.User?.Picture?.FileUrl, c?.User?.Picture?.PublicId, c?.User?.EmailConfirmed ?? false), c.PostId, c.DateCreated));
 
         var tags = post.PostTags?.Select(pt => new TagDTO(pt.Tag.Id, pt.Tag.Name, pt.Tag.PostTags.Count));
 
         return new PostDTO(post.Id, post.Title, post.Content, post.IsArchived, post?.Picture?.Id, post?.Picture?.FileUrl, post?.Picture?.PublicId,
-            new UserProfileDTO(post?.User?.FirstName, post?.User?.LastName, post?.User?.DisplayName, post?.User?.Email, post?.User?.PhoneNumber, post?.User?.Picture?.FileUrl, post?.User?.Picture?.PublicId), comments, tags, post.DateCreated);
+            new UserProfileDTO(post?.User?.FirstName, post?.User?.LastName, post?.User?.DisplayName, post?.User?.Email, post?.User?.PhoneNumber, post?.User?.Picture?.FileUrl, post?.User?.Picture?.PublicId,post?.User?.EmailConfirmed ?? false), comments, tags, post.DateCreated);
     }
 }
