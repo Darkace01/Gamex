@@ -1,0 +1,146 @@
+﻿@page "/tournaments/manage-users/{Id}"
+@attribute [Authorize(Roles = AppConstant.AdminUserRole)]
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IRepositoryServiceManager RepositoryServiceManager
+@rendermode @(new InteractiveServerRenderMode(prerender: true))
+
+<div class="row">
+    <div class="col-md-6">
+        <h1>Manage Tournament</h1>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex justify-content-end">
+            <a href="/tournaments" class="btn btn-secondary">Go Back</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        @{
+            if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @errorMessage
+                </div>
+            }
+        }
+        <QuickGrid Items="@TournamentUsersFiltered" Pagination="@pagination" Virtualize="true" @ref="TournamentGrid">
+            <PropertyColumn Property="@(p => p.DisplayName)" Sortable="true">
+                <ColumnOptions>
+                    <div class="search-box">
+                        <input type="search" autofocus @bind="nameFilter" @bind:event="oninput" placeholder="Display name..." />
+                    </div>
+                </ColumnOptions>
+            </PropertyColumn>
+            <PropertyColumn Property="@(p => p.Email)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.Points)" Sortable="true" />
+            <TemplateColumn Title="Wait List Status" Sortable="true">
+                @{
+                    if (context.IsInWaitList)
+                    {
+                        <span class="badge bg-secondary">In Waitlist</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-primary">In Tournament</span>
+                    }
+                }
+            </TemplateColumn>
+            <TemplateColumn Title="Manager User">
+                <a href="/tournaments/manage-users/@Id/@context.UserId" class="btn btn-primary">Manage User Details</a>
+            </TemplateColumn>
+            <TemplateColumn Title="Actions">
+                @{
+                    if (context.IsInWaitList)
+                    {
+                        <button class="btn btn-primary" @onclick="(() => HandleApprove(context,true))" disabled="@IsLoading">
+                            Approve @if (IsLoading == true)
+                            {
+                                <Loading />
+                            }
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-warning" @onclick="(() => HandleApprove(context,false))" disabled="@IsLoading">
+                            Move to Waitlist  @if (IsLoading == true)
+                            {
+                                <Loading />
+                            }
+                        </button>
+                    }
+                }
+            </TemplateColumn>
+        </QuickGrid>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    public Guid TournamentId { get; set; }
+
+    public string errorMessage { get; set; } = "";
+    private bool IsLoading { get; set; } = false;
+    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+    string nameFilter = string.Empty;
+    QuickGrid<TournamentUserDTO> TournamentGrid;
+
+    private IQueryable<TournamentUserDTO>? TournamentUsers { get; set; }
+
+    IQueryable<TournamentUserDTO> TournamentUsersFiltered => TournamentUsers?.Where(x => x.DisplayName.Contains(nameFilter, StringComparison.CurrentCultureIgnoreCase)) ?? Enumerable.Empty<TournamentUserDTO>().AsQueryable();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Guid.TryParse(Id, out var tournamentId))
+        {
+            TournamentId = tournamentId;
+        }
+        await LoadTournamentUsers();
+    }
+
+    private async Task LoadTournamentUsers()
+    {
+        var tournamentUsersList = await RepositoryServiceManager.TournamentService.GetTournamentUsers(TournamentId).ToListAsync();
+        TournamentUsers = tournamentUsersList.AsQueryable();
+    }
+
+    private async Task HandleDelete(TournamentUserDTO tournamentUser)
+    {
+        var user = await UserManager.FindByEmailAsync(tournamentUser.Email);
+        if (user == null)
+        {
+            errorMessage = "User not found";
+            return;
+        }
+    }
+
+    private async Task<ApplicationUser?> GetCurrentUser()
+    {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userClaim = authenticationState.User;
+        var user = await UserManager.GetUserAsync(userClaim);
+        return user;
+    }
+
+    private async void HandleApprove(TournamentUserDTO tournamentUser, bool status, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            IsLoading = true;
+            await RepositoryServiceManager.TournamentService.UpdateUserWaitListStatus(TournamentId, tournamentUser.UserId, status, cancellationToken);
+            IsLoading = false;
+            NavigationManager.Refresh(forceReload: true);
+            // LoadTournamentUsers();
+        }
+        catch (Exception)
+        {
+            errorMessage = "An error occurred while approving the user";
+            throw;
+        }
+    }
+}

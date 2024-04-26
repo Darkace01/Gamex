@@ -10,6 +10,9 @@ public class UserTournament
     public DateTime? DateJoined { get; set; } = DateTime.UtcNow;
     public decimal? Amount { get; set; }
     public int? Point { get; set; }
+    public bool? Win { get; set; } = false;
+    public bool? Loss { get; set; } = false;
+    public bool? WaitList { get; set; } = false;
     public Guid? PaymentTransactionId { get; set; }
     public PaymentTransaction? PaymentTransaction { get; set; }
 }

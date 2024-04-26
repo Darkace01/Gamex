@@ -126,7 +126,6 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
             if (userExist.ExternalAuthInWithGoogle)
             {
                 userExist.ExternalAuthInWithGoogle = true;
-                userExist.EmailConfirmed = true;
                 await _userManager.UpdateAsync(userExist);
             }
 
@@ -142,7 +141,6 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         ApplicationUser user = new()
         {
             Email = response.Data?.Email,
-            EmailConfirmed = true,
             FirstName = response.Data?.GivenName ?? string.Empty,
             LastName = response.Data?.FamilyName ?? string.Empty,
             SecurityStamp = Guid.NewGuid().ToString(),
@@ -249,6 +247,54 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         if (!result.Succeeded) return BadRequest(new ApiResponse<string>(400, "Invalid reset password request"));
 
         return Ok(new ApiResponse<string>(200, "Password reset successfully!"));
+    }
+
+    [HttpPost("send-confirmation-email/{email}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> SendConfirmationEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return BadRequest(new ApiResponse<string>(400, "Invalid email address"));
+
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user == null) return BadRequest(new ApiResponse<string>(400, "Invalid email address"));
+
+        var token = await _repositoryServiceManager.ExtendedUserService.GenerateUserConfirmationCode(user.Id);
+
+        var message = $"Please find your confirmation code : {token.Code}";
+
+        _ = await _emailService.SendEmailAsync(email, "Confirm Email", message);
+
+        return Ok(new ApiResponse<string>(200, "Confirmation email sent successfully!"));
+    }
+
+    [HttpPost("confirm-email")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailDTO model)
+    {
+        if (model is null) return BadRequest(new ApiResponse<string>(400, "Invalid email confirmation request"));
+
+        if (!ModelState.IsValid) return BadRequest(new ApiResponse<string>(400, "Invalid email confirmation request"));
+
+        var user = await _userManager.FindByEmailAsync(model.Email);
+
+        if (user == null) return BadRequest(new ApiResponse<string>(400, "Invalid email confirmation request"));
+
+        var isValidCode = await _repositoryServiceManager.ExtendedUserService.VerifyUserConfirmationCode(user.Id, model.Code);
+
+        if (!isValidCode) return BadRequest(new ApiResponse<string>(400, "Invalid email confirmation request"));
+
+        user.EmailConfirmed = true;
+
+        await _userManager.UpdateAsync(user);
+
+        return Ok(new ApiResponse<string>(200, "Email confirmed successfully!"));
     }
     #region Private Methods
     private async Task<ApiResponse<GoogleJsonWebSignature.Payload>> ValidateUserTokenForGoogle(string token)

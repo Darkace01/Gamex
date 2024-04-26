@@ -24,6 +24,9 @@ public class OnboardController(IRepositoryServiceManager repo, UserManager<Appli
             return Unauthorized(new ApiResponse<UserProfileDTO>(401, "Unauthorized"));
         }
 
+        if (!user.EmailConfirmed)
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Please confirm your email address to join the tournament"));
+
         if (!string.IsNullOrWhiteSpace(user.Picture?.PublicId))
         {
             await _repositoryServiceManager.FileStorageService.DeleteFile(user.Picture.PublicId);
@@ -85,7 +88,7 @@ public class OnboardController(IRepositoryServiceManager repo, UserManager<Appli
         {
             return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<UserProfileDTO>(500, "Internal server error"));
         }
-        return Ok(new ApiResponse<UserProfileDTO>(GetUserProfileDTO(user)));
+        return Ok(new ApiResponse<UserProfileDTO?>(GetUserProfileDTO(user)));
     }
 
     [HttpPost("profile-picture")]
@@ -151,7 +154,7 @@ public class OnboardController(IRepositoryServiceManager repo, UserManager<Appli
         {
             return Unauthorized(new ApiResponse<UserProfileDTO>(401, "Unauthorized"));
         }
-        return Ok(new ApiResponse<UserProfileDTO>(GetUserProfileDTO(user)));
+        return Ok(new ApiResponse<UserProfileDTO?>(GetUserProfileDTO(user)));
     }
 
     #region Helpers
