@@ -92,6 +92,34 @@ public class ExtendedUserService : IExtendedUserService
 
         return user;
     }
+    
+    public UserPublicProfileDTO? GetPublicUserByIdForProfile(string id)
+    {
+        var user = _context.Users
+            .AsNoTracking()
+            .Where(u => u.Id == id)
+            .Select(u => new
+            {
+                User = u,
+                Picture = _context.Pictures.AsNoTracking().FirstOrDefault(p => p.Id == u.PictureId),
+            })
+            .Select(u => new UserPublicProfileDTO(
+                u.User.FirstName,
+                u.User.LastName,
+                u.User.DisplayName,
+                u.User.Email,
+                u.User.PhoneNumber,
+                u.Picture.FileUrl,
+                u.Picture.PublicId,
+                _context.UserTournaments.Count(ut => ut.UserId == u.User.Id && ut.WaitList == true),
+                _context.Posts.Count(post => post.UserId == u.User.Id),
+                _context.Comments.Count(comment => comment.UserId == u.User.Id),
+                u.User.EmailConfirmed
+            ))
+            .FirstOrDefault();
+
+        return user;
+    }
 
     /// <summary>
     /// Generates a user confirmation code.

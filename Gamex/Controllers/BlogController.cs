@@ -10,14 +10,18 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(typeof(ApiResponse<PaginationDTO<PostDTO>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPosts([FromQuery] IEnumerable<string> TagIds, [FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "", CancellationToken cancellationToken = default)
     {
-        var posts = _repositoryServiceManager.PostService.GetAllPosts();
-        var totalNumber = await posts.CountAsync(cancellationToken);
+        var postList = await _repositoryServiceManager.PostService.GetAllPosts(TagIds, take, skip, s, cancellationToken);
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<PostDTO>>(postList));
+    }
 
-        var postList = await _repositoryServiceManager.PostService.GetAllPosts(TagIds, take, skip, s).ToListAsync(cancellationToken);
-
-        PaginationDTO<PostDTO> pagination = new(postList, Math.Ceiling((decimal)posts.Count() / take), skip, take, totalNumber);
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<PostDTO>>(pagination));
-
+    [HttpGet("posts/user/{userId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<PaginationDTO<PostDTO>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPosts([FromRoute] string userId, [FromQuery] IEnumerable<string> TagIds, [FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "", CancellationToken cancellationToken = default)
+    {
+        var postList = await _repositoryServiceManager.PostService.GetAllUsersPosts(userId, TagIds, take, skip, s, cancellationToken);
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<PostDTO>>(postList));
     }
 
     [HttpGet("posts/{id}")]

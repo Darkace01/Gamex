@@ -1,16 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿namespace Gamex.DTO;
 
-namespace Gamex.DTO;
-
-public class UserProfileUpdateDTO
-{
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public string DisplayName { get; set; } = string.Empty;
-    public string PhoneNumber { get; set; } = string.Empty;
-}
-
-public class UserProfileDTO
+public class UserPublicProfileDTO
 {
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
@@ -28,17 +18,16 @@ public class UserProfileDTO
     public string PhoneNumber { get; set; } = string.Empty;
     public string ProfilePictureUrl { get; set; } = string.Empty;
     public string ProfilePicturePublicId { get; set; } = string.Empty;
-    public decimal WalletBalance { get; set; }
     public int ActiveTournaments { get; set; }
     public int Post { get; set; }
     public int Comments { get; set; }
     public bool ConfirmedEmail { get; set; }
 
-    public UserProfileDTO()
+    public UserPublicProfileDTO()
     {
     }
 
-    public UserProfileDTO(string firstName,string lastName,string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId,bool confirmedEmail)
+    public UserPublicProfileDTO(string firstName,string lastName,string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId,bool confirmedEmail)
     {
         FirstName = firstName;
         LastName = lastName;
@@ -50,7 +39,7 @@ public class UserProfileDTO
         ConfirmedEmail = confirmedEmail;
     }
 
-    public UserProfileDTO(string firstName, string lastName, string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId, decimal? walletBalance, int activeTournaments, int post, int comments, bool confirmedEmail)
+    public UserPublicProfileDTO(string firstName, string lastName, string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId, int activeTournaments, int post, int comments, bool confirmedEmail)
     {
         FirstName = firstName;
         LastName = lastName;
@@ -59,7 +48,6 @@ public class UserProfileDTO
         PhoneNumber = phoneNumber;
         ProfilePictureUrl = profilePictureUrl;
         ProfilePicturePublicId = profilePicturePublicId;
-        WalletBalance = walletBalance ?? 0;
         ActiveTournaments = activeTournaments;
         Post = post;
         Comments = comments;

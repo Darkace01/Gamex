@@ -51,7 +51,17 @@ namespace Gamex.Service.Contract
         /// <param name="skip">The number of posts to skip.</param>
         /// <param name="s">The search string to filter by.</param>
         /// <returns>An IQueryable of PostDTO representing the filtered and paginated posts.</returns>
-        IQueryable<PostDTO> GetAllPosts(IEnumerable<string> TagIds, int take = 10, int skip = 0, string s = "");
+        Task<PaginationDTO<PostDTO>> GetAllPosts(IEnumerable<string> TagIds, int take = 10, int skip = 0, string s = "", CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Retrieves all posts for a specific user based on the specified criteria.
+        /// </summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <param name="TagIds">The collection of tag IDs to filter by.</param>
+        /// <param name="take">The number of posts to take.</param>
+        /// <param name="skip">The number of posts to skip.</param>
+        /// <param name="s">The search string to filter by.</param>
+        /// <returns>The pagination DTO containing the queryable collection of post DTOs.</returns>
+        Task<PaginationDTO<PostDTO>> GetAllUsersPosts(string userId, IEnumerable<string> TagIds, int take = 10, int skip = 0, string s = "", CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a post by ID.
