@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using Gamex.DTO;
+using System.Threading;
 
 namespace Gamex.Service.Implementation;
 
@@ -38,7 +39,7 @@ public class PostService(GamexDbContext context) : IPostService
     /// <param name="skip">The number of posts to skip.</param>
     /// <param name="s">The search string to filter by.</param>
     /// <returns>The queryable collection of post DTOs.</returns>
-    public IQueryable<PostDTO> GetAllPosts(IEnumerable<string> TagIds, int take = 10, int skip = 0, string s = "")
+    public async Task<PaginationDTO<PostDTO>> GetAllPosts(IEnumerable<string> TagIds, int take = 10, int skip = 0, string s = "", CancellationToken cancellationToken = default)
     {
         var posts = _context.Posts.Include(x => x.User).Include(x => x.Picture).Include(x => x.PostTags).ThenInclude(x => x.Tag).Include(x => x.Comments).ThenInclude(x => x.User).AsNoTracking();
         if (TagIds.Any())
@@ -50,7 +51,10 @@ public class PostService(GamexDbContext context) : IPostService
         {
             posts = posts.Where(p => p.Title.Contains(s, StringComparison.CurrentCultureIgnoreCase) || p.Content.Contains(s, StringComparison.CurrentCultureIgnoreCase));
         }
-        return posts.OrderByDescending(p => p.DateCreated).Skip(skip).Take(take).Select(p => MapPostToDTO(p));
+        var allPosts = posts.OrderByDescending(p => p.DateCreated).Skip(skip).Take(take).Select(p => MapPostToDTO(p));
+        var totalCount = await posts.CountAsync(cancellationToken);
+        PaginationDTO<PostDTO> paginationDTO = new(await allPosts.ToListAsync(cancellationToken), Math.Ceiling((decimal)totalCount / take), skip, take, totalCount);
+        return paginationDTO;
     }
 
     /// <summary>
@@ -290,6 +294,38 @@ public class PostService(GamexDbContext context) : IPostService
         return true;
     }
 
+    /// <summary>
+    /// Retrieves all posts for a specific user based on the specified criteria.
+    /// </summary>
+    /// <param name="userId">The ID of the user.</param>
+    /// <param name="TagIds">The collection of tag IDs to filter by.</param>
+    /// <param name="take">The number of posts to take.</param>
+    /// <param name="skip">The number of posts to skip.</param>
+    /// <param name="s">The search string to filter by.</param>
+    /// <returns>The pagination DTO containing the queryable collection of post DTOs.</returns>
+    public async Task<PaginationDTO<PostDTO>> GetAllUsersPosts(string userId, IEnumerable<string> TagIds, int take = 10, int skip = 0, string s = "", CancellationToken cancellationToken = default)
+    {
+        var posts = _context.Posts.Include(x => x.User).Include(x => x.Picture).Include(x => x.PostTags).ThenInclude(x => x.Tag).Include(x => x.Comments).ThenInclude(x => x.User).Where(x => x.UserId == userId).AsNoTracking();
+        if (TagIds.Any())
+        {
+            TagIds = TagIds.Select(t => t.ToLower().ToString());
+            posts = posts.Where(p => p.PostTags.Any(t => TagIds.Contains(t.Tag.Name.ToLower().ToString())));
+        }
+        if (!string.IsNullOrWhiteSpace(s))
+        {
+            posts = posts.Where(p => p.Title.Contains(s, StringComparison.CurrentCultureIgnoreCase) || p.Content.Contains(s, StringComparison.CurrentCultureIgnoreCase));
+        }
+        var allPosts = posts.OrderByDescending(p => p.DateCreated).Skip(skip).Take(take).Select(p => MapPostToDTO(p));
+        var totalCount = await posts.CountAsync(cancellationToken);
+        PaginationDTO<PostDTO> paginationDTO = new(await allPosts.ToListAsync(cancellationToken), Math.Ceiling((decimal)totalCount / take), skip, take, totalCount);
+        return paginationDTO;
+    }
+
+    /// <summary>
+    /// Maps a <see cref="Post"/> entity to a <see cref="PostDTO"/> data transfer object.
+    /// </summary>
+    /// <param name="post">The <see cref="Post"/> entity to map.</param>
+    /// <returns>The mapped <see cref="PostDTO"/>.</returns>
     private static PostDTO MapPostToDTO(Post post)
     {
         var comments = post.Comments?.Select(c => new CommentDTO(c.Id, c.Title, c.Content, c.IsArchived, new UserProfileDTO(c.User?.FirstName, c.User?.LastName, c.User?.DisplayName, c.User?.Email, c?.User?.PhoneNumber, c?.User?.Picture?.FileUrl, c?.User?.Picture?.PublicId, c?.User?.EmailConfirmed ?? false), c.PostId, c.DateCreated));
@@ -297,6 +333,6 @@ public class PostService(GamexDbContext context) : IPostService
         var tags = post.PostTags?.Select(pt => new TagDTO(pt.Tag.Id, pt.Tag.Name, pt.Tag.PostTags.Count));
 
         return new PostDTO(post.Id, post.Title, post.Content, post.IsArchived, post?.Picture?.Id, post?.Picture?.FileUrl, post?.Picture?.PublicId,
-            new UserProfileDTO(post?.User?.FirstName, post?.User?.LastName, post?.User?.DisplayName, post?.User?.Email, post?.User?.PhoneNumber, post?.User?.Picture?.FileUrl, post?.User?.Picture?.PublicId,post?.User?.EmailConfirmed ?? false), comments, tags, post.DateCreated);
+            new UserProfileDTO(post?.User?.FirstName, post?.User?.LastName, post?.User?.DisplayName, post?.User?.Email, post?.User?.PhoneNumber, post?.User?.Picture?.FileUrl, post?.User?.Picture?.PublicId, post?.User?.EmailConfirmed ?? false), comments, tags, post.DateCreated);
     }
 }
