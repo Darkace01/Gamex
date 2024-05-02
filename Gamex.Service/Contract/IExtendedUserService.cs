@@ -10,6 +10,7 @@ namespace Gamex.Service.Contract
         /// <param name="userId">The user ID.</param>
         /// <returns>The generated UserConfirmationCodeDTO object.</returns>
         Task<UserConfirmationCodeDTO> GenerateUserConfirmationCode(string userId);
+        UserPublicProfileDTO? GetPublicUserByIdForProfile(string id);
 
         /// <summary>
         /// Gets the user by their username.

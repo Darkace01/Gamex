@@ -32,7 +32,7 @@ public class TransactionController(IRepositoryServiceManager repositoryServiceMa
         paymentTransactionCreateDTO.TransactionReference = transactionReference;
         paymentTransactionCreateDTO.UserId = user.Id;
         paymentTransactionCreateDTO.Status = Common.TransactionStatus.Pending;
-        if (paymentTransactionCreateDTO.TournamentId.Equals(AppConstant.DefaultTournamentId))
+        if (paymentTransactionCreateDTO.TournamentId.Equals(Guid.Empty))
         {
             paymentTransactionCreateDTO.TournamentId = null;
         }
