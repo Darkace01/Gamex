@@ -22,6 +22,7 @@ public class UserPublicProfileDTO
     public int Post { get; set; }
     public int Comments { get; set; }
     public bool ConfirmedEmail { get; set; }
+    public int TotalPoints { get; set; }
 
     public UserPublicProfileDTO()
     {
@@ -52,5 +53,21 @@ public class UserPublicProfileDTO
         Post = post;
         Comments = comments;
         ConfirmedEmail = confirmedEmail;
+    }
+
+    public UserPublicProfileDTO(string firstName, string lastName, string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId, int activeTournaments, int post, int comments, bool confirmedEmail, int totalPoints)
+    {
+        FirstName = firstName;
+        LastName = lastName;
+        DisplayName = displayName;
+        Email = email;
+        PhoneNumber = phoneNumber;
+        ProfilePictureUrl = profilePictureUrl;
+        ProfilePicturePublicId = profilePicturePublicId;
+        ActiveTournaments = activeTournaments;
+        Post = post;
+        Comments = comments;
+        ConfirmedEmail = confirmedEmail;
+        TotalPoints = totalPoints;
     }
 }

@@ -65,6 +65,13 @@
                         <ValidationMessage For="@(() => Model.Loss)" class="text-danger" />
                     </div>
                 </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="Draw" class="form-label">Draw</label>
+                        <InputCheckbox id="Loss" class="form-check-input" @bind-Value="Model.Draw" />
+                        <ValidationMessage For="@(() => Model.Draw)" class="text-danger" />
+                    </div>
+                </div>
             </div>
 
 

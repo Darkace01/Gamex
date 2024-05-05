@@ -24,7 +24,8 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
                  TournamentList = g.First().UserTournaments.Select(ut => new TournamentMiniDTO(ut.TournamentId, ut.Tournament.Name, ut.Tournament.Description)).ToList(),
                  Points = g.First().UserTournaments.Sum(ut => ut.Point ?? 0),
                  Win = g.First().UserTournaments.Count(ut => ut.Win ?? false),
-                 Loss = g.First().UserTournaments.Count(ut => ut.Loss ?? false)
+                 Loss = g.First().UserTournaments.Count(ut => ut.Loss ?? false),
+                 Draw = g.First().UserTournaments.Count(ut => ut.Draw ?? false)
              })
              .OrderByDescending(l => l.Points)
             .ThenBy(l => l.Tournaments)
@@ -40,7 +41,8 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
                 Points = l.Points,
                 TournamentList = l.TournamentList,
                 Win = l.Win,
-                Loss = l.Loss
+                Loss = l.Loss,
+                Draw = l.Draw
             });
         return leaderboard;
     }
@@ -66,7 +68,8 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
                 TournamentList = g.First().UserTournaments.Select(ut => new TournamentMiniDTO(ut.TournamentId, ut.Tournament.Name, ut.Tournament.Description)).ToList(),
                 Points = g.First().UserTournaments.Sum(ut => ut.Point ?? 0),
                 Win = g.First().UserTournaments.Count(ut => ut.Win ?? false),
-                Loss = g.First().UserTournaments.Count(ut => ut.Loss ?? false)
+                Loss = g.First().UserTournaments.Count(ut => ut.Loss ?? false),
+                Draw = g.First().UserTournaments.Count(ut => ut.Draw ?? false)
             })
             .OrderByDescending(l => l.Points)
            .ThenBy(l => l.Tournaments)
@@ -82,7 +85,8 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
                Points = l.Points,
                TournamentList = l.TournamentList,
                Win = l.Win,
-               Loss = l.Loss
+               Loss = l.Loss,
+               Draw = l.Draw
            });
         return leaderboard;
     }
