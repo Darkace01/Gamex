@@ -12,6 +12,7 @@ public class UserTournament
     public int? Point { get; set; }
     public bool? Win { get; set; } = false;
     public bool? Loss { get; set; } = false;
+    public bool? Draw { get; set; } = false;
     public bool? WaitList { get; set; } = false;
     public Guid? PaymentTransactionId { get; set; }
     public PaymentTransaction? PaymentTransaction { get; set; }
