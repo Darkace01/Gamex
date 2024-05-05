@@ -12,6 +12,7 @@ public class TournamentUserDTO
     public bool IsInWaitList { get; set; }
     public bool Win { get; set; }
     public bool Loss { get; set; }
+    public bool Draw { get; set; }
 }
 public class TournamentUserUpdateDTO
 {
@@ -24,4 +25,5 @@ public class TournamentUserUpdateDTO
     public bool IsInWaitList { get; set; }
     public bool Win { get; set; }
     public bool Loss { get; set; }
+    public bool Draw { get; set; }
 }

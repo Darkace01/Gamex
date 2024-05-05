@@ -5,7 +5,6 @@
 public class UsersController(IRepositoryServiceManager repositoryServiceManager, UserManager<ApplicationUser> userManager) : BaseController(userManager, repositoryServiceManager)
 {
     [HttpGet("{id}")]
-    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]

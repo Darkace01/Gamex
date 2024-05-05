@@ -114,7 +114,8 @@ public class ExtendedUserService : IExtendedUserService
                 _context.UserTournaments.Count(ut => ut.UserId == u.User.Id && ut.WaitList == true),
                 _context.Posts.Count(post => post.UserId == u.User.Id),
                 _context.Comments.Count(comment => comment.UserId == u.User.Id),
-                u.User.EmailConfirmed
+                u.User.EmailConfirmed,
+                _context.UserTournaments.Where(ut => ut.UserId == u.User.Id).Sum(ut => ut.Point ?? 0)
             ))
             .FirstOrDefault();
 

@@ -554,7 +554,8 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 Points = ut.Point ?? 0,
                 IsInWaitList = ut.WaitList == false,
                 Loss = ut.Loss ?? false,
-                Win = ut.Win ?? false
+                Win = ut.Win ?? false,
+                Draw = ut.Draw ?? false
             });
     }
 
@@ -591,6 +592,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
         userTournament.WaitList = !model.IsInWaitList;
         userTournament.Loss = model.Loss;
         userTournament.Win = model.Win;
+        userTournament.Draw = model.Draw;
 
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -610,6 +612,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 IsInWaitList = ut.WaitList == false,
                 Loss = ut.Loss ?? false,
                 Win = ut.Win ?? false,
+                Draw = ut.Draw ?? false,
                 TournamentId = id,
                 DisplayName = ut.User.DisplayName,
                 Email = ut.User.Email,
