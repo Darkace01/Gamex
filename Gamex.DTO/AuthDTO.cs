@@ -108,6 +108,11 @@ public class ResetPasswordDTO
     public string Email { get; set; }
 }
 
+public class RequestConfirmEmailDTO
+{
+    [Required]
+    public string Email { get; set; }
+}
 public class ConfirmEmailDTO
 {
     [Required]
