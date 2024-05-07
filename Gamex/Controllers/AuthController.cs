@@ -105,7 +105,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         _ = await _emailService.SendEmailAsync(model.Email, "Confirm Email", message);
 
-        return Ok(new ApiResponse<string>(200, "User created successfully!"));
+        return Ok(new ApiResponse<string>("", 200, "User created successfully!"));
     }
 
     [HttpPost("external/google")]
@@ -196,7 +196,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         if (!result.Succeeded) return BadRequest(new ApiResponse<string>(400, "Invalid change password request"));
 
-        return Ok(new ApiResponse<string>(200, "Password changed successfully!"));
+        return Ok(new ApiResponse<string>("", 200, "Password changed successfully!"));
     }
 
     [HttpPost("forgot-password")]
@@ -224,7 +224,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         _ = await _emailService.SendEmailAsync(model.Email, "Reset Password", message);
         // _emailService.SendEmail(new EmailDTO { To = model.Email, Subject = "Reset Password", Body = passwordResetLink });
 
-        return Ok(new ApiResponse<string>(200, responseMessage));
+        return Ok(new ApiResponse<string>("", 200, responseMessage));
     }
 
     [HttpPost("reset-password")]
@@ -252,7 +252,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         if (!result.Succeeded) return BadRequest(new ApiResponse<string>(400, "Invalid reset password request"));
 
-        return Ok(new ApiResponse<string>(200, "Password reset successfully!"));
+        return Ok(new ApiResponse<string>("", 200, "Password reset successfully!"));
     }
 
     [HttpPost("send-confirmation-email")]
@@ -268,13 +268,15 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         if (user == null) return BadRequest(new ApiResponse<string>(400, "Invalid email address"));
 
+        if (user.EmailConfirmed) return BadRequest(new ApiResponse<string>(400, "Email already confirmed!"));
+
         var token = await _repositoryServiceManager.ExtendedUserService.GenerateUserConfirmationCode(user.Id);
 
         var message = $"Please find your confirmation code : {token.Code}";
 
         _ = await _emailService.SendEmailAsync(model.Email, "Confirm Email", message);
 
-        return Ok(new ApiResponse<string>(200, "Confirmation email sent successfully!"));
+        return Ok(new ApiResponse<string>("", 200, "Confirmation email sent successfully!"));
     }
 
     [HttpPost("confirm-email")]
@@ -300,7 +302,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         await _userManager.UpdateAsync(user);
 
-        return Ok(new ApiResponse<string>(200, "Email confirmed successfully!"));
+        return Ok(new ApiResponse<string>("", 200, "Email confirmed successfully!"));
     }
     #region Private Methods
     private async Task<ApiResponse<GoogleJsonWebSignature.Payload>> ValidateUserTokenForGoogle(string token)
