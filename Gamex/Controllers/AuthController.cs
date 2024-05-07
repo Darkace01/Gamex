@@ -99,6 +99,12 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         await _userManager.AddToRoleAsync(user, AppConstant.PublicUserRole);
 
+        var token = await _repositoryServiceManager.ExtendedUserService.GenerateUserConfirmationCode(user.Id);
+
+        var message = $"Please find your confirmation code : {token.Code}";
+
+        _ = await _emailService.SendEmailAsync(model.Email, "Confirm Email", message);
+
         return Ok(new ApiResponse<string>(200, "User created successfully!"));
     }
 
@@ -249,16 +255,16 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         return Ok(new ApiResponse<string>(200, "Password reset successfully!"));
     }
 
-    [HttpPost("send-confirmation-email/{email}")]
+    [HttpPost("send-confirmation-email")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> SendConfirmationEmail(string email)
+    public async Task<IActionResult> SendConfirmationEmail([FromBody] RequestConfirmEmailDTO model)
     {
-        if (string.IsNullOrWhiteSpace(email)) return BadRequest(new ApiResponse<string>(400, "Invalid email address"));
+        if (string.IsNullOrWhiteSpace(model.Email)) return BadRequest(new ApiResponse<string>(400, "Invalid email address"));
 
-        var user = await _userManager.FindByEmailAsync(email);
+        var user = await _userManager.FindByEmailAsync(model.Email);
 
         if (user == null) return BadRequest(new ApiResponse<string>(400, "Invalid email address"));
 
@@ -266,7 +272,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         var message = $"Please find your confirmation code : {token.Code}";
 
-        _ = await _emailService.SendEmailAsync(email, "Confirm Email", message);
+        _ = await _emailService.SendEmailAsync(model.Email, "Confirm Email", message);
 
         return Ok(new ApiResponse<string>(200, "Confirmation email sent successfully!"));
     }
