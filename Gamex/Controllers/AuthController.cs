@@ -99,6 +99,12 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         await _userManager.AddToRoleAsync(user, AppConstant.PublicUserRole);
 
+        var token = await _repositoryServiceManager.ExtendedUserService.GenerateUserConfirmationCode(user.Id);
+
+        var message = $"Please find your confirmation code : {token.Code}";
+
+        _ = await _emailService.SendEmailAsync(model.Email, "Confirm Email", message);
+
         return Ok(new ApiResponse<string>(200, "User created successfully!"));
     }
 
