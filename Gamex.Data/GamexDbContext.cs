@@ -16,6 +16,9 @@ public class GamexDbContext(DbContextOptions<GamexDbContext> options) : Identity
     public DbSet<Tag> Tags { get; set; }
     public DbSet<PostTag> PostTags { get; set; }
     public DbSet<UserConfirmationCode> UserConfirmationCodes { get; set; }
+    public DbSet<TournamentRound> TournamentRounds { get; set; }
+    public DbSet<RoundMatch> RoundMatches { get; set; }
+    public DbSet<MatchUser> MatchUsers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -60,7 +63,7 @@ public class GamexDbContext(DbContextOptions<GamexDbContext> options) : Identity
             .WithMany(p => p.Comments)
             .HasForeignKey(c => c.PostId)
             .OnDelete(DeleteBehavior.Cascade); // Added new foreign key constraint
-            
+
         builder.Entity<Post>()
             .HasOne(p => p.User)
             .WithMany(u => u.Posts)
@@ -104,7 +107,7 @@ public class GamexDbContext(DbContextOptions<GamexDbContext> options) : Identity
             .WithOne(pt => pt.Post)
             .HasForeignKey(pt => pt.PostId)
             .OnDelete(DeleteBehavior.NoAction);
-        
+
         builder.Entity<PostTag>()
             .HasOne(pt => pt.Post)
             .WithMany(p => p.PostTags)
@@ -115,6 +118,30 @@ public class GamexDbContext(DbContextOptions<GamexDbContext> options) : Identity
             .HasOne(pt => pt.Tag)
             .WithMany(t => t.PostTags)
             .HasForeignKey(pt => pt.TagId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<TournamentRound>()
+            .HasOne(tr => tr.Tournament)
+            .WithMany(t => t.TournamentRounds)
+            .HasForeignKey(tr => tr.TournamentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Tournament>()
+            .HasMany(t => t.TournamentRounds)
+            .WithOne(tr => tr.Tournament)
+            .HasForeignKey(tr => tr.TournamentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<RoundMatch>()
+            .HasOne(rm => rm.TournamentRound)
+            .WithMany(tr => tr.RoundMatches)
+            .HasForeignKey(rm => rm.TournamentRoundId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<TournamentRound>()
+            .HasMany(tr => tr.RoundMatches)
+            .WithOne(rm => rm.TournamentRound)
+            .HasForeignKey(rm => rm.TournamentRoundId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
