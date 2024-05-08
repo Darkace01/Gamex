@@ -11,15 +11,11 @@ public class TournamentRoundService(GamexDbContext context) : ITournamentRoundSe
     {
         return _context.TournamentRounds
             .Include(x => x.Tournament)
-            .Include(x => x.Tournament)
             .AsNoTracking()
-            .Select(r => new TournamentRoundDTO
-            {
-                Id = r.Id,
-                Name = r.Name,
-                Description = r.Description,
-                Tournament = new TournamentMiniDTO(r.Tournament.Id, r.Tournament.Name, r.Tournament.Description)
-            });
+            .Select(r => new TournamentRoundDTO(r.Id,
+                                                r.Name,
+                                                r.Description,
+                                                new TournamentMiniDTO(r.Tournament.Id, r.Tournament.Name, r.Tournament.Description)));
     }
 
 
@@ -32,14 +28,13 @@ public class TournamentRoundService(GamexDbContext context) : ITournamentRoundSe
     {
         return _context.TournamentRounds
             .Include(x => x.Tournament)
+            .Include(x => x.RoundMatches)
             .AsNoTracking()
-            .Select(r => new TournamentRoundDTO
-            {
-                Id = r.Id,
-                Name = r.Name,
-                Description = r.Description,
-                Tournament = new TournamentMiniDTO(r.Tournament.Id, r.Tournament.Name, r.Tournament.Description)
-            })
+            .Select(r => new TournamentRoundDTO(r.Id,
+                                                r.Name,
+                                                r.Description,
+                                                new TournamentMiniDTO(r.Tournament.Id, r.Tournament.Name, r.Tournament.Description),
+                                                r.RoundMatches.Select(rm => new RoundMatchDTO(rm.Id, rm.Name, rm.TournamentRoundId)).ToList()))
             .FirstOrDefault(r => r.Id == id);
     }
 
@@ -48,7 +43,7 @@ public class TournamentRoundService(GamexDbContext context) : ITournamentRoundSe
     /// </summary>
     /// <param name="round">The tournament round to create.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public async Task CreateRound(TournamentRoundCreateDTO round)
+    public async Task CreateRound(TournamentRoundCreateDTO round, CancellationToken cancellationToken = default)
     {
         var newRound = new TournamentRound
         {
@@ -58,7 +53,7 @@ public class TournamentRoundService(GamexDbContext context) : ITournamentRoundSe
         };
 
         _context.TournamentRounds.Add(newRound);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <summary>
@@ -66,7 +61,7 @@ public class TournamentRoundService(GamexDbContext context) : ITournamentRoundSe
     /// </summary>
     /// <param name="round">The updated tournament round.</param>
     /// <returns>A tuple indicating whether the update was successful (true/false) and an optional error message.</returns>
-    public async Task<(bool, string)> UpdateRound(TournamentRoundUpdateDTO round)
+    public async Task<(bool, string)> UpdateRound(TournamentRoundUpdateDTO round, CancellationToken cancellationToken = default)
     {
         var existingRound = await _context.TournamentRounds.FirstOrDefaultAsync(r => r.Id == round.Id);
         if (existingRound == null)
@@ -76,7 +71,7 @@ public class TournamentRoundService(GamexDbContext context) : ITournamentRoundSe
         existingRound.Description = round.Description;
         existingRound.TournamentId = round.TournamentId;
 
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return (true, "");
     }
 
@@ -85,14 +80,14 @@ public class TournamentRoundService(GamexDbContext context) : ITournamentRoundSe
     /// </summary>
     /// <param name="id">The ID of the tournament round to delete.</param>
     /// <returns>A tuple indicating whether the deletion was successful (true/false) and an optional error message.</returns>
-    public async Task<(bool, string)> DeleteRound(Guid id)
+    public async Task<(bool, string)> DeleteRound(Guid id, CancellationToken cancellationToken = default)
     {
         var existingRound = await _context.TournamentRounds.FirstOrDefaultAsync(r => r.Id == id);
         if (existingRound == null)
             return (false, "Round not found");
 
         _context.TournamentRounds.Remove(existingRound);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
         return (true, "");
     }
 }
