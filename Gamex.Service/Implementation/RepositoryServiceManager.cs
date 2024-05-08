@@ -19,6 +19,7 @@ public class RepositoryServiceManager : IRepositoryServiceManager
     private ILeaderboardService _leaderboardService;
     private IPaymentService _paymentService;
     private IPaystackPayment _paystackPayment;
+    private ITournamentRoundService _tournamentRoundService;
 
     public RepositoryServiceManager(GamexDbContext context, IConfiguration config)
     {
@@ -141,6 +142,15 @@ public class RepositoryServiceManager : IRepositoryServiceManager
         {
             _paystackPayment ??= new PaystackPayment(_configuration);
             return _paystackPayment;
+        }
+    }
+
+    public ITournamentRoundService TournamentRoundService
+    {
+        get
+        {
+            _tournamentRoundService ??= new TournamentRoundService(_context);
+            return _tournamentRoundService;
         }
     }
 }

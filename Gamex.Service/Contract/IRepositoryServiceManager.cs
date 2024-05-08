@@ -15,5 +15,6 @@
         ILeaderboardService LeaderboardService { get; }
         IPaymentService PaymentService { get; }
         IPaystackPayment PaystackPayment { get; }
+        ITournamentRoundService TournamentRoundService { get; }
     }
 }
