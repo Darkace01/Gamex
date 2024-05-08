@@ -24,6 +24,78 @@ public class GamexDbContext(DbContextOptions<GamexDbContext> options) : Identity
     {
         base.OnModelCreating(builder);
 
+        // Soft Delete Filter
+        #region Soft Delete Filter
+        builder.Entity<Tournament>().HasQueryFilter(t => !t.IsDeleted);
+        builder.Entity<Picture>().HasQueryFilter(p => !p.IsDeleted);
+        builder.Entity<UserTournament>().HasQueryFilter(ut => !ut.IsDeleted);
+        builder.Entity<Post>().HasQueryFilter(p => !p.IsDeleted);
+        builder.Entity<Comment>().HasQueryFilter(c => !c.IsDeleted);
+        builder.Entity<TournamentCategory>().HasQueryFilter(tc => !tc.IsDeleted);
+        builder.Entity<PaymentTransaction>().HasQueryFilter(pt => !pt.IsDeleted);
+        builder.Entity<Tag>().HasQueryFilter(t => !t.IsDeleted);
+        builder.Entity<PostTag>().HasQueryFilter(pt => !pt.IsDeleted);
+        builder.Entity<UserConfirmationCode>().HasQueryFilter(ucc => !ucc.IsDeleted);
+        builder.Entity<TournamentRound>().HasQueryFilter(tr => !tr.IsDeleted);
+        builder.Entity<RoundMatch>().HasQueryFilter(rm => !rm.IsDeleted);
+        builder.Entity<MatchUser>().HasQueryFilter(mu => !mu.IsDeleted);
+        #endregion
+
+        // Indexes
+        #region Indexes
+        builder.Entity<Tournament>()
+            .HasIndex(t => t.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<Picture>()
+            .HasIndex(p => p.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<UserTournament>()
+            .HasIndex(ut => ut.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<Post>()
+            .HasIndex(p => p.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<Comment>()
+            .HasIndex(c => c.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<TournamentCategory>()
+            .HasIndex(tc => tc.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<PaymentTransaction>()
+            .HasIndex(pt => pt.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<Tag>()
+            .HasIndex(t => t.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<PostTag>()
+            .HasIndex(pt => pt.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<UserConfirmationCode>()
+            .HasIndex(ucc => ucc.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<TournamentRound>()
+            .HasIndex(tr => tr.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<RoundMatch>()
+            .HasIndex(rm => rm.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<MatchUser>()
+            .HasIndex(mu => mu.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+        #endregion
+
         builder.Entity<UserTournament>()
             .HasKey(ut => new { ut.UserId, ut.TournamentId });
 
