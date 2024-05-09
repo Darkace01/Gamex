@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using Gamex.Data.Interceptors;
+using Serilog;
 
 namespace Gamex.Extensions;
 
@@ -22,7 +23,7 @@ public static class ServiceExtensions
                                   .AllowAnyOrigin()
                                   //.WithOrigins("*")
                                   .SetIsOriginAllowed(origin => true));
-                                  //.AllowCredentials());
+            //.AllowCredentials());
         });
     }
 
@@ -180,5 +181,26 @@ public static class ServiceExtensions
             googleOptions.ClientId = configuration["Authentication:Google:ClientId"];
             googleOptions.ClientSecret = configuration["Authentication:Google:ClientSecret"];
         });
+    }
+
+    public static void ConfigureInterceptors(this IServiceCollection services)
+    {
+        services.AddSingleton<SoftDeleteInterceptor>();
+    }
+
+    public static void ConfigureDatabase(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        services.AddDbContext<GamexDbContext>((sp, options) =>
+            options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
+            {
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 10,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null
+                    );
+            })
+            .AddInterceptors(sp.GetRequiredService<SoftDeleteInterceptor>())
+            );
     }
 }

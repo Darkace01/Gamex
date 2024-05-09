@@ -8,7 +8,6 @@ public class RepositoryServiceManager : IRepositoryServiceManager
 
     private ITournamentService _tournamentService;
     private IJWTHelper _jwtHelper;
-    //private ISMTPMailService _smtpMailService;
     private IPictureService _pictureService;
     private IFileStorageService _fileStorageService;
     private IPostService _postService;
@@ -19,6 +18,8 @@ public class RepositoryServiceManager : IRepositoryServiceManager
     private ILeaderboardService _leaderboardService;
     private IPaymentService _paymentService;
     private IPaystackPayment _paystackPayment;
+    private IRoundService _tournamentRoundService;
+    private IMatchService _roundMatchService;
 
     public RepositoryServiceManager(GamexDbContext context, IConfiguration config)
     {
@@ -44,16 +45,6 @@ public class RepositoryServiceManager : IRepositoryServiceManager
             return _jwtHelper;
         }
     }
-
-    //public ISMTPMailService SMTPMailService
-    //{
-    //    get
-    //    {
-    //        _smtpMailService ??= new SMTPMailService(_configuration);
-    //        return _smtpMailService;
-    //    }
-    //}
-
     public IPictureService PictureService
     {
         get
@@ -141,6 +132,24 @@ public class RepositoryServiceManager : IRepositoryServiceManager
         {
             _paystackPayment ??= new PaystackPayment(_configuration);
             return _paystackPayment;
+        }
+    }
+
+    public IRoundService TournamentRoundService
+    {
+        get
+        {
+            _tournamentRoundService ??= new RoundService(_context);
+            return _tournamentRoundService;
+        }
+    }
+
+    public IMatchService RoundMatchService
+    {
+        get
+        {
+            _roundMatchService ??= new MatchService(_context);
+            return _roundMatchService;
         }
     }
 }

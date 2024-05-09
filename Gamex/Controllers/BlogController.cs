@@ -289,4 +289,19 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
 
         return StatusCode(StatusCodes.Status201Created, new ApiResponse<string>("Tag Successfully Created"));
     }
+
+    [HttpDelete("tags/{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> DeleteTag(Guid id)
+    {
+        var tag = await _repositoryServiceManager.TagService.GetTagById(id);
+        if (tag == null)
+            return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<TagDTO>(404, "Tag not found"));
+
+        await _repositoryServiceManager.TagService.DeleteTag(id);
+
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<string>("Tag Successfully Deleted"));
+    }
 }

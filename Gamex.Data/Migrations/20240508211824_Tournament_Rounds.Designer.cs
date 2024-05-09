@@ -4,6 +4,7 @@ using Gamex.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Gamex.Data.Migrations
 {
     [DbContext(typeof(GamexDbContext))]
-    partial class GamexDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240508211824_Tournament_Rounds")]
+    partial class Tournament_Rounds
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -129,13 +132,7 @@ namespace Gamex.Data.Migrations
                     b.Property<DateTime>("DateModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("datetime2");
-
                     b.Property<bool?>("IsArchived")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<Guid>("PostId")
@@ -150,9 +147,6 @@ namespace Gamex.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted")
-                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("PostId");
 
@@ -173,13 +167,7 @@ namespace Gamex.Data.Migrations
                     b.Property<DateTime>("DateModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("datetime2");
-
                     b.Property<bool?>("Draw")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("Loss")
@@ -199,9 +187,6 @@ namespace Gamex.Data.Migrations
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted")
-                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("MatchId");
 
@@ -225,12 +210,6 @@ namespace Gamex.Data.Migrations
                     b.Property<DateTime>("DateModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -246,9 +225,6 @@ namespace Gamex.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted")
-                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("TournamentId");
 
@@ -269,15 +245,9 @@ namespace Gamex.Data.Migrations
                     b.Property<DateTime>("DateModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("FileUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -288,9 +258,6 @@ namespace Gamex.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted")
-                        .HasFilter("IsDeleted = 0");
 
                     b.ToTable("Pictures");
                 });
@@ -311,13 +278,7 @@ namespace Gamex.Data.Migrations
                     b.Property<DateTime>("DateModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("datetime2");
-
                     b.Property<bool?>("IsArchived")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<Guid?>("PictureId")
@@ -332,9 +293,6 @@ namespace Gamex.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted")
-                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("PictureId");
 
@@ -351,16 +309,7 @@ namespace Gamex.Data.Migrations
                     b.Property<Guid>("TagId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
                     b.HasKey("PostId", "TagId");
-
-                    b.HasIndex("IsDeleted")
-                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("TagId");
 
@@ -379,12 +328,6 @@ namespace Gamex.Data.Migrations
                     b.Property<DateTime>("DateModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -393,9 +336,6 @@ namespace Gamex.Data.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted")
-                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("TournamentRoundId");
 
@@ -414,20 +354,11 @@ namespace Gamex.Data.Migrations
                     b.Property<DateTime>("DateModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted")
-                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("Name")
                         .IsUnique();
@@ -453,9 +384,6 @@ namespace Gamex.Data.Migrations
                     b.Property<DateTime>("DateModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -465,9 +393,6 @@ namespace Gamex.Data.Migrations
 
                     b.Property<decimal>("EntryFee")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("IsFeatured")
                         .HasColumnType("bit");
@@ -503,9 +428,6 @@ namespace Gamex.Data.Migrations
 
                     b.HasIndex("CoverPictureId");
 
-                    b.HasIndex("IsDeleted")
-                        .HasFilter("IsDeleted = 0");
-
                     b.HasIndex("PictureId");
 
                     b.ToTable("Tournaments");
@@ -523,20 +445,11 @@ namespace Gamex.Data.Migrations
                     b.Property<DateTime>("DateModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted")
-                        .HasFilter("IsDeleted = 0");
 
                     b.ToTable("TournamentCategories");
                 });
@@ -553,15 +466,9 @@ namespace Gamex.Data.Migrations
                     b.Property<DateTime>("DateModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -571,9 +478,6 @@ namespace Gamex.Data.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted")
-                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("TournamentId");
 
@@ -596,14 +500,8 @@ namespace Gamex.Data.Migrations
                     b.Property<DateTime>("DateModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime>("ExpiryDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("IsUsed")
                         .HasColumnType("bit");
@@ -613,9 +511,6 @@ namespace Gamex.Data.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted")
-                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("UserId");
 
@@ -640,13 +535,7 @@ namespace Gamex.Data.Migrations
                     b.Property<DateTime?>("DateJoined")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("datetime2");
-
                     b.Property<bool?>("Draw")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("Loss")
@@ -665,9 +554,6 @@ namespace Gamex.Data.Migrations
                         .HasColumnType("bit");
 
                     b.HasKey("UserId", "TournamentId");
-
-                    b.HasIndex("IsDeleted")
-                        .HasFilter("IsDeleted = 0");
 
                     b.HasIndex("PaymentTransactionId");
 

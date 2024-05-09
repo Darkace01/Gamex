@@ -4,7 +4,6 @@
     {
         ITournamentService TournamentService { get; }
         IJWTHelper JWTHelper { get; }
-        //ISMTPMailService SMTPMailService { get; }
         IPictureService PictureService { get; }
         IFileStorageService FileStorageService { get; }
         IPostService PostService { get; }
@@ -15,5 +14,7 @@
         ILeaderboardService LeaderboardService { get; }
         IPaymentService PaymentService { get; }
         IPaystackPayment PaystackPayment { get; }
+        IRoundService TournamentRoundService { get; }
+        IMatchService RoundMatchService { get; }
     }
 }

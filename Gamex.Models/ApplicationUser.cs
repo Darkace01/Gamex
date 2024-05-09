@@ -43,7 +43,8 @@ public class ApplicationUser: IdentityUser
     /// <summary>
     /// List of users blog post
     /// </summary>
-    public ICollection<Post> Posts { get; set; }
-    public ICollection<Comment> Comments { get; set; }
-    public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
+    public ICollection<Post> Posts { get; set; } = default!;
+    public ICollection<Comment> Comments { get; set; } = default!;
+    public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = default!;
+    public ICollection<MatchUser> MatchUsers { get; set; } = default!;
 }

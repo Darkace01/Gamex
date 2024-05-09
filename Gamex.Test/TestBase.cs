@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.Text.RegularExpressions;
 
 namespace Gamex.Test;
 
@@ -267,6 +268,71 @@ public class TestBase
         ];
 
         dbContext.PaymentTransactions.AddRange(paymentTransactions);
+        dbContext.SaveChanges();
+
+        // TournamentRounds
+        List<TournamentRound> rounds =
+        [
+            new TournamentRound
+            {
+                Name = "Group Stage",
+                Description = "Round Description 1",
+                TournamentId = tournaments.First().Id
+            },
+            new TournamentRound
+            {
+                Name = "Round Of 16",
+                Description = "Round Description 2",
+                TournamentId = tournaments.First().Id
+            },
+            new TournamentRound
+            {
+                Name = "Semi Final",
+                Description = "Round Description 3",
+                TournamentId = tournaments.Last().Id
+            }
+        ];
+        dbContext.AddRange(rounds);
+        dbContext.SaveChanges();
+
+        // RoundMatches
+
+        List<RoundMatch> matches =
+        [
+            new RoundMatch
+            {
+                TournamentRoundId = rounds.First().Id,
+                Name = "Team A vs Team B",                
+            },
+            new RoundMatch
+            {
+                TournamentRoundId = rounds.First().Id,
+                Name = "Team C vs Team D",
+            },
+            new RoundMatch
+            {
+                TournamentRoundId = rounds.Last().Id,
+                Name = "Team E vs Team F",
+            }
+        ];
+        dbContext.AddRange(matches);
+        dbContext.SaveChanges();
+        // MatchUsers
+        List<MatchUser> matchUsers =
+        [
+            new MatchUser
+            {
+                MatchId = matches.First().Id,
+                UserId = user1.Id
+            },
+            new MatchUser
+            {
+                MatchId = matches.First().Id,
+                UserId = user2.Id
+            }
+        ];
+
+        dbContext.AddRange(matchUsers);
         dbContext.SaveChanges();
 
         return dbContext;
