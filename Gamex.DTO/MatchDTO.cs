@@ -1,24 +1,24 @@
 ﻿namespace Gamex.DTO;
-public class RoundMatchDTO
+public class MatchDTO
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = default!;
     public Guid RoundId { get; set; }
     public TournamentRoundDTO Round { get; set; }
 
-    public RoundMatchDTO()
+    public MatchDTO()
     {
         
     }
 
-    public RoundMatchDTO(Guid id, string name, Guid roundId)
+    public MatchDTO(Guid id, string name, Guid roundId)
     {
         Id = id;
         Name = name;
         RoundId = roundId;
     }
     
-    public RoundMatchDTO(Guid id, string name, Guid roundId, TournamentRoundDTO round)
+    public MatchDTO(Guid id, string name, Guid roundId, TournamentRoundDTO round)
     {
         Id = id;
         Name = name;
@@ -27,13 +27,13 @@ public class RoundMatchDTO
     }
 }
 
-public class RoundMatchCreateDTO
+public class MatchCreateDTO
 {
     public string Name { get; set; } = default!;
     public Guid RoundId { get; set; }
 }
 
-public class RoundMatchUpdateDTO
+public class MatchUpdateDTO
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = default!;

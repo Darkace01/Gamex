@@ -5,7 +5,7 @@ public class TournamentRoundDTO
     public string Name { get; set; } = default!;
     public string Description { get; set; } = default!;
     public TournamentMiniDTO Tournament { get; set; }
-    public List<RoundMatchDTO> Rounds { get; set; }
+    public List<MatchDTO> Rounds { get; set; }
 
     public TournamentRoundDTO()
     {
@@ -25,7 +25,7 @@ public class TournamentRoundDTO
         Description = description;
         Tournament = tournament;
     }
-    public TournamentRoundDTO(Guid id, string name, string description, TournamentMiniDTO tournament, List<RoundMatchDTO> rounds)
+    public TournamentRoundDTO(Guid id, string name, string description, TournamentMiniDTO tournament, List<MatchDTO> rounds)
     {
         Id = id;
         Name = name;

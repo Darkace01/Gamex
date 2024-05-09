@@ -1,5 +1,5 @@
 ﻿namespace Gamex.Service.Implementation;
-public class TournamentRoundService(GamexDbContext context) : ITournamentRoundService
+public class RoundService(GamexDbContext context) : IRoundService
 {
     private readonly GamexDbContext _context = context;
 
@@ -18,6 +18,24 @@ public class TournamentRoundService(GamexDbContext context) : ITournamentRoundSe
                                                 new TournamentMiniDTO(r.Tournament.Id, r.Tournament.Name, r.Tournament.Description)));
     }
 
+    /// <summary>
+    /// Retrieves all tournament rounds by tournament ID.
+    /// </summary>
+    /// <param name="tournamentId">The ID of the tournament.</param>
+    /// <returns>An <see cref="IQueryable{TournamentRoundDTO}"/> representing the collection of tournament rounds.</returns>
+    public IQueryable<TournamentRoundDTO> GetAllRoundsByTournamentId(Guid tournamentId)
+    {
+        return _context.TournamentRounds
+            .Include(x => x.Tournament)
+            .AsNoTracking()
+            .Where(r => r.TournamentId == tournamentId)
+            .Select(r => new TournamentRoundDTO(r.Id,
+                                                r.Name,
+                                                r.Description,
+                                                new TournamentMiniDTO(r.Tournament.Id,
+                                                                        r.Tournament.Name,
+                                                                        r.Tournament.Description)));
+    }
 
     /// <summary>
     /// Retrieves a tournament round by its ID.
@@ -34,7 +52,7 @@ public class TournamentRoundService(GamexDbContext context) : ITournamentRoundSe
                                                 r.Name,
                                                 r.Description,
                                                 new TournamentMiniDTO(r.Tournament.Id, r.Tournament.Name, r.Tournament.Description),
-                                                r.RoundMatches.Select(rm => new RoundMatchDTO(rm.Id, rm.Name, rm.TournamentRoundId)).ToList()))
+                                                r.RoundMatches.Select(rm => new MatchDTO(rm.Id, rm.Name, rm.TournamentRoundId)).ToList()))
             .FirstOrDefault(r => r.Id == id);
     }
 

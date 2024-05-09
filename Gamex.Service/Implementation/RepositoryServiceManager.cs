@@ -8,7 +8,6 @@ public class RepositoryServiceManager : IRepositoryServiceManager
 
     private ITournamentService _tournamentService;
     private IJWTHelper _jwtHelper;
-    //private ISMTPMailService _smtpMailService;
     private IPictureService _pictureService;
     private IFileStorageService _fileStorageService;
     private IPostService _postService;
@@ -19,8 +18,8 @@ public class RepositoryServiceManager : IRepositoryServiceManager
     private ILeaderboardService _leaderboardService;
     private IPaymentService _paymentService;
     private IPaystackPayment _paystackPayment;
-    private ITournamentRoundService _tournamentRoundService;
-    private IRoundMatchService _roundMatchService;
+    private IRoundService _tournamentRoundService;
+    private IMatchService _roundMatchService;
 
     public RepositoryServiceManager(GamexDbContext context, IConfiguration config)
     {
@@ -46,16 +45,6 @@ public class RepositoryServiceManager : IRepositoryServiceManager
             return _jwtHelper;
         }
     }
-
-    //public ISMTPMailService SMTPMailService
-    //{
-    //    get
-    //    {
-    //        _smtpMailService ??= new SMTPMailService(_configuration);
-    //        return _smtpMailService;
-    //    }
-    //}
-
     public IPictureService PictureService
     {
         get
@@ -146,20 +135,20 @@ public class RepositoryServiceManager : IRepositoryServiceManager
         }
     }
 
-    public ITournamentRoundService TournamentRoundService
+    public IRoundService TournamentRoundService
     {
         get
         {
-            _tournamentRoundService ??= new TournamentRoundService(_context);
+            _tournamentRoundService ??= new RoundService(_context);
             return _tournamentRoundService;
         }
     }
 
-    public IRoundMatchService RoundMatchService
+    public IMatchService RoundMatchService
     {
         get
         {
-            _roundMatchService ??= new RoundMatchService(_context);
+            _roundMatchService ??= new MatchService(_context);
             return _roundMatchService;
         }
     }
