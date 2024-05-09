@@ -44,16 +44,17 @@ public class RoundService(GamexDbContext context) : IRoundService
     /// <returns>The tournament round with the specified ID, or null if not found.</returns>
     public TournamentRoundDTO? GetRoundById(Guid id)
     {
-        return _context.TournamentRounds
+        var r = _context.TournamentRounds
             .Include(x => x.Tournament)
             .Include(x => x.RoundMatches)
             .AsNoTracking()
-            .Select(r => new TournamentRoundDTO(r.Id,
-                                                r.Name,
-                                                r.Description,
-                                                new TournamentMiniDTO(r.Tournament.Id, r.Tournament.Name, r.Tournament.Description),
-                                                r.RoundMatches.Select(rm => new MatchDTO(rm.Id, rm.Name, rm.TournamentRoundId)).ToList()))
             .FirstOrDefault(r => r.Id == id);
+        return new TournamentRoundDTO(r.Id,
+                                            r.Name,
+                                            r.Description,
+                                            new TournamentMiniDTO(r.Tournament.Id, r.Tournament.Name, r.Tournament.Description),
+                                            r.RoundMatches.Select(rm => new MatchDTO(rm.Id, rm.Name, rm.TournamentRoundId)));
+
     }
 
     /// <summary>
