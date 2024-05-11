@@ -21,6 +21,7 @@ public class RepositoryServiceManager : IRepositoryServiceManager
     private IRoundService _tournamentRoundService;
     private IMatchService _roundMatchService;
     private IMatchUserService _matchUserService;
+    private IDashboardService _dashboardService;
 
     public RepositoryServiceManager(GamexDbContext context, IConfiguration config)
     {
@@ -160,6 +161,15 @@ public class RepositoryServiceManager : IRepositoryServiceManager
         {
             _matchUserService ??= new MatchUserService(_context);
             return _matchUserService;
+        }
+    }
+
+    public IDashboardService DashboardService
+    {
+        get
+        {
+            _dashboardService ??= new DashboardService(_context);
+            return _dashboardService;
         }
     }
 }
