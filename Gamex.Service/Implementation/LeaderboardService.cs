@@ -1,4 +1,6 @@
-﻿namespace Gamex.Service.Implementation;
+﻿using Gamex.Models;
+
+namespace Gamex.Service.Implementation;
 
 public class LeaderboardService(GamexDbContext context) : ILeaderboardService
 {
@@ -13,19 +15,31 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
         var leaderboard = _context.Users
              .AsNoTracking()
              .Include(ut => ut.UserTournaments)
+             .Include(ut => ut.MatchUsers)
+                .ThenInclude(ut => ut.Match)
+                .ThenInclude(ut => ut.TournamentRound)
              .Where(x => x.EmailConfirmed && x.UserTournaments.Any(ut => ut.WaitList ?? false))
              .GroupBy(ut => ut.Id)
              .Select(g => new LeaderboardDTO
              {
                  PlayerId = g.Key,
                  PlayerName = g.First().DisplayName == "" ? g.First().FirstName + " " + g.First().LastName : g.First().DisplayName,
-                 PlayerProfilePictureUrl = g.First().Picture != null ? g.First().Picture.FileUrl : "",
+                 PlayerProfilePictureUrl = g.FirstOrDefault().Picture != null ? g.First().Picture.FileUrl : "",
                  Tournaments = g.First().UserTournaments.Count,
-                 TournamentList = g.First().UserTournaments.Select(ut => new TournamentMiniDTO(ut.TournamentId, ut.Tournament.Name, ut.Tournament.Description)).ToList(),
-                 Points = g.First().UserTournaments.Sum(ut => ut.Point ?? 0),
-                 Win = g.First().UserTournaments.Count(ut => ut.Win ?? false),
-                 Loss = g.First().UserTournaments.Count(ut => ut.Loss ?? false),
-                 Draw = g.First().UserTournaments.Count(ut => ut.Draw ?? false)
+                 TournamentList = g.First().UserTournaments
+                                   .Select(ut => new TournamentMiniDTO(ut.TournamentId, ut.Tournament.Name, ut.Tournament.Description))
+                                   .ToList(),
+                 Points = g.First().MatchUsers
+                       .Sum(ut => ut.Point ?? 0),
+                 Win = g.First().MatchUsers
+                       .Count(ut => ut.Win ?? false),
+                 Loss = g.First().MatchUsers
+                        .Count(ut => ut.Loss ?? false),
+                 Draw = g.First().MatchUsers
+                        .Count(ut => ut.Draw ?? false),
+                 Form = g.First().MatchUsers
+                        .Select(ut => new TournamentFormDTO(ut.MatchId, ut.Win ?? false, ut.Loss ?? false, ut.Draw ?? false))
+                        .AsEnumerable()
              })
              .OrderByDescending(l => l.Points)
             .ThenBy(l => l.Tournaments)
@@ -42,7 +56,8 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
                 TournamentList = l.TournamentList,
                 Win = l.Win,
                 Loss = l.Loss,
-                Draw = l.Draw
+                Draw = l.Draw,
+                Form = l.Form
             });
         return leaderboard;
     }
@@ -56,8 +71,10 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
         var leaderboard = _context.Users
             .AsNoTracking()
             .Include(ut => ut.UserTournaments)
-            .Where(x => x.EmailConfirmed && x.UserTournaments.Any(ut => ut.WaitList ?? false))
-            .Where(ut => ut.UserTournaments.Any(ut => ut.TournamentId == tournamentId))
+            .Include(ut => ut.MatchUsers)
+            .ThenInclude(ut => ut.Match)
+            .ThenInclude(ut => ut.TournamentRound)
+            .Where(x => x.EmailConfirmed && x.UserTournaments.Any(ut => ut.WaitList ?? false) && x.UserTournaments.Any(ut => ut.TournamentId == tournamentId))
             .GroupBy(ut => ut.Id)
             .Select(g => new LeaderboardDTO
             {
@@ -66,10 +83,19 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
                 PlayerProfilePictureUrl = g.First().Picture != null ? g.First().Picture.FileUrl : "",
                 Tournaments = g.First().UserTournaments.Count,
                 TournamentList = g.First().UserTournaments.Select(ut => new TournamentMiniDTO(ut.TournamentId, ut.Tournament.Name, ut.Tournament.Description)).ToList(),
-                Points = g.First().UserTournaments.Sum(ut => ut.Point ?? 0),
-                Win = g.First().UserTournaments.Count(ut => ut.Win ?? false),
-                Loss = g.First().UserTournaments.Count(ut => ut.Loss ?? false),
-                Draw = g.First().UserTournaments.Count(ut => ut.Draw ?? false)
+                Points = g.First().MatchUsers.Sum(ut => ut.Point ?? 0),
+                Win = g.First().MatchUsers
+                       .Where(x => x.Match.TournamentRound.TournamentId == tournamentId)
+                       .Count(ut => ut.Win ?? false),
+                Loss = g.First().MatchUsers
+                        .Where(x => x.Match.TournamentRound.TournamentId == tournamentId)
+                        .Count(ut => ut.Loss ?? false),
+                Draw = g.First().MatchUsers
+                        .Where(x => x.Match.TournamentRound.TournamentId == tournamentId)
+                        .Count(ut => ut.Draw ?? false),
+                Form = g.First().MatchUsers
+                        .Select(ut => new TournamentFormDTO(ut.MatchId, ut.Win ?? false, ut.Loss ?? false, ut.Draw ?? false))
+                        .AsEnumerable()
             })
             .OrderByDescending(l => l.Points)
            .ThenBy(l => l.Tournaments)
@@ -86,7 +112,8 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
                TournamentList = l.TournamentList,
                Win = l.Win,
                Loss = l.Loss,
-               Draw = l.Draw
+               Draw = l.Draw,
+               Form = l.Form
            });
         return leaderboard;
     }
