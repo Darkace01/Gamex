@@ -112,7 +112,8 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 Id = tc.Id,
                 Name = tc.Name
             }),
-            TotalRegisteredCount = t.UserTournaments.Count()
+            TotalRegisteredCount = t.UserTournaments == null ? 0 : t.UserTournaments.Count,
+            RoundsCount = t.TournamentRounds == null ? 0 : t.TournamentRounds.Count,
 
             //TournamentUsers = t.UserTournaments.Select(ut => new TournamentUserDTO
             //{

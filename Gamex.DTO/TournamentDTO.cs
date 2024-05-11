@@ -34,7 +34,9 @@ public class TournamentDTO
         }
     }
     public int TotalRegisteredCount { get; set; }
+    public int RoundsCount { get; set; }
     public IEnumerable<TournamentCategoryDTO>? Categories { get; set; }
+    public IEnumerable<TournamentRoundDTO>? Rounds { get; set; }
     public IEnumerable<TournamentUserDTO> TournamentUsers { get; set; }
 }
 

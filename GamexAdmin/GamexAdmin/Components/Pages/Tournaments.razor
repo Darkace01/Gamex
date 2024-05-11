@@ -47,15 +47,21 @@
                     {
                         foreach (var category in context.Categories)
                         {
-                            <span class="badge bg-primary">@category.Name</span>
+                            <span class="badge bg-dark">@category.Name</span>
                         }
                     }
+                </div>
+            </TemplateColumn>
+            <TemplateColumn Title="Rounds">
+                <div class="d-flex justify-content-between">
+                    <span class="badge bg-info">@context.RoundsCount</span>
                 </div>
             </TemplateColumn>
             <TemplateColumn Title="Actions">
                 <a href="/tournaments/edit/@context.Id" class="btn btn-primary">Edit</a>
                 <a href="/tournaments/manage-users/@context.Id" class="btn btn-info">Manage</a>
                 <button class="btn btn-danger" @onclick="(() => HandleDelete(context))">Delete</button>
+                <a href="/tournaments/manage-rounds/@context.Id" class="btn btn-outline-primary">Manage Rounds</a>
             </TemplateColumn>
         </QuickGrid>
         <Paginator State="@pagination" />

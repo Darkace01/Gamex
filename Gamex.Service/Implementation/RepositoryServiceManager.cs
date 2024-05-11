@@ -20,6 +20,7 @@ public class RepositoryServiceManager : IRepositoryServiceManager
     private IPaystackPayment _paystackPayment;
     private IRoundService _tournamentRoundService;
     private IMatchService _roundMatchService;
+    private IMatchUserService _matchUserService;
 
     public RepositoryServiceManager(GamexDbContext context, IConfiguration config)
     {
@@ -150,6 +151,15 @@ public class RepositoryServiceManager : IRepositoryServiceManager
         {
             _roundMatchService ??= new MatchService(_context);
             return _roundMatchService;
+        }
+    }
+
+    public IMatchUserService MatchUserService
+    {
+        get
+        {
+            _matchUserService ??= new MatchUserService(_context);
+            return _matchUserService;
         }
     }
 }

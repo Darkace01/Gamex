@@ -15,7 +15,8 @@ public class MatchUserService(GamexDbContext context) : IMatchUserService
             .Include(x => x.User)
             .AsNoTracking()
             .Where(mu => mu.Id == matchId)
-            .Select(mu => new MatchUserDTO(mu.UserId,
+            .Select(mu => new MatchUserDTO(mu.Id,
+                                           mu.UserId,
                                            mu.User.Email,
                                            mu.User.DisplayName,
                                            mu.User.Picture == null ? "" : mu.User.Picture.FileUrl,
@@ -39,7 +40,8 @@ public class MatchUserService(GamexDbContext context) : IMatchUserService
             .Include(x => x.User)
             .AsNoTracking()
             .Where(mu => mu.MatchId == matchId)
-            .Select(mu => new MatchUserDTO(mu.UserId,
+            .Select(mu => new MatchUserDTO(mu.Id,
+                                        mu.UserId,
                                            mu.User.Email,
                                            mu.User.DisplayName,
                                            //mu.User.Picture == null ? "" : mu.User.Picture.FileUrl,
@@ -64,7 +66,7 @@ public class MatchUserService(GamexDbContext context) : IMatchUserService
         var canJoinMatch = await _context.Tournaments
             .Join(_context.TournamentRounds, t => t.Id, r => r.TournamentId, (t, r) => new { Tournament = t, Round = r })
             .Join(_context.UserTournaments, tr => tr.Tournament.Id, tu => tu.TournamentId, (tr, tu) => new { TournamentRound = tr, UserTournament = tu })
-            .Where(x => x.UserTournament.UserId == matchUserCreateDTO.UserId && x.UserTournament.WaitList == false)
+            .Where(x => x.UserTournament.UserId == matchUserCreateDTO.UserId && x.UserTournament.WaitList == true)
             .Select(x => x.TournamentRound.Tournament.Id)
             .AnyAsync(cancellationToken);
 

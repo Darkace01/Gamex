@@ -1,6 +1,7 @@
 ﻿namespace Gamex.DTO;
 public class MatchUserDTO
 {
+    public Guid MatchUserId { get; set; }
     public string UserId { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
@@ -17,8 +18,9 @@ public class MatchUserDTO
         
     }
 
-    public MatchUserDTO(string userId, string email, string displayName, string pictureUrl, int points, int rank, bool win, bool loss, bool draw, Guid matchId)
+    public MatchUserDTO(Guid id, string userId, string email, string displayName, string pictureUrl, int points, int rank, bool win, bool loss, bool draw, Guid matchId)
     {
+        MatchUserId = id;
         UserId = userId;
         Email = email;
         DisplayName = displayName;
@@ -31,8 +33,9 @@ public class MatchUserDTO
         MatchId = matchId;
     }
 
-    public MatchUserDTO(string userId, string email, string displayName, string pictureUrl, int points, int rank, bool win, bool loss, bool draw)
+    public MatchUserDTO(Guid id,string userId, string email, string displayName, string pictureUrl, int points, int rank, bool win, bool loss, bool draw)
     {
+        MatchUserId = id;
         UserId = userId;
         Email = email;
         DisplayName = displayName;

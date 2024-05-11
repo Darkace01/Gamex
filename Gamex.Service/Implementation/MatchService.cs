@@ -22,7 +22,12 @@ public class MatchService(GamexDbContext context) : IMatchService
         return context.RoundMatches
             .Include(rm => rm.TournamentRound)
             .AsNoTracking()
-            .Select(rm => new MatchDTO(rm.Id, rm.Name, rm.TournamentRoundId, new TournamentRoundDTO(rm.TournamentRound.Id, rm.TournamentRound.Name, rm.TournamentRound.Description)))
+            .Select(rm => new MatchDTO(rm.Id, rm.Name, rm.TournamentRoundId, new TournamentRoundDTO(rm.TournamentRound.Id,
+                                                                                                    rm.TournamentRound.Name,
+                                                                                                    rm.TournamentRound.Description, new TournamentMiniDTO(rm.TournamentRound.Tournament.Id,
+                                                                                                                                                          rm.TournamentRound.Tournament.Name,
+                                                                                                                                                          rm.TournamentRound.Tournament.Description)),
+                                                                                                    rm.MatchUser == null ? 0 : rm.MatchUser.Count))
             .FirstOrDefault(rm => rm.Id == id);
     }
 
@@ -37,7 +42,12 @@ public class MatchService(GamexDbContext context) : IMatchService
             .Include(rm => rm.TournamentRound)
             .AsNoTracking()
             .Where(rm => rm.TournamentRoundId == roundId)
-            .Select(rm => new MatchDTO(rm.Id, rm.Name, rm.TournamentRoundId, new TournamentRoundDTO(rm.TournamentRound.Id, rm.TournamentRound.Name, rm.TournamentRound.Description)));
+            .Select(rm => new MatchDTO(rm.Id, rm.Name, rm.TournamentRoundId, new TournamentRoundDTO(rm.TournamentRound.Id,
+                                                                                                    rm.TournamentRound.Name,
+                                                                                                    rm.TournamentRound.Description, new TournamentMiniDTO(rm.TournamentRound.Tournament.Id,
+                                                                                                                                                          rm.TournamentRound.Tournament.Name,
+                                                                                                                                                          rm.TournamentRound.Tournament.Description)),
+                                                                                                    rm.MatchUser == null ? 0 : rm.MatchUser.Count));
     }
 
     /// <summary>

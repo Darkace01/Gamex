@@ -16,5 +16,6 @@
         IPaystackPayment PaystackPayment { get; }
         IRoundService TournamentRoundService { get; }
         IMatchService RoundMatchService { get; }
+        IMatchUserService MatchUserService { get; }
     }
 }
