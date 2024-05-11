@@ -24,20 +24,21 @@
     <div class="card-body">
         <QuickGrid Items="@MatchFiltered" Pagination="@pagination" Virtualize="true" @ref="MatchGrid">
             <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
-            <PropertyColumn Property="@(p => p.Round.Name)" Title="Round" Sortable="true" />
-            <TemplateColumn Title="Tournament">
+           <TemplateColumn Title="Round">
                 <div class="d-flex justify-content-between">
-                    <span class="badge bg-black">@context.Round.Tournament?.Name</span>
+                    <span class="badge bg-black">@context.Round.Name</span>
                 </div>
-            </TemplateColumn>
+           </TemplateColumn>
+
             <TemplateColumn Title="Players">
                 <div class="d-flex justify-content-between">
                     <span class="badge bg-primary">@context.PlayersCount</span>
                 </div>
             </TemplateColumn>
             <TemplateColumn Title="Actions">
-                <a href="/tournaments/matches/edit/@TournamentId/@context.Id " class="btn btn-primary">Edit</a>
+                <a href="/tournaments/matches/edit/@TournamentId/@RoundId/@context.Id " class="btn btn-primary">Edit</a>
                 <button class="btn btn-danger" @onclick="(() => HandleDelete(context, new CancellationToken()))">Delete</button>
+                <a href="/tournaments/manage-players/@TournamentId/@RoundId/@context.Id" class="btn btn-outline-primary">Manage Players</a>
             </TemplateColumn>
         </QuickGrid>
     </div>

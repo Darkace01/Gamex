@@ -31,9 +31,9 @@
                 </div>
             </TemplateColumn>
             <TemplateColumn Title="Actions">
-                <a href="/tournaments/round/edit/@context.Id" class="btn btn-primary">Edit</a>
+                <a href="/tournaments/round/edit/@Id/@context.Id" class="btn btn-primary">Edit</a>
                 <button class="btn btn-danger" @onclick="(() => HandleDelete(context, new CancellationToken()))">Delete</button>
-                <a href="/tournaments/manage-matches/@context.Tournament.Id/@context.Id" class="btn btn-outline-primary">Manage Matches</a>
+                <a href="/tournaments/manage-matches/@Id/@context.Id" class="btn btn-outline-primary">Manage Matches</a>
             </TemplateColumn>
         </QuickGrid>
     </div>
