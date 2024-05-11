@@ -17,5 +17,6 @@
         IRoundService TournamentRoundService { get; }
         IMatchService RoundMatchService { get; }
         IMatchUserService MatchUserService { get; }
+        IDashboardService DashboardService { get; }
     }
 }

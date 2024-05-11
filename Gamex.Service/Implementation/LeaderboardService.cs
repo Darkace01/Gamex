@@ -37,7 +37,7 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
                         .Count(ut => ut.Loss ?? false),
                  Draw = g.First().MatchUsers
                         .Count(ut => ut.Draw ?? false),
-                 Form = g.First().MatchUsers
+                 Form = g.First().MatchUsers.Take(5)
                         .Select(ut => new TournamentFormDTO(ut.MatchId, ut.Win ?? false, ut.Loss ?? false, ut.Draw ?? false))
                         .AsEnumerable()
              })
@@ -93,7 +93,7 @@ public class LeaderboardService(GamexDbContext context) : ILeaderboardService
                 Draw = g.First().MatchUsers
                         .Where(x => x.Match.TournamentRound.TournamentId == tournamentId)
                         .Count(ut => ut.Draw ?? false),
-                Form = g.First().MatchUsers
+                Form = g.First().MatchUsers.Take(5)
                         .Select(ut => new TournamentFormDTO(ut.MatchId, ut.Win ?? false, ut.Loss ?? false, ut.Draw ?? false))
                         .AsEnumerable()
             })
