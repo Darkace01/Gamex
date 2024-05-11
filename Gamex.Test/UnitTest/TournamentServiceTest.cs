@@ -133,6 +133,118 @@ public class TournamentServiceTest : TestBase
         Assert.NotNull(joinedTournamentInDb);
     }
 
+    [Fact]
+    public void GetFeaturedTournaments_ShouldReturnFeaturedTournaments()
+    {
+        // Arrange
+        var dbContext = GetSampleData(nameof(GetFeaturedTournaments_ShouldReturnFeaturedTournaments));
+        var tournamentService = MockTournamentService(dbContext);
+
+        // Act
+        var tournaments = tournamentService.GetFeaturedTournaments();
+
+        // Assert
+        Assert.NotNull(tournaments);
+        Assert.Equal(2, tournaments.Count());
+    }
+
+    [Fact]
+    public async Task GetTournamentUserDetail_ShouldReturnTournamentUserDetail()
+    {
+        // Arrange
+        var dbContext = GetSampleData(nameof(GetTournamentUserDetail_ShouldReturnTournamentUserDetail));
+        var tournamentService = MockTournamentService(dbContext);
+        var tournament = dbContext.Tournaments.FirstOrDefault();
+        var user = dbContext.Users.FirstOrDefault();
+
+        // Act
+        var tournamentUserDetail = await tournamentService.GetTournamentUserDetail(tournament.Id, user.Id);
+
+        // Assert
+        Assert.NotNull(tournamentUserDetail);
+        Assert.Equal(user.Id, tournamentUserDetail.UserId);
+    }
+
+    [Fact]
+    public void GetTournamentUsers_ShouldReturnTournamentUsers()
+    {
+        // Arrange
+        var dbContext = GetSampleData(nameof(GetTournamentUsers_ShouldReturnTournamentUsers));
+        var tournamentService = MockTournamentService(dbContext);
+        var tournament = dbContext.Tournaments.FirstOrDefault();
+
+        // Act
+        var tournamentUsers = tournamentService.GetTournamentUsers(tournament.Id);
+
+        // Assert
+        Assert.NotNull(tournamentUsers);
+        Assert.Equal(1, tournamentUsers.Count());
+    }
+
+    [Fact]
+    public async Task UpdateUserTournamentDetails_ShouldUpdateUserTournamentDetails()
+    {
+        // Arrange
+        var dbContext = GetSampleData(nameof(UpdateUserTournamentDetails_ShouldUpdateUserTournamentDetails));
+        var tournamentService = MockTournamentService(dbContext);
+        var tournament = dbContext.Tournaments.FirstOrDefault();
+        var user = dbContext.Users.FirstOrDefault();
+        var tournamentUser = dbContext.UserTournaments.FirstOrDefault();
+
+        TournamentUserUpdateDTO updatedTournamentUser = new()
+        {
+            DisplayName = "Updated Display Name",
+            Email = "update@email.com",
+            TournamentName = "Updated Tournament Name",
+            TournamentId = tournament.Id,
+            UserId = user.Id,
+            Points = 100,
+            IsInWaitList = false,
+            Win = true,
+            Loss = false,
+            Draw = false
+        };
+
+        await tournamentService.UpdateUserTournamentDetails(updatedTournamentUser);
+
+        // Assert
+        var updatedTournamentUserInDb = dbContext.UserTournaments.FirstOrDefault(x => x.TournamentId == tournament.Id);
+        Assert.Equal(100, updatedTournamentUserInDb.Point);
+    }
+
+    [Fact]
+    public async Task UpdateUserWaitListStatus_ShouldUpdateUserWaitListStatus()
+    {
+        // Arrange
+        var dbContext = GetSampleData(nameof(UpdateUserWaitListStatus_ShouldUpdateUserWaitListStatus));
+        var tournamentService = MockTournamentService(dbContext);
+        var tournament = dbContext.Tournaments.FirstOrDefault();
+        var user = dbContext.Users.FirstOrDefault();
+
+        // Act
+        await tournamentService.UpdateUserWaitListStatus(tournament.Id, user.Id, false);
+
+        // Assert
+        var updatedTournamentUserInDb = dbContext.UserTournaments.FirstOrDefault(x => x.TournamentId == tournament.Id);
+        Assert.False(updatedTournamentUserInDb.WaitList);
+    }
+
+    //[Fact]
+    //public async Task JoinTournamentWithTransactionReference_ShouldJoinTournamentWithTransactionReference()
+    //{
+    //    // Arrange
+    //    var dbContext = GetSampleData(nameof(JoinTournamentWithTransactionReference_ShouldJoinTournamentWithTransactionReference));
+    //    var tournamentService = MockTournamentService(dbContext);
+    //    var tournament = dbContext.Tournaments.FirstOrDefault();
+    //    var user = dbContext.Users.FirstOrDefault();
+
+    //    // Act
+    //    await tournamentService.JoinTournamentWithTransactionReference(tournament.Id, user);
+
+    //    // Assert
+    //    var joinedTournamentInDb = dbContext.UserTournaments.FirstOrDefault(x => x.TournamentId == tournament.Id);
+    //    Assert.NotNull(joinedTournamentInDb);
+    //}
     #region Helpers
     private ITournamentService MockTournamentService(GamexDbContext context)
     {

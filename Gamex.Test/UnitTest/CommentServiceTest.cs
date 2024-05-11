@@ -111,7 +111,7 @@ public class CommentServiceTest:TestBase
         // Arrange
         var dbContext = GetSampleData(nameof(DeleteCommentByPostId_ShouldDeleteComment));
         var commentService = MockCommentService(dbContext);
-        var postToDelete = dbContext.Posts.FirstOrDefault();
+        var postToDelete = dbContext.Posts.FirstOrDefault(x => x.Comments.Count > 0);
 
         // Act
         var deleted = await commentService.DeleteCommentByPostId(postToDelete.Id);

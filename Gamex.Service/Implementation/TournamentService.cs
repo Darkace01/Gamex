@@ -112,7 +112,8 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 Id = tc.Id,
                 Name = tc.Name
             }),
-            TotalRegisteredCount = t.UserTournaments.Count()
+            TotalRegisteredCount = t.UserTournaments == null ? 0 : t.UserTournaments.Count,
+            RoundsCount = t.TournamentRounds == null ? 0 : t.TournamentRounds.Count,
 
             //TournamentUsers = t.UserTournaments.Select(ut => new TournamentUserDTO
             //{
@@ -538,7 +539,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     /// <returns>The tournament users</returns>
     public IQueryable<TournamentUserDTO> GetTournamentUsers(Guid id)
     {
-        return _context.UserTournaments
+        var users =  _context.UserTournaments
             .AsNoTracking()
             .Include(ut => ut.User)
             .Include(ut => ut.User.Picture)
@@ -550,13 +551,15 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 Email = ut.User.Email,
                 CreatorId = ut.CreatorId,
                 DisplayName = ut.User.DisplayName,
-                PictureUrl = ut.User.Picture != null ? ut.User.Picture.FileUrl : "",
+                //PictureUrl = ut.User.Picture != null ? ut.User.Picture.FileUrl : "",
+                //PictureUrl = ut.User.Picture != null ? ut.User.Picture.FileUrl : "",
                 Points = ut.Point ?? 0,
                 IsInWaitList = ut.WaitList == false,
                 Loss = ut.Loss ?? false,
                 Win = ut.Win ?? false,
                 Draw = ut.Draw ?? false
             });
+        return users;
     }
 
     /// <summary>

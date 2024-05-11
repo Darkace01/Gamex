@@ -1,0 +1,113 @@
+﻿@page "/tournaments/matches/create/{TournamentId}/{RoundId}/{MatchId}"
+@attribute [Authorize(Roles = AppConstant.AdminUserRole)]
+@inject IRepositoryServiceManager RepositoryServiceManager
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@rendermode @(new InteractiveServerRenderMode(prerender: true))
+
+<PageTitle>Edit Tournament Match</PageTitle>
+
+<div class="row">
+    <div class="col-md-6">
+        <h1>Edit Round Match</h1>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex justify-content-end">
+            <a href="/tournaments/manage-match/@TournamentId/@RoundId" class="btn btn-secondary">Go Back</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <EditForm Model="@Model" OnValidSubmit="HandleSubmit" FormName="EditTournamentMatch" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="alert alert-danger" role="alert" />
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @errorMessage
+                </div>
+            }
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="@Model.Name" class="form-control" autocomplete="name" aria-required="true" placeholder="Please enter tournament name." disabled="@IsLoading" />
+                <label for="name" class="form-label">Name</label>
+                <ValidationMessage For="@(() => Model.Name)" class="text-danger" />
+            </div>
+            <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">
+                @{
+                    if (IsLoading == true)
+                    {
+                        <Loading />
+                    }
+                }Submit
+            </button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string RoundId { get; set; }
+    [Parameter]
+    public string MatchId { get; set; }
+    [Parameter]
+    public string TournamentId { get; set; }
+
+    public Guid RoundGuidId { get; set; }
+
+
+    [SupplyParameterFromForm]
+    public MatchUpdateDTO Model { get; set; } = new();
+
+    private string errorMessage = string.Empty;
+    private bool IsLoading { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Guid.TryParse(RoundId, out var roundId))
+        {
+            RoundGuidId = roundId;
+        }
+
+        if (Guid.TryParse(MatchId, out var matchId))
+        {
+            var matchToUpdate = RepositoryServiceManager.RoundMatchService.GetMatchById(matchId);
+
+            if (matchToUpdate is null)
+                NavigationManager.NavigateTo($"/tournaments/manage-match/{TournamentId}/{RoundId}");
+
+            Model = new MatchUpdateDTO()
+                {
+                    Id = matchToUpdate.Id,
+                    Name = matchToUpdate.Name,
+                };
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            IsLoading = true;
+            (bool isSuccessful, string message) = await RepositoryServiceManager.RoundMatchService.UpdateMatch(Model);
+
+            if (!isSuccessful)
+            {
+                errorMessage = message;
+                return;
+            }
+            NavigationManager.NavigateTo($"/tournaments/manage-match/{TournamentId}/{RoundId}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+}

@@ -16,10 +16,85 @@ public class GamexDbContext(DbContextOptions<GamexDbContext> options) : Identity
     public DbSet<Tag> Tags { get; set; }
     public DbSet<PostTag> PostTags { get; set; }
     public DbSet<UserConfirmationCode> UserConfirmationCodes { get; set; }
+    public DbSet<TournamentRound> TournamentRounds { get; set; }
+    public DbSet<RoundMatch> RoundMatches { get; set; }
+    public DbSet<MatchUser> MatchUsers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        // Soft Delete Filter
+        #region Soft Delete Filter
+        builder.Entity<Tournament>().HasQueryFilter(t => !t.IsDeleted);
+        builder.Entity<Picture>().HasQueryFilter(p => !p.IsDeleted);
+        builder.Entity<UserTournament>().HasQueryFilter(ut => !ut.IsDeleted);
+        builder.Entity<Post>().HasQueryFilter(p => !p.IsDeleted);
+        builder.Entity<Comment>().HasQueryFilter(c => !c.IsDeleted);
+        builder.Entity<TournamentCategory>().HasQueryFilter(tc => !tc.IsDeleted);
+        builder.Entity<PaymentTransaction>().HasQueryFilter(pt => !pt.IsDeleted);
+        builder.Entity<Tag>().HasQueryFilter(t => !t.IsDeleted);
+        builder.Entity<PostTag>().HasQueryFilter(pt => !pt.IsDeleted);
+        builder.Entity<UserConfirmationCode>().HasQueryFilter(ucc => !ucc.IsDeleted);
+        builder.Entity<TournamentRound>().HasQueryFilter(tr => !tr.IsDeleted);
+        builder.Entity<RoundMatch>().HasQueryFilter(rm => !rm.IsDeleted);
+        builder.Entity<MatchUser>().HasQueryFilter(mu => !mu.IsDeleted);
+        #endregion
+
+        // Indexes
+        #region Indexes
+        builder.Entity<Tournament>()
+            .HasIndex(t => t.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<Picture>()
+            .HasIndex(p => p.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<UserTournament>()
+            .HasIndex(ut => ut.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<Post>()
+            .HasIndex(p => p.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<Comment>()
+            .HasIndex(c => c.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<TournamentCategory>()
+            .HasIndex(tc => tc.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<PaymentTransaction>()
+            .HasIndex(pt => pt.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<Tag>()
+            .HasIndex(t => t.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<PostTag>()
+            .HasIndex(pt => pt.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<UserConfirmationCode>()
+            .HasIndex(ucc => ucc.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<TournamentRound>()
+            .HasIndex(tr => tr.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<RoundMatch>()
+            .HasIndex(rm => rm.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+
+        builder.Entity<MatchUser>()
+            .HasIndex(mu => mu.IsDeleted)
+            .HasFilter("IsDeleted = 0");
+        #endregion
 
         builder.Entity<UserTournament>()
             .HasKey(ut => new { ut.UserId, ut.TournamentId });
@@ -60,7 +135,7 @@ public class GamexDbContext(DbContextOptions<GamexDbContext> options) : Identity
             .WithMany(p => p.Comments)
             .HasForeignKey(c => c.PostId)
             .OnDelete(DeleteBehavior.Cascade); // Added new foreign key constraint
-            
+
         builder.Entity<Post>()
             .HasOne(p => p.User)
             .WithMany(u => u.Posts)
@@ -104,7 +179,7 @@ public class GamexDbContext(DbContextOptions<GamexDbContext> options) : Identity
             .WithOne(pt => pt.Post)
             .HasForeignKey(pt => pt.PostId)
             .OnDelete(DeleteBehavior.NoAction);
-        
+
         builder.Entity<PostTag>()
             .HasOne(pt => pt.Post)
             .WithMany(p => p.PostTags)
@@ -115,6 +190,30 @@ public class GamexDbContext(DbContextOptions<GamexDbContext> options) : Identity
             .HasOne(pt => pt.Tag)
             .WithMany(t => t.PostTags)
             .HasForeignKey(pt => pt.TagId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<TournamentRound>()
+            .HasOne(tr => tr.Tournament)
+            .WithMany(t => t.TournamentRounds)
+            .HasForeignKey(tr => tr.TournamentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Tournament>()
+            .HasMany(t => t.TournamentRounds)
+            .WithOne(tr => tr.Tournament)
+            .HasForeignKey(tr => tr.TournamentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<RoundMatch>()
+            .HasOne(rm => rm.TournamentRound)
+            .WithMany(tr => tr.RoundMatches)
+            .HasForeignKey(rm => rm.TournamentRoundId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<TournamentRound>()
+            .HasMany(tr => tr.RoundMatches)
+            .WithOne(rm => rm.TournamentRound)
+            .HasForeignKey(rm => rm.TournamentRoundId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

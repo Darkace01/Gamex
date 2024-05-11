@@ -1,0 +1,150 @@
+﻿@page "/tournaments/matches-players/create/{TournamentId}/{RoundId}/{MatchId}"
+@attribute [Authorize(Roles = AppConstant.AdminUserRole)]
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IRepositoryServiceManager RepositoryServiceManager
+@rendermode @(new InteractiveServerRenderMode(prerender: true))
+
+<PageTitle>Add Player to Match</PageTitle>
+
+<div class="row">
+    <div class="col-md-6">
+        <h1>Add Player to Match</h1>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex justify-content-end">
+            <a href="/tournaments/manage-players/@TournamentId/@RoundId/@MatchId" class="btn btn-secondary">Go Back</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <EditForm Model="@Model" OnValidSubmit="HandleSubmit" FormName="CreateMatchPlayer" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="alert alert-danger" role="alert" />
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @errorMessage
+                </div>
+            }
+
+            <div class="form-floating mb-3">
+                <InputSelect @bind-Value="@UserId" class="form-control" autocomplete="name" aria-required="true" disabled="@IsLoading">
+                    <option value="">Select Player</option>
+                    @foreach (var item in TournamentUserList)
+                    {
+                        <option value="@item.UserId">@item.DisplayName</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => Model.UserId)" class="text-danger" />
+            </div>
+            <div class="form-group">
+                <label for="Points" class="form-label">Points</label>
+                <InputNumber id="Points" class="form-control" @bind-Value="Model.Points" />
+                <ValidationMessage For="@(() => Model.Points)" class="text-danger" />
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="Win" class="form-label">Win</label>
+                        <InputCheckbox id="Win" class="form-check-input" @bind-Value="Model.Win" />
+                        <ValidationMessage For="@(() => Model.Win)" class="text-danger" />
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="Loss" class="form-label">Loss</label>
+                        <InputCheckbox id="Loss" class="form-check-input" @bind-Value="Model.Loss" />
+                        <ValidationMessage For="@(() => Model.Loss)" class="text-danger" />
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="Draw" class="form-label">Draw</label>
+                        <InputCheckbox id="Loss" class="form-check-input" @bind-Value="Model.Draw" />
+                        <ValidationMessage For="@(() => Model.Draw)" class="text-danger" />
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">
+                @{
+                    if (IsLoading == true)
+                    {
+                        <Loading />
+                    }
+                }Submit
+            </button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string RoundId { get; set; }
+    [Parameter]
+    public string TournamentId { get; set; }
+    [Parameter]
+    public string MatchId { get; set; }
+
+    public Guid TournamentGuidId { get; set; }
+    public Guid RoundGuidId { get; set; }
+    public Guid MatchGuidId { get; set; }
+    public Guid MatchPlayerGuidId { get; set; }
+
+    public string UserId { get; set; }
+
+    [SupplyParameterFromForm]
+    public MatchUserCreateDTO Model { get; set; } = new();
+
+    private List<TournamentUserDTO> TournamentUserList = new();
+
+    private string errorMessage = string.Empty;
+    private bool IsLoading { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Guid.TryParse(TournamentId, out var tournamentId))
+        {
+            TournamentGuidId = tournamentId;
+        }
+        if (Guid.TryParse(RoundId, out var roundId))
+        {
+            RoundGuidId = roundId;
+        }
+
+        if (Guid.TryParse(MatchId, out var matchGuidId))
+        {
+            MatchGuidId = matchGuidId;
+        }
+
+        TournamentUserList = await RepositoryServiceManager.TournamentService.GetTournamentUsers(tournamentId).Where(x => x.IsInWaitList == false).ToListAsync();
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            IsLoading = true;
+            Model.MatchId = MatchGuidId;
+            Model.UserId = UserId;
+            (bool isSuccessful,string message) = await RepositoryServiceManager.MatchUserService.CreateMatchUser(Model);
+            if(!isSuccessful)
+            {
+                errorMessage = message;
+                return;
+            }
+            NavigationManager.NavigateTo($"/tournaments/manage-players/{TournamentId}/{RoundId}/{MatchId}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+}
