@@ -1,0 +1,94 @@
+﻿@page "/tournaments/round/create/{Id}"
+@attribute [Authorize(Roles = AppConstant.AdminUserRole)]
+@inject IRepositoryServiceManager RepositoryServiceManager
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@rendermode @(new InteractiveServerRenderMode(prerender: true))
+
+<PageTitle>Create Tournament Round</PageTitle>
+
+<div class="row">
+    <div class="col-md-6">
+        <h1>Create Tournament Round</h1>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex justify-content-end">
+            <a href="/tournaments/manage-rounds/@Id" class="btn btn-secondary">Go Back</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <EditForm Model="@Model" OnValidSubmit="HandleSubmit" FormName="CreateTournamentRound" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="alert alert-danger" role="alert" />
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @errorMessage
+                </div>
+            }
+
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="@Model.Name" class="form-control" autocomplete="name" aria-required="true" placeholder="Please enter tournament name." disabled="@IsLoading" />
+                <label for="name" class="form-label">Name</label>
+                <ValidationMessage For="@(() => Model.Name)" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
+                <InputTextArea @bind-Value="@Model.Description" class="form-control" autocomplete="description" aria-required="true" placeholder="Please enter tournament description." disabled="@IsLoading" />
+                <label for="description" class="form-label">Description</label>
+                <ValidationMessage For="@(() => Model.Description)" class="text-danger" />
+            </div>
+            <button type="submit" class="btn btn-primary w-100" disabled="@IsLoading">
+                @{
+                    if (IsLoading == true)
+                    {
+                        <Loading />
+                    }
+                }Submit
+            </button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    public Guid TournamentId { get; set; }
+
+    [SupplyParameterFromForm]
+    public TournamentRoundCreateDTO? Model { get; set; }
+
+    public string errorMessage { get; set; } = "";
+
+    private bool IsLoading { get; set; } = false;
+
+    protected override void OnInitialized()
+    {
+        if (Guid.TryParse(Id, out var tournamentId))
+        {
+            TournamentId = tournamentId;
+        }
+        Model ??= new();
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            IsLoading = true;
+            Model.TournamentId = TournamentId;
+            await RepositoryServiceManager.TournamentRoundService.CreateRound(Model, default);
+            IsLoading = false;
+            NavigationManager.NavigateTo($"/tournaments/manage-rounds/{Id}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            IsLoading = false;
+        }
+    }
+}

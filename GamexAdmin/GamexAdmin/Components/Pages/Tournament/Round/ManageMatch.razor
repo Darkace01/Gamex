@@ -1,0 +1,79 @@
+﻿@page "/tournaments/manage-matches/{TournamentId}/{RoundId}"
+@attribute [Authorize(Roles = AppConstant.AdminUserRole)]
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IRepositoryServiceManager RepositoryServiceManager
+@rendermode @(new InteractiveServerRenderMode(prerender: true))
+
+<PageTitle>Manage Round Matches</PageTitle>
+
+<div class="row">
+    <div class="col-md-6">
+        <h1>Round Matches</h1>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex justify-content-end">
+            <a href="/tournaments/matches/create/@TournamentId/@RoundId" class="btn btn-primary">Create Match</a>
+            <a href="/tournaments/manage-rounds/@TournamentId" class="btn btn-secondary mx-2">Go Back</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <QuickGrid Items="@MatchFiltered" Pagination="@pagination" Virtualize="true" @ref="MatchGrid">
+            <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+            <PropertyColumn Property="@(p => p.Round.Name)" Title="Round" Sortable="true" />
+            <TemplateColumn Title="Tournament">
+                <div class="d-flex justify-content-between">
+                    <span class="badge bg-black">@context.Round.Tournament?.Name</span>
+                </div>
+            </TemplateColumn>
+            <TemplateColumn Title="Players">
+                <div class="d-flex justify-content-between">
+                    <span class="badge bg-primary">@context.PlayersCount</span>
+                </div>
+            </TemplateColumn>
+            <TemplateColumn Title="Actions">
+                <a href="/tournaments/matches/edit/@TournamentId/@context.Id " class="btn btn-primary">Edit</a>
+                <button class="btn btn-danger" @onclick="(() => HandleDelete(context, new CancellationToken()))">Delete</button>
+            </TemplateColumn>
+        </QuickGrid>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string RoundId { get; set; }
+    [Parameter]
+    public string TournamentId { get; set; }
+
+    public Guid RoundGuidId { get; set; }
+
+    private IQueryable<MatchDTO> MatchList = default!;
+
+    QuickGrid<MatchDTO> MatchGrid = default!;
+    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+    private bool IsLoading { get; }
+
+    protected override void OnInitialized()
+    {
+        if (Guid.TryParse(RoundId, out var roundId))
+        {
+            RoundGuidId = roundId;
+        }
+        MatchList = RepositoryServiceManager.RoundMatchService.GetAllMatchesByRoundId(RoundGuidId).ToList().AsQueryable();
+    }
+
+    IQueryable<MatchDTO> MatchFiltered => MatchList;
+
+    private async Task HandleDelete(MatchDTO match, CancellationToken cancellationToken)
+    {
+        (bool isSuccessful, string message) = await RepositoryServiceManager.RoundMatchService.DeleteMatch(match.Id, cancellationToken);
+        if (isSuccessful)
+        {
+            await MatchGrid.RefreshDataAsync();
+        }
+    }
+}

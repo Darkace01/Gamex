@@ -15,7 +15,8 @@ public class RoundService(GamexDbContext context) : IRoundService
             .Select(r => new TournamentRoundDTO(r.Id,
                                                 r.Name,
                                                 r.Description,
-                                                new TournamentMiniDTO(r.Tournament.Id, r.Tournament.Name, r.Tournament.Description)));
+                                                new TournamentMiniDTO(r.Tournament.Id, r.Tournament.Name, r.Tournament.Description), r.RoundMatches
+                                                                                                   == null ? 0 : r.RoundMatches.Count));
     }
 
     /// <summary>
@@ -34,7 +35,8 @@ public class RoundService(GamexDbContext context) : IRoundService
                                                 r.Description,
                                                 new TournamentMiniDTO(r.Tournament.Id,
                                                                         r.Tournament.Name,
-                                                                        r.Tournament.Description)));
+                                                                        r.Tournament.Description), r.RoundMatches
+                                                                                                   == null ? 0 : r.RoundMatches.Count));
     }
 
     /// <summary>

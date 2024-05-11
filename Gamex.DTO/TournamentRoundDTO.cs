@@ -4,8 +4,10 @@ public class TournamentRoundDTO
     public Guid Id { get; set; } = default!;
     public string Name { get; set; } = default!;
     public string Description { get; set; } = default!;
-    public TournamentMiniDTO Tournament { get; set; }
-    public IEnumerable<MatchDTO> Rounds { get; set; }
+    public TournamentMiniDTO? Tournament { get; set; }
+    public IEnumerable<MatchDTO> Matches { get; set; }
+
+    public int MatchesCount { get; set; }
 
     public TournamentRoundDTO()
     {
@@ -25,13 +27,21 @@ public class TournamentRoundDTO
         Description = description;
         Tournament = tournament;
     }
-    public TournamentRoundDTO(Guid id, string name, string description, TournamentMiniDTO tournament, IEnumerable<MatchDTO> rounds)
+    public TournamentRoundDTO(Guid id, string name, string description, TournamentMiniDTO tournament, IEnumerable<MatchDTO> matches)
     {
         Id = id;
         Name = name;
         Description = description;
         Tournament = tournament;
-        Rounds = rounds;
+        Matches = matches;
+    }
+    public TournamentRoundDTO(Guid id, string name, string description, TournamentMiniDTO tournament,int matchCount)
+    {
+        Id = id;
+        Name = name;
+        Description = description;
+        Tournament = tournament;
+        MatchesCount = matchCount;
     }
 }
 

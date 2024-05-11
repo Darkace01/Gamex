@@ -6,6 +6,8 @@ public class MatchDTO
     public Guid RoundId { get; set; }
     public TournamentRoundDTO Round { get; set; }
 
+    public int PlayersCount { get; set; }
+
     public MatchDTO()
     {
         
@@ -24,6 +26,15 @@ public class MatchDTO
         Name = name;
         RoundId = roundId;
         Round = round;
+    }
+    
+    public MatchDTO(Guid id, string name, Guid roundId, TournamentRoundDTO round,int playersCount)
+    {
+        Id = id;
+        Name = name;
+        RoundId = roundId;
+        Round = round;
+        PlayersCount = playersCount;
     }
 }
 
