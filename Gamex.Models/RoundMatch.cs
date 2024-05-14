@@ -1,5 +1,5 @@
 ﻿namespace Gamex.Models;
-public class RoundMatch:Entity
+public class RoundMatch : Entity
 {
     public string Name { get; set; } = default!;
     public Guid TournamentRoundId { get; set; }

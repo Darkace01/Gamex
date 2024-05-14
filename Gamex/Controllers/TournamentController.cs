@@ -4,6 +4,8 @@
 [ApiController]
 public class TournamentController(IRepositoryServiceManager repositoryServiceManager, UserManager<ApplicationUser> userManager) : BaseController(userManager, repositoryServiceManager)
 {
+    private const string TournamentNotFound = "Tournament not found";
+    private const string Unauthorized = "Unauthorized";
 
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -12,7 +14,7 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
     public async Task<IActionResult> GetTournaments([FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "", [FromQuery] string categoryNames = "", CancellationToken cancellationToken = default)
     {
         var tournaments = _repositoryServiceManager.TournamentService.GetAllTournaments();
-        var totalNumber = tournaments.Count();
+        var totalNumber = await tournaments.CountAsync(cancellationToken);
 
         if (!string.IsNullOrEmpty(categoryNames))
         {
@@ -54,7 +56,7 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
     {
         var tournament = await _repositoryServiceManager.TournamentService.GetTournamentById(id);
         if (tournament == null)
-            return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<TournamentDTO>(404, "Tournament not found"));
+            return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<TournamentDTO>(404, TournamentNotFound));
 
         return StatusCode(StatusCodes.Status200OK, new ApiResponse<TournamentDTO>(tournament));
     }
@@ -71,7 +73,7 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
 
         var user = await GetUser();
         if (user == null)
-            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, Unauthorized));
 
         if (tournamentCreateDTO.Picture is not null)
         {
@@ -109,27 +111,32 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
 
         var user = await GetUser();
         if (user == null)
-            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, Unauthorized));
 
         var tournamentExist = await _repositoryServiceManager.TournamentService.GetTournamentById(id);
         if (tournamentExist == null)
-            return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Tournament not found"));
+            return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, TournamentNotFound));
 
         var userRole = await _userManager.GetRolesAsync(user);
 
-        if (!userRole.Contains(AppConstant.AdminUserRole))
-            if (tournamentExist.TournamentUsers.All(ut => ut.CreatorId != user.Id))
-                return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+        if (!userRole.Contains(AppConstant.AdminUserRole) && tournamentExist.TournamentUsers.All(ut => ut.CreatorId != user.Id))
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, Unauthorized));
 
+        tournamentUpdateDTO = await UpdateTournamentPictures(tournamentExist, tournamentUpdateDTO);
+
+        await _repositoryServiceManager.TournamentService.UpdateTournament(tournamentUpdateDTO, user);
+
+        return StatusCode(StatusCodes.Status204NoContent, new ApiResponse<string>("Tournament Successfully Updated"));
+    }
+
+    private async Task<TournamentUpdateDTO> UpdateTournamentPictures(TournamentDTO tournamentExist, TournamentUpdateDTO tournamentUpdateDTO)
+    {
         if (tournamentUpdateDTO.Picture is not null)
         {
             var uploadResult = await _repositoryServiceManager.FileStorageService.SaveFile(tournamentUpdateDTO.Picture, AppConstant.PostPictureTag);
             if (uploadResult is not null)
             {
-                if (!string.IsNullOrWhiteSpace(tournamentExist.PicturePublicId))
-                {
-                    await _repositoryServiceManager.FileStorageService.DeleteFile(tournamentExist.PicturePublicId);
-                }
+                await DeleteTournamentPicture(tournamentExist.PicturePublicId);
 
                 if (!string.IsNullOrWhiteSpace(uploadResult.PublicId))
                 {
@@ -149,10 +156,7 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
             var uploadResult = await _repositoryServiceManager.FileStorageService.SaveFile(tournamentUpdateDTO.CoverPicture, AppConstant.PostPictureTag);
             if (uploadResult is not null)
             {
-                if (!string.IsNullOrWhiteSpace(tournamentExist.CoverPicturePublicId))
-                {
-                    await _repositoryServiceManager.FileStorageService.DeleteFile(tournamentExist.CoverPicturePublicId);
-                }
+                await DeleteTournamentPicture(tournamentExist.CoverPicturePublicId);
 
                 if (!string.IsNullOrWhiteSpace(uploadResult.PublicId))
                 {
@@ -167,10 +171,15 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
                 }
             }
         }
+        return tournamentUpdateDTO;
+    }
 
-        await _repositoryServiceManager.TournamentService.UpdateTournament(tournamentUpdateDTO, user);
-
-        return StatusCode(StatusCodes.Status204NoContent, new ApiResponse<string>("Tournament Successfully Updated"));
+    private async Task DeleteTournamentPicture(string publicId)
+    {
+        if (!string.IsNullOrWhiteSpace(publicId))
+        {
+            await _repositoryServiceManager.FileStorageService.DeleteFile(publicId);
+        }
     }
 
     [HttpDelete("{id}")]
@@ -182,17 +191,16 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
     {
         var user = await GetUser();
         if (user == null)
-            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, Unauthorized));
 
         var tournamentExist = await _repositoryServiceManager.TournamentService.GetTournamentById(id);
         if (tournamentExist == null)
-            return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Tournament not found"));
+            return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, TournamentNotFound));
 
         var userRole = await _userManager.GetRolesAsync(user);
 
-        if (!userRole.Contains(AppConstant.AdminUserRole))
-            if (tournamentExist.TournamentUsers.All(ut => ut.CreatorId != user.Id))
-                return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+        if (!userRole.Contains(AppConstant.AdminUserRole) && tournamentExist.TournamentUsers.All(ut => ut.CreatorId != user.Id))
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, Unauthorized));
 
         await _repositoryServiceManager.TournamentService.DeleteTournament(id, user);
 
@@ -208,14 +216,14 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
     {
         var user = await GetUser();
         if (user == null)
-            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, Unauthorized));
 
         if (!user.EmailConfirmed)
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Please confirm your email address to join the tournament"));
 
         var tournamentExist = await _repositoryServiceManager.TournamentService.GetTournamentById(id);
         if (tournamentExist == null)
-            return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Tournament not found"));
+            return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, TournamentNotFound));
 
         if (tournamentExist.TournamentUsers.Any(ut => ut.UserId == user.Id))
             return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Your are already in this tournament"));
@@ -226,14 +234,11 @@ public class TournamentController(IRepositoryServiceManager repositoryServiceMan
         if (tournamentExist.EntryFee > 0)
         {
             var userWallet = await _repositoryServiceManager.PaymentService.GetUserBalance(user.Id);
-            if (userWallet > tournamentExist.EntryFee)
+            if (userWallet > tournamentExist.EntryFee && model is not null && !string.IsNullOrWhiteSpace(model.Reference))
             {
-                if (model is not null && !string.IsNullOrWhiteSpace(model.Reference))
-                {
-                    var transactionStatus = await ValidateAndVerifyTransactionReference(model.Reference, cancellationToken);
-                    if (transactionStatus.StatusCode != StatusCodes.Status200OK)
-                        return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(transactionStatus.StatusCode, transactionStatus.Message));
-                }
+                var transactionStatus = await ValidateAndVerifyTransactionReference(model.Reference, cancellationToken);
+                if (transactionStatus.StatusCode != StatusCodes.Status200OK)
+                    return StatusCode(StatusCodes.Status400BadRequest, new ApiResponse<string>(transactionStatus.StatusCode, transactionStatus.Message));
             }
         }
 

@@ -24,7 +24,7 @@ public class TournamentFormDTO
 
     public TournamentFormDTO()
     {
-        
+
     }
 
     public TournamentFormDTO(Guid matchId, bool win, bool loss, bool draw)

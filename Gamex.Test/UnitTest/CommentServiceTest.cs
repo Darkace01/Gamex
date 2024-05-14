@@ -1,6 +1,6 @@
 ﻿namespace Gamex.Test.UnitTest;
 
-public class CommentServiceTest:TestBase
+public class CommentServiceTest : TestBase
 {
 
     [Fact]
@@ -31,7 +31,7 @@ public class CommentServiceTest:TestBase
         CommentCreateDTO newComment = new("Test Comment", "Test Content 3", false, postToGet.Id);
 
         // Act
-        var saved = await commentService.CreateComment(newComment,testUser.Id);
+        var saved = await commentService.CreateComment(newComment, testUser.Id);
 
         // Assert
         Assert.True(saved);
@@ -95,7 +95,7 @@ public class CommentServiceTest:TestBase
         // Arrange
         var dbContext = GetSampleData(nameof(GetCommentsByPostId_ShouldReturnComments));
         var commentService = MockCommentService(dbContext);
-        var postToGet = dbContext.Posts.AsNoTracking().FirstOrDefault(x => x.Comments.Count() > 0);
+        var postToGet = dbContext.Posts.AsNoTracking().FirstOrDefault(x => x.Comments.Any());
 
         // Act
         var comments = commentService.GetAllCommentByPostId(postToGet.Id);

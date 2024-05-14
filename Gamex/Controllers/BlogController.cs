@@ -4,6 +4,8 @@
 [ApiController]
 public class BlogController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager) : BaseController(userManager, repo)
 {
+    private const string UnAuthorized = "Unauthorized";
+
     [HttpGet("posts")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -49,7 +51,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
 
         var user = await GetUser();
         if (user == null)
-            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, UnAuthorized));
 
         if (postCreateDTO.Picture is not null)
         {
@@ -78,14 +80,14 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
 
         var user = await GetUser();
         if (user == null)
-            return Unauthorized(new ApiResponse<string>(401, "Unauthorized"));
+            return Unauthorized(new ApiResponse<string>(401, UnAuthorized));
 
         var postToUpdate = await _repositoryServiceManager.PostService.GetPost(id, cancellationToken);
         if (postToUpdate == null)
             return NotFound(new ApiResponse<string>(404, "Post not found"));
 
         if (postToUpdate.User.Email != user.Email)
-            return Unauthorized(new ApiResponse<string>(401, "Unauthorized"));
+            return Unauthorized(new ApiResponse<string>(401, UnAuthorized));
 
         if (postUpdateDTO.Picture is not null)
         {
@@ -125,14 +127,14 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     {
         var user = await GetUser();
         if (user == null)
-            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, UnAuthorized));
 
         var postToDelete = await _repositoryServiceManager.PostService.GetPost(id, cancellationToken);
         if (postToDelete == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Post not found"));
 
         if (postToDelete.User.Email != user.Email)
-            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, UnAuthorized));
 
         await _repositoryServiceManager.PostService.DeletePost(id, user, cancellationToken);
 
@@ -192,7 +194,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
 
         var user = await GetUser();
         if (user == null)
-            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, UnAuthorized));
 
         await _repositoryServiceManager.CommentService.CreateComment(commentCreateDTO, user.Id, cancellationToken);
 
@@ -211,14 +213,14 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
 
         var user = await GetUser();
         if (user == null)
-            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, UnAuthorized));
 
         var commentToUpdate = await _repositoryServiceManager.CommentService.GetCommentById(id, cancellationToken);
         if (commentToUpdate == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Comment not found"));
 
         if (commentToUpdate.User.Email != user.Email)
-            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, UnAuthorized));
 
         await _repositoryServiceManager.CommentService.UpdateComment(commentUpdateDTO, cancellationToken);
 
@@ -234,14 +236,14 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     {
         var user = await GetUser();
         if (user == null)
-            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, UnAuthorized));
 
         var commentToDelete = await _repositoryServiceManager.CommentService.GetCommentById(id, cancellationToken);
         if (commentToDelete == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<string>(404, "Comment not found"));
 
         if (commentToDelete.User.Email != user.Email)
-            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, "Unauthorized"));
+            return StatusCode(StatusCodes.Status401Unauthorized, new ApiResponse<string>(401, UnAuthorized));
 
         await _repositoryServiceManager.CommentService.DeleteComment(id, cancellationToken);
 

@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-
-namespace Gamex.Controllers;
+﻿namespace Gamex.Controllers;
 public class BaseController(UserManager<ApplicationUser> userManager, IRepositoryServiceManager repositoryServiceManager) : ControllerBase
 {
     protected readonly UserManager<ApplicationUser> _userManager = userManager;

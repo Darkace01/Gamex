@@ -28,7 +28,7 @@ public class UserPublicProfileDTO
     {
     }
 
-    public UserPublicProfileDTO(string firstName,string lastName,string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId,bool confirmedEmail)
+    public UserPublicProfileDTO(string firstName, string lastName, string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId, bool confirmedEmail)
     {
         FirstName = firstName;
         LastName = lastName;

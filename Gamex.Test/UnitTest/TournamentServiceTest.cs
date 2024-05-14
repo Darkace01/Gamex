@@ -1,8 +1,4 @@
-﻿using Gamex.DTO;
-using Gamex.Service.Contract;
-using Gamex.Service.Implementation;
-
-namespace Gamex.Test.UnitTest;
+﻿namespace Gamex.Test.UnitTest;
 
 public class TournamentServiceTest : TestBase
 {

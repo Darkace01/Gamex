@@ -1,6 +1,4 @@
-﻿using Gamex.Models;
-
-namespace Gamex.Service.Implementation;
+﻿namespace Gamex.Service.Implementation;
 
 public class LeaderboardService(GamexDbContext context) : ILeaderboardService
 {

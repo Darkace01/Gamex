@@ -1,6 +1,4 @@
-﻿using Gamex.DTO;
-
-namespace Gamex.Test.UnitTest;
+﻿namespace Gamex.Test.UnitTest;
 
 public class PictureServiceTest : TestBase
 {
@@ -47,7 +45,7 @@ public class PictureServiceTest : TestBase
         var pictureService = MockPictureService(dbContext);
         var pictureToUpdate = dbContext.Pictures.FirstOrDefault();
 
-        PictureUpdateDTO updatedPicture = new(new Guid(),"","");
+        PictureUpdateDTO updatedPicture = new(Guid.Empty, "", "");
 
         // Act
         await pictureService.UpdatePicture(updatedPicture);

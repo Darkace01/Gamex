@@ -92,7 +92,7 @@ public class ExtendedUserService : IExtendedUserService
 
         return user;
     }
-    
+
     public UserPublicProfileDTO? GetPublicUserByIdForProfile(string id)
     {
         var user = _context.Users

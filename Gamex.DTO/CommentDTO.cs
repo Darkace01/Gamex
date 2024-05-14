@@ -14,7 +14,7 @@ public class CommentDTO
     {
     }
 
-    public CommentDTO(Guid id, string title, string content, bool? isArchived, UserProfileDTO user, Guid postId,DateTime dateCreated)
+    public CommentDTO(Guid id, string title, string content, bool? isArchived, UserProfileDTO user, Guid postId, DateTime dateCreated)
     {
         Id = id;
         Title = title;

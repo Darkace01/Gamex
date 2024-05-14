@@ -64,7 +64,7 @@
                     <TemplateColumn Title="Is Featured">
                         <div class="d-flex justify-content-between">
                             @{
-                                if (context.IsFeatured == false)
+                                if (!context.IsFeatured)
                                 {
                                     <span class="badge bg-secondary">Not Featured</span>
                                 }
@@ -142,7 +142,7 @@
 
 @code {
     DashboardDTO Model = new();
-    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+    private readonly PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
 
     private IQueryable<TournamentDTO> TournamentList = default;
     QuickGrid<TournamentDTO>? TournamentGrid;
