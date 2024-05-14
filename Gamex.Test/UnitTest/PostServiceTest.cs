@@ -1,6 +1,6 @@
 ﻿namespace Gamex.Test.UnitTest;
 
-public class PostServiceTest: TestBase
+public class PostServiceTest : TestBase
 {
     [Fact]
     public async Task GetPost_ShouldReturnPost()
@@ -39,7 +39,7 @@ public class PostServiceTest: TestBase
         };
 
         // Act
-        var saved = await postService.CreatePostMock(newPost,testUser);
+        var saved = await postService.CreatePostMock(newPost, testUser);
 
         // Assert
         Assert.True(saved);
@@ -68,7 +68,7 @@ public class PostServiceTest: TestBase
         //PostUpdateDTO updatedPost = new(postToUpdate.Id,"Test Post", "Test Post Content",false,null,null,testUser.Id);
 
         // Act
-        var updated = await postService.UpdatePostMock(updatedPost,testUser);
+        var updated = await postService.UpdatePostMock(updatedPost, testUser);
 
         // Assert
         var updatedPostInDb = dbContext.Posts.FirstOrDefault(p => p.Id == postToUpdate.Id);
@@ -88,7 +88,7 @@ public class PostServiceTest: TestBase
         var testUser = dbContext.Users.FirstOrDefault();
 
         // Act
-        var deleted = await postService.DeletePost(postToDelete.Id,testUser);
+        var deleted = await postService.DeletePost(postToDelete.Id, testUser);
 
         // Assert
         var deletedPostInDb = dbContext.Posts.FirstOrDefault(p => p.Id == postToDelete.Id);
@@ -166,7 +166,7 @@ public class PostServiceTest: TestBase
         };
 
         // Act
-        var saved = await postService.CreatePostMock(newPost,testUser);
+        var saved = await postService.CreatePostMock(newPost, testUser);
 
         // Assert
         Assert.True(saved);

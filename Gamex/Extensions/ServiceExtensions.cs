@@ -11,10 +11,6 @@ public static class ServiceExtensions
     /// <param name="services"></param>
     public static void ConfigureCors(this IServiceCollection services, IConfiguration configuration)
     {
-        //var corsOrigins = configuration["CorsOrigins"];
-        //string[] originList = [];
-        //originList = string.IsNullOrEmpty(corsOrigins) ? (["http://localhost:3000", "https://localhost:3000"]) : corsOrigins.Split(";");
-
         services.AddCors(options =>
         {
             options.AddPolicy("CorsPolicy", builder =>
@@ -23,7 +19,6 @@ public static class ServiceExtensions
                                   .AllowAnyOrigin()
                                   //.WithOrigins("*")
                                   .SetIsOriginAllowed(origin => true));
-            //.AllowCredentials());
         });
     }
 
@@ -153,15 +148,6 @@ public static class ServiceExtensions
 
     public static void ConfigureJsonSerializer(this IServiceCollection services)
     {
-        //JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-        //{
-        //    ContractResolver = new CamelCasePropertyNamesContractResolver()
-        //};
-        //services.AddControllers().AddJsonOptions(options =>
-        //{
-        //    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        //    options.JsonSerializerOptions.WriteIndented = true;
-        //});
     }
 
     /// <summary>
@@ -171,11 +157,6 @@ public static class ServiceExtensions
     /// <param name="configuration"></param>
     public static void ConfigureExternalAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        //services.AddAuthentication().AddGoogle(googleOptions =>
-        //{
-        //    googleOptions.ClientId = configuration["Authentication:Google:ClientId"];
-        //    googleOptions.ClientSecret = configuration["Authentication:Google:ClientSecret"];
-        //});
         services.AddAuthentication().AddGoogleOpenIdConnect(googleOptions =>
         {
             googleOptions.ClientId = configuration["Authentication:Google:ClientId"];

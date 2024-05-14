@@ -14,7 +14,7 @@ public static class CommonHelpers
     {
         var splitedDate = date.Split('/');
 
-        DateTime convertedDate = new(int.Parse(splitedDate[2]), int.Parse(splitedDate[1]), int.Parse(splitedDate[0]));
+        DateTime convertedDate = new(int.Parse(splitedDate[0]), int.Parse(splitedDate[1]), int.Parse(splitedDate[2]), 0, 0, 0, DateTimeKind.Local);
         return convertedDate;
     }
 
@@ -26,7 +26,7 @@ public static class CommonHelpers
     public static DateTime ConvertToTime(string time)
     {
         var splittedTime = time.Split(':');
-        DateTime convertedTime = new(1, 1, 1, int.Parse(splittedTime[0]), int.Parse(splittedTime[1]), 0);
+        DateTime convertedTime = new(1, 1, 1, int.Parse(splittedTime[0]), int.Parse(splittedTime[1]), 0, DateTimeKind.Local);
         return convertedTime;
     }
 

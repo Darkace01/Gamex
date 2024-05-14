@@ -1,6 +1,6 @@
 ﻿namespace Gamex.Models;
 
-public class Entity: ISoftDeletable
+public class Entity : ISoftDeletable
 {
     public Guid Id { get; set; }
     public DateTime DateCreated { get; set; } = DateTime.UtcNow;

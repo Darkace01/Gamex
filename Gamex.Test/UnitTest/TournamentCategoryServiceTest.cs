@@ -1,6 +1,6 @@
 ﻿namespace Gamex.Test.UnitTest;
 
-public class TournamentCategoryServiceTest: TestBase
+public class TournamentCategoryServiceTest : TestBase
 {
     [Fact]
     public async Task GetTournamentCategory_ShouldReturnTournamentCategory()

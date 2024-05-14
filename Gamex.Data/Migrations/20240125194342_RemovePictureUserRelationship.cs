@@ -31,7 +31,7 @@ namespace Gamex.Data.Migrations
                 table: "AspNetUsers",
                 column: "PictureId");
 
-           
+
         }
 
         /// <inheritdoc />
@@ -58,7 +58,7 @@ namespace Gamex.Data.Migrations
                 unique: true,
                 filter: "[UserId] IS NOT NULL");
 
-            
+
         }
     }
 }

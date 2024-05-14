@@ -9,7 +9,7 @@ public class PictureService(GamexDbContext context) : IPictureService
     /// </summary>
     /// <param name="pictureId">The ID of the picture.</param>
     /// <returns>The picture DTO if found, otherwise null.</returns>
-    public async Task<PictureDTO> GetPicture(Guid pictureId)
+    public async Task<PictureDTO?> GetPicture(Guid pictureId)
     {
         var picture = await _context.Pictures.AsNoTracking().FirstOrDefaultAsync(p => p.Id == pictureId);
         if (picture == null)
@@ -24,7 +24,7 @@ public class PictureService(GamexDbContext context) : IPictureService
     /// </summary>
     /// <param name="publicId">The public ID of the picture.</param>
     /// <returns>The picture DTO if found, otherwise null.</returns>
-    public async Task<PictureDTO> GetPictureByPublicId(string publicId)
+    public async Task<PictureDTO?> GetPictureByPublicId(string publicId)
     {
         var picture = await _context.Pictures.AsNoTracking().FirstOrDefaultAsync(p => p.PublicId == publicId);
         if (picture == null)
@@ -56,7 +56,7 @@ public class PictureService(GamexDbContext context) : IPictureService
     /// </summary>
     /// <param name="pictureUpdateDTO">The picture update DTO.</param>
     /// <returns>The updated picture DTO if found, otherwise null.</returns>
-    public async Task<PictureDTO> UpdatePicture(PictureUpdateDTO pictureUpdateDTO)
+    public async Task<PictureDTO?> UpdatePicture(PictureUpdateDTO pictureUpdateDTO)
     {
         var picture = await _context.Pictures.FirstOrDefaultAsync(p => p.Id == pictureUpdateDTO.Id);
         if (picture == null)

@@ -4,6 +4,9 @@
 [ApiController]
 public class AuthController(IRepositoryServiceManager repo, UserManager<ApplicationUser> userManager, IConfiguration configuration, RoleManager<IdentityRole> roleManager, ISMTPMailService mailService) : BaseController(userManager, repo)
 {
+    private const string InvalidAuthenticationRequest = "Invalid authentication request";
+    private const string InvalidUsernameAndPassword = "Invalid username or password.";
+    private const string InvalidConfirmMailRequest = "Invalid email confirmation request";
     private readonly IConfiguration _configuration = configuration;
     private readonly RoleManager<IdentityRole> _roleManager = roleManager;
     private readonly ISMTPMailService _emailService = mailService;
@@ -15,16 +18,16 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(typeof(ApiResponse<LoginResponseDTO>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Login([FromBody] LoginDTO model, CancellationToken cancellationToken)
     {
-        if (model == null) return BadRequest(new ApiResponse<LoginDTO>(400, "Invalid authentication request"));
+        if (model == null) return BadRequest(new ApiResponse<LoginDTO>(400, InvalidAuthenticationRequest));
 
-        if (!ModelState.IsValid) return BadRequest(new ApiResponse<LoginDTO>(400, "Invalid authentication request"));
+        if (!ModelState.IsValid) return BadRequest(new ApiResponse<LoginDTO>(400, InvalidAuthenticationRequest));
 
         var user = await _userManager.FindByNameAsync(model.Username);
         user ??= await _userManager.FindByEmailAsync(model.Username);
-        if (user == null) return BadRequest(new ApiResponse<LoginDTO>(400, "Invalid username or password."));
+        if (user == null) return BadRequest(new ApiResponse<LoginDTO>(400, InvalidUsernameAndPassword));
 
         var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
-        if (!isPasswordValid) return BadRequest(new ApiResponse<LoginDTO>(400, "Invalid username or password."));
+        if (!isPasswordValid) return BadRequest(new ApiResponse<LoginDTO>(400, InvalidUsernameAndPassword));
 
         var isUserActive = user.LockoutEnabled;
         if (!isUserActive) return BadRequest(new ApiResponse<LoginDTO>(400, "User is not active. Please contact administrator."));
@@ -55,7 +58,7 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         if (user == null) return BadRequest(new ApiResponse<LoginResponseDTO>(400, "Invalid refresh token request"));
 
-        if (user == null || user.RefreshToken != model.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.Now) return BadRequest(new ApiResponse<LoginResponseDTO>(400, "Invalid refresh token request"));
+        if (user.RefreshToken != model.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.Now) return BadRequest(new ApiResponse<LoginResponseDTO>(400, "Invalid refresh token request"));
 
         var isUserActive = user.LockoutEnabled;
         if (!isUserActive) return BadRequest(new ApiResponse<LoginDTO>(400, "User is not active. Please contact administrator."));
@@ -222,7 +225,6 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
 
         // Send email with password reset link
         _ = await _emailService.SendEmailAsync(model.Email, "Reset Password", message);
-        // _emailService.SendEmail(new EmailDTO { To = model.Email, Subject = "Reset Password", Body = passwordResetLink });
 
         return Ok(new ApiResponse<string>("", 200, responseMessage));
     }
@@ -286,17 +288,17 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailDTO model)
     {
-        if (model is null) return BadRequest(new ApiResponse<string>(400, "Invalid email confirmation request"));
+        if (model is null) return BadRequest(new ApiResponse<string>(400, InvalidConfirmMailRequest));
 
-        if (!ModelState.IsValid) return BadRequest(new ApiResponse<string>(400, "Invalid email confirmation request"));
+        if (!ModelState.IsValid) return BadRequest(new ApiResponse<string>(400, InvalidConfirmMailRequest));
 
         var user = await _userManager.FindByEmailAsync(model.Email);
 
-        if (user == null) return BadRequest(new ApiResponse<string>(400, "Invalid email confirmation request"));
+        if (user == null) return BadRequest(new ApiResponse<string>(400, InvalidConfirmMailRequest));
 
         var isValidCode = await _repositoryServiceManager.ExtendedUserService.VerifyUserConfirmationCode(user.Id, model.Code);
 
-        if (!isValidCode) return BadRequest(new ApiResponse<string>(400, "Invalid email confirmation request"));
+        if (!isValidCode) return BadRequest(new ApiResponse<string>(400, InvalidConfirmMailRequest));
 
         user.EmailConfirmed = true;
 

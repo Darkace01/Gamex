@@ -1,6 +1,6 @@
 ﻿namespace Gamex.Models;
 
-public class UserTournament:ISoftDeletable
+public class UserTournament : ISoftDeletable
 {
     public string UserId { get; set; } = string.Empty;
     public string CreatorId { get; set; } = string.Empty;

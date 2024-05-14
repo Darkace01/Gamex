@@ -54,7 +54,7 @@ public class FileStorageService(Cloudinary cloudinary) : IFileStorageService
     {
         var uploadParams = new ImageUploadParams()
         {
-            File = new FileDescription(file.Name, file.OpenReadStream(maxAllowedSize:AppConstant.MaxFileSize)),
+            File = new FileDescription(file.Name, file.OpenReadStream(maxAllowedSize: AppConstant.MaxFileSize)),
             UniqueFilename = true,
             Tags = tag
         };

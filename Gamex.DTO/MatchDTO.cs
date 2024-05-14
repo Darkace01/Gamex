@@ -10,7 +10,7 @@ public class MatchDTO
 
     public MatchDTO()
     {
-        
+
     }
 
     public MatchDTO(Guid id, string name, Guid roundId)
@@ -19,7 +19,7 @@ public class MatchDTO
         Name = name;
         RoundId = roundId;
     }
-    
+
     public MatchDTO(Guid id, string name, Guid roundId, TournamentRoundDTO round)
     {
         Id = id;
@@ -27,8 +27,8 @@ public class MatchDTO
         RoundId = roundId;
         Round = round;
     }
-    
-    public MatchDTO(Guid id, string name, Guid roundId, TournamentRoundDTO round,int playersCount)
+
+    public MatchDTO(Guid id, string name, Guid roundId, TournamentRoundDTO round, int playersCount)
     {
         Id = id;
         Name = name;

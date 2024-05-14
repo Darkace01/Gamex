@@ -1,5 +1,5 @@
-﻿using System.Net.Http.Headers;
-using System.Net;
+﻿using System.Net;
+using System.Net.Http.Headers;
 
 namespace Gamex.Common;
 
@@ -7,7 +7,7 @@ public static class HttpFactory
 {
     public static HttpClient InitHttpClient(string baseUrl)
     {
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
         var client = new HttpClient()
         {

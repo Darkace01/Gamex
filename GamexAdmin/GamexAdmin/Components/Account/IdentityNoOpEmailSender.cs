@@ -1,12 +1,10 @@
 using Gamex.Service.Contract;
-using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace GamexAdmin.Components.Account;
 
 // Remove the "else if (EmailSender is IdentityNoOpEmailSender)" block from RegisterConfirmation.razor after updating with a real implementation.
 internal sealed class IdentityNoOpEmailSender : IEmailSender<ApplicationUser>
 {
-    //private readonly IEmailSender emailSender = new NoOpEmailSender();
     private readonly ISMTPMailService smtpEmailSender;
 
     public IdentityNoOpEmailSender(ISMTPMailService smtpEmailSender)

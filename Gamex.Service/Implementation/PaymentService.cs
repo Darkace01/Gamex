@@ -49,7 +49,7 @@ public class PaymentService(GamexDbContext context) : IPaymentService
     /// <param name="cancellationToken">The cancellation token.</param>
     public async Task UpdatePaymentTransactionStatus(string transactionReference, Common.TransactionStatus status, CancellationToken cancellationToken = default)
     {
-        var paymentTransaction = await _context.PaymentTransactions.FirstOrDefaultAsync(x => x.TransactionReference == transactionReference,cancellationToken);
+        var paymentTransaction = await _context.PaymentTransactions.FirstOrDefaultAsync(x => x.TransactionReference == transactionReference, cancellationToken);
         if (paymentTransaction != null)
         {
             paymentTransaction.Status = (TransactionStatus)status;
