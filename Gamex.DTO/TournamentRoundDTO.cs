@@ -1,7 +1,7 @@
 ﻿namespace Gamex.DTO;
 public class TournamentRoundDTO
 {
-    public Guid Id { get; set; } = default!;
+    public Guid Id { get; set; } = Guid.Empty!;
     public string Name { get; set; } = default!;
     public string Description { get; set; } = default!;
     public TournamentMiniDTO? Tournament { get; set; }
@@ -11,7 +11,7 @@ public class TournamentRoundDTO
 
     public TournamentRoundDTO()
     {
-        
+
     }
     public TournamentRoundDTO(Guid id, string name, string description)
     {
@@ -19,7 +19,7 @@ public class TournamentRoundDTO
         Name = name;
         Description = description;
     }
-    
+
     public TournamentRoundDTO(Guid id, string name, string description, TournamentMiniDTO tournament)
     {
         Id = id;
@@ -35,7 +35,7 @@ public class TournamentRoundDTO
         Tournament = tournament;
         Matches = matches;
     }
-    public TournamentRoundDTO(Guid id, string name, string description, TournamentMiniDTO tournament,int matchCount)
+    public TournamentRoundDTO(Guid id, string name, string description, TournamentMiniDTO tournament, int matchCount)
     {
         Id = id;
         Name = name;

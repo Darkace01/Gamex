@@ -1,7 +1,4 @@
-﻿using Gamex.DTO;
-using System.Threading;
-
-namespace Gamex.Service.Implementation;
+﻿namespace Gamex.Service.Implementation;
 
 public class PostService(GamexDbContext context) : IPostService
 {

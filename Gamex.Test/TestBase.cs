@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using System.Text.RegularExpressions;
 
 namespace Gamex.Test;
 
@@ -302,7 +301,7 @@ public class TestBase
             new RoundMatch
             {
                 TournamentRoundId = rounds.First().Id,
-                Name = "Team A vs Team B",                
+                Name = "Team A vs Team B",
             },
             new RoundMatch
             {

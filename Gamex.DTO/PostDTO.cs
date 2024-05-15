@@ -20,7 +20,7 @@ public class PostDTO
     {
     }
 
-    public PostDTO(Guid id, string title, string content, bool? isArchived,Guid? pictureId, string pictureUrl, string picturePublicId, UserProfileDTO user, IEnumerable<CommentDTO> comment, IEnumerable<TagDTO> tag,DateTime dateCreated)
+    public PostDTO(Guid id, string title, string content, bool? isArchived, Guid? pictureId, string pictureUrl, string picturePublicId, UserProfileDTO user, IEnumerable<CommentDTO> comment, IEnumerable<TagDTO> tag, DateTime dateCreated)
     {
         Id = id;
         Title = title;

@@ -1,7 +1,4 @@
 ﻿using Gamex.Common;
-using Gamex.DTO;
-using Gamex.Models;
-using System.Threading;
 
 namespace Gamex.Service.Implementation;
 
@@ -300,27 +297,19 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     /// <returns></returns>
     public async Task DeleteTournament(Guid id, ApplicationUser user)
     {
-        try
+        Tournament? existingTournament = await _context.Tournaments
+            .Include(t => t.UserTournaments)
+            .FirstOrDefaultAsync(t => t.Id == id) ?? throw new Exception("Tournament not found");
+        var adminRoleId = _context.Roles.AsNoTracking().FirstOrDefault(r => r.Name == AppConstant.AdminUserRole)?.Id;
+        List<string> adminUsers = [];
+        if (!string.IsNullOrWhiteSpace(adminRoleId))
         {
-            Tournament? existingTournament = await _context.Tournaments
-                .Include(t => t.UserTournaments)
-                .FirstOrDefaultAsync(t => t.Id == id) ?? throw new Exception("Tournament not found");
-            var adminRoleId = _context.Roles.AsNoTracking().FirstOrDefault(r => r.Name == AppConstant.AdminUserRole)?.Id;
-            List<string> adminUsers = [];
-            if (!string.IsNullOrWhiteSpace(adminRoleId))
-            {
-                adminUsers = _context.UserRoles.AsNoTracking().Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
-            }
-            if (!existingTournament.UserTournaments.Any(ut => ut.CreatorId != user.Id || adminUsers.Any(x => x == user.Id)))
-                throw new Exception("You are not authorized to delete this tournament");
-            _context.Tournaments.Remove(existingTournament);
-            await _context.SaveChangesAsync();
-
+            adminUsers = _context.UserRoles.AsNoTracking().Where(ur => ur.RoleId == adminRoleId).Select(ur => ur.UserId).ToList();
         }
-        catch (Exception)
-        {
-            throw;
-        }
+        if (!existingTournament.UserTournaments.Any(ut => ut.CreatorId != user.Id || adminUsers.Any(x => x == user.Id)))
+            throw new Exception("You are not authorized to delete this tournament");
+        _context.Tournaments.Remove(existingTournament);
+        await _context.SaveChangesAsync();
     }
     /// <summary>
     /// Join a tournament mock for unit testing without a transaction
@@ -539,7 +528,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
     /// <returns>The tournament users</returns>
     public IQueryable<TournamentUserDTO> GetTournamentUsers(Guid id)
     {
-        var users =  _context.UserTournaments
+        var users = _context.UserTournaments
             .AsNoTracking()
             .Include(ut => ut.User)
             .Include(ut => ut.User.Picture)
@@ -602,7 +591,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
         return (true, "User tournament updated.");
     }
 
-    public async Task<TournamentUserUpdateDTO?> GetTournamentUserDetail(Guid id,string userId, CancellationToken cancellationToken = default)
+    public async Task<TournamentUserUpdateDTO?> GetTournamentUserDetail(Guid id, string userId, CancellationToken cancellationToken = default)
     {
         var tournament = await _context.UserTournaments
             .AsNoTracking()
@@ -620,7 +609,7 @@ public class TournamentService(GamexDbContext context) : ITournamentService
                 DisplayName = ut.User.DisplayName,
                 Email = ut.User.Email,
                 TournamentName = ut.Tournament.Name
-            //}).FirstOrDefault();
+                //}).FirstOrDefault();
             }).FirstOrDefaultAsync(cancellationToken);
         return tournament;
     }

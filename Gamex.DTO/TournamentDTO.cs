@@ -43,8 +43,8 @@ public class TournamentDTO
 public class TournamentMiniDTO
 {
     public Guid Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
+    public string Name { get; set; }
+    public string Description { get; set; }
 
     public TournamentMiniDTO(Guid id, string name, string description)
     {
@@ -72,9 +72,16 @@ public class TournamentCreateDTO
     {
         get
         {
-            return string.IsNullOrEmpty(StartDateString)
+            if (StartDateString.Contains('/'))
+            {
+                return string.IsNullOrEmpty(StartDateString)
                 ? null
-                : StartDateString.Contains("/") ? CommonHelpers.ConvertToDate(StartDateString) : null;
+                : CommonHelpers.ConvertToDate(StartDateString);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
     public DateTime? StartDateForm { get; set; }
@@ -83,9 +90,16 @@ public class TournamentCreateDTO
     {
         get
         {
-            return string.IsNullOrEmpty(EndDateString)
+            if (EndDateString.Contains("/"))
+            {
+                return string.IsNullOrEmpty(EndDateString)
                 ? null
-                : EndDateString.Contains("/") ? CommonHelpers.ConvertToDate(EndDateString) : null;
+                : CommonHelpers.ConvertToDate(EndDateString);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
     public DateTime? EndDateForm { get; set; }
@@ -95,9 +109,16 @@ public class TournamentCreateDTO
     {
         get
         {
-            return string.IsNullOrEmpty(TimeString)
+            if (TimeString.Contains(":"))
+            {
+                return string.IsNullOrEmpty(TimeString)
                 ? null
-                : TimeString.Contains(":") ? CommonHelpers.ConvertToTime(TimeString) : null;
+                : CommonHelpers.ConvertToTime(TimeString);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
     public DateTime? TimeForm { get; set; }
@@ -123,9 +144,14 @@ public class TournamentUpdateDTO
     {
         get
         {
-            return string.IsNullOrEmpty(StartDateString)
-                ? null
-                : StartDateString.Contains("/") ? CommonHelpers.ConvertToDate(StartDateString) : null;
+            if (StartDateString.Contains("/"))
+            {
+                return string.IsNullOrEmpty(StartDateString) ? null : CommonHelpers.ConvertToDate(StartDateString);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
     public DateTime? StartDateForm { get; set; }
@@ -134,9 +160,14 @@ public class TournamentUpdateDTO
     {
         get
         {
-            return string.IsNullOrEmpty(EndDateString)
-                ? null
-                : EndDateString.Contains("/") ? CommonHelpers.ConvertToDate(EndDateString) : null;
+            if (EndDateString.Contains("/"))
+            {
+                return string.IsNullOrEmpty(EndDateString) ? null : CommonHelpers.ConvertToDate(EndDateString);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
     public DateTime? EndDateForm { get; set; }
@@ -146,9 +177,14 @@ public class TournamentUpdateDTO
     {
         get
         {
-            return string.IsNullOrEmpty(TimeString)
-                ? null
-                : TimeString.Contains(":") ? CommonHelpers.ConvertToTime(TimeString) : null;
+            if (TimeString.Contains(":"))
+            {
+                return string.IsNullOrEmpty(TimeString) ? null : CommonHelpers.ConvertToTime(TimeString);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
     public string TimeString { get; set; } = string.Empty;

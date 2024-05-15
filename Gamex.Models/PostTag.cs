@@ -1,6 +1,6 @@
 ﻿namespace Gamex.Models;
 
-public class PostTag: ISoftDeletable
+public class PostTag : ISoftDeletable
 {
     public Guid PostId { get; set; }
     public Post Post { get; set; } = null!;

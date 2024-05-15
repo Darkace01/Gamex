@@ -1,5 +1,5 @@
 ﻿namespace Gamex.Models;
-public class MatchUser:Entity
+public class MatchUser : Entity
 {
     public int? Point { get; set; }
     public bool? Win { get; set; } = false;

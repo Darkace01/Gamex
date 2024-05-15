@@ -2,9 +2,6 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Configure Json Serializer
-builder.Services.ConfigureJsonSerializer();
-
 builder.Services.AddAuthorization();
 // Add services to the container.
 builder.Services.ConfigureInterceptors();
@@ -34,19 +31,11 @@ builder.Services.AddHealthChecks();
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
-//builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
-//    .AddEntityFrameworkStores<GamexDbContext>()
-//    .AddApiEndpoints();
-
-
+builder.WebHost.ConfigureSentry();
 var app = builder.Build();
 app.UseSerilogRequestLogging();
-//app.MapIdentityApi<ApplicationUser>();
-
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-}
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -63,4 +52,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();

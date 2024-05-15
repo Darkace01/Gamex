@@ -1,5 +1,5 @@
 ﻿namespace Gamex.Models;
-public class UserConfirmationCode: Entity
+public class UserConfirmationCode : Entity
 {
     public string Code { get; set; } = string.Empty;
     public DateTime ExpiryDate { get; set; } = DateTime.Now.AddMinutes(30);

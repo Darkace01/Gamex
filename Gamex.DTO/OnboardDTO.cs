@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace Gamex.DTO;
+﻿namespace Gamex.DTO;
 
 public class UserProfileUpdateDTO
 {
@@ -38,7 +36,7 @@ public class UserProfileDTO
     {
     }
 
-    public UserProfileDTO(string firstName,string lastName,string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId,bool confirmedEmail)
+    public UserProfileDTO(string firstName, string lastName, string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId, bool confirmedEmail)
     {
         FirstName = firstName;
         LastName = lastName;

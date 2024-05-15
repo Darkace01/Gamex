@@ -8,7 +8,7 @@ public class LeaderboardController(IRepositoryServiceManager repo, UserManager<A
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<IEnumerable<LeaderboardDTO>>), StatusCodes.Status200OK)]
-    public IActionResult GetLeaderboard([FromQuery]string tournamentId = "")
+    public IActionResult GetLeaderboard([FromQuery] string tournamentId = "")
     {
         if (string.IsNullOrWhiteSpace(tournamentId))
         {

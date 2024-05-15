@@ -42,58 +42,59 @@ public class GamexDbContext(DbContextOptions<GamexDbContext> options) : Identity
         #endregion
 
         // Indexes
+        const string IsDeletedIndex = "IsDeleted = 0";
         #region Indexes
         builder.Entity<Tournament>()
             .HasIndex(t => t.IsDeleted)
-            .HasFilter("IsDeleted = 0");
+            .HasFilter(IsDeletedIndex);
 
         builder.Entity<Picture>()
             .HasIndex(p => p.IsDeleted)
-            .HasFilter("IsDeleted = 0");
+            .HasFilter(IsDeletedIndex);
 
         builder.Entity<UserTournament>()
             .HasIndex(ut => ut.IsDeleted)
-            .HasFilter("IsDeleted = 0");
+            .HasFilter(IsDeletedIndex);
 
         builder.Entity<Post>()
             .HasIndex(p => p.IsDeleted)
-            .HasFilter("IsDeleted = 0");
+            .HasFilter(IsDeletedIndex);
 
         builder.Entity<Comment>()
             .HasIndex(c => c.IsDeleted)
-            .HasFilter("IsDeleted = 0");
+            .HasFilter(IsDeletedIndex);
 
         builder.Entity<TournamentCategory>()
             .HasIndex(tc => tc.IsDeleted)
-            .HasFilter("IsDeleted = 0");
+            .HasFilter(IsDeletedIndex);
 
         builder.Entity<PaymentTransaction>()
             .HasIndex(pt => pt.IsDeleted)
-            .HasFilter("IsDeleted = 0");
+            .HasFilter(IsDeletedIndex);
 
         builder.Entity<Tag>()
             .HasIndex(t => t.IsDeleted)
-            .HasFilter("IsDeleted = 0");
+            .HasFilter(IsDeletedIndex);
 
         builder.Entity<PostTag>()
             .HasIndex(pt => pt.IsDeleted)
-            .HasFilter("IsDeleted = 0");
+            .HasFilter(IsDeletedIndex);
 
         builder.Entity<UserConfirmationCode>()
             .HasIndex(ucc => ucc.IsDeleted)
-            .HasFilter("IsDeleted = 0");
+            .HasFilter(IsDeletedIndex);
 
         builder.Entity<TournamentRound>()
             .HasIndex(tr => tr.IsDeleted)
-            .HasFilter("IsDeleted = 0");
+            .HasFilter(IsDeletedIndex);
 
         builder.Entity<RoundMatch>()
             .HasIndex(rm => rm.IsDeleted)
-            .HasFilter("IsDeleted = 0");
+            .HasFilter(IsDeletedIndex);
 
         builder.Entity<MatchUser>()
             .HasIndex(mu => mu.IsDeleted)
-            .HasFilter("IsDeleted = 0");
+            .HasFilter(IsDeletedIndex);
         #endregion
 
         builder.Entity<UserTournament>()

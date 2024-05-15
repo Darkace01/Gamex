@@ -1,6 +1,6 @@
 ﻿namespace Gamex.Test.UnitTest;
 
-public class TagServiceTest: TestBase
+public class TagServiceTest : TestBase
 {
     [Fact]
     public async Task GetTag_ShouldReturnTag()

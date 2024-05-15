@@ -15,7 +15,7 @@ public class MatchUserDTO
 
     public MatchUserDTO()
     {
-        
+
     }
 
     public MatchUserDTO(Guid id, string userId, string email, string displayName, string pictureUrl, int points, int rank, bool win, bool loss, bool draw, Guid matchId)
@@ -33,7 +33,7 @@ public class MatchUserDTO
         MatchId = matchId;
     }
 
-    public MatchUserDTO(Guid id,string userId, string email, string displayName, string pictureUrl, int points, int rank, bool win, bool loss, bool draw)
+    public MatchUserDTO(Guid id, string userId, string email, string displayName, string pictureUrl, int points, int rank, bool win, bool loss, bool draw)
     {
         MatchUserId = id;
         UserId = userId;
