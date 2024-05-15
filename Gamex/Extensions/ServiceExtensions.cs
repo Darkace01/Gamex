@@ -1,4 +1,5 @@
 ﻿using Gamex.Data.Interceptors;
+using Sentry.Profiling;
 using Serilog;
 
 namespace Gamex.Extensions;
@@ -146,10 +147,6 @@ public static class ServiceExtensions
                                 .AddEntityFrameworkStores<GamexDbContext>()
                                 .AddDefaultTokenProviders();
 
-    public static void ConfigureJsonSerializer(this IServiceCollection services)
-    {
-    }
-
     /// <summary>
     /// Configure External Authentication. Like google, facebook, etc.
     /// </summary>
@@ -183,5 +180,10 @@ public static class ServiceExtensions
             })
             .AddInterceptors(sp.GetRequiredService<SoftDeleteInterceptor>())
             );
+    }
+
+    public static void ConfigureSentry(this IWebHostBuilder builderContext)
+    {
+        builderContext.UseSentry();
     }
 }
