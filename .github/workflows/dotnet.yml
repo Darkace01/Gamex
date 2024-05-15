@@ -43,6 +43,7 @@ jobs:
           SMTP.From: ${{ secrets.SMTP_FROM }}
           SMTP.DisplayName: ${{ secrets.SMTP_DISPLAYNAME }}
           SMTP.EnableSSL: ${{ secrets.SMTP_ENABLESSL }}
+          Sentry.Dsn: ${{ secrets.SENTRY_DSN }}
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:

@@ -2,9 +2,6 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Configure Json Serializer
-builder.Services.ConfigureJsonSerializer();
-
 builder.Services.AddAuthorization();
 // Add services to the container.
 builder.Services.ConfigureInterceptors();
@@ -34,10 +31,9 @@ builder.Services.AddHealthChecks();
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
-
+builder.WebHost.ConfigureSentry();
 var app = builder.Build();
 app.UseSerilogRequestLogging();
-
 // Configure the HTTP request pipeline.
 
 app.UseSwagger();
