@@ -1,4 +1,5 @@
 ﻿namespace Gamex.Controllers;
+[EnableRateLimiting(AppConstant.RateLimiting.FixedPolicy)]
 public class BaseController(UserManager<ApplicationUser> userManager, IRepositoryServiceManager repositoryServiceManager) : ControllerBase
 {
     protected readonly UserManager<ApplicationUser> _userManager = userManager;

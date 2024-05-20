@@ -161,11 +161,20 @@ public static class ServiceExtensions
         });
     }
 
+    /// <summary>
+    /// Configure Interceptors
+    /// </summary>
+    /// <param name="services"></param>
     public static void ConfigureInterceptors(this IServiceCollection services)
     {
         services.AddSingleton<SoftDeleteInterceptor>();
     }
 
+    /// <summary>
+    /// Configure Database
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="configuration"></param>
     public static void ConfigureDatabase(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
@@ -182,11 +191,20 @@ public static class ServiceExtensions
             );
     }
 
+    /// <summary>
+    /// Configure Sentry
+    /// </summary>
+    /// <param name="builderContext"></param>
     public static void ConfigureSentry(this IWebHostBuilder builderContext)
     {
         builderContext.UseSentry();
     }
 
+    /// <summary>
+    /// Configure Caching
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="configuration"></param>
     public static void ConfigureCaching(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddResponseCaching();
@@ -196,5 +214,25 @@ public static class ServiceExtensions
             options.Configuration = configuration.GetConnectionString("RedisConnection");
             options.InstanceName = "Gamex_";
         });
+    }
+
+    /// <summary>
+    /// Add Rate Limiting
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="config"></param>
+    public static void AddRateLimiting(this IServiceCollection services, IConfiguration config)
+    {
+        var myOptions = new RateLimitOptions();
+        config.GetSection(RateLimitOptions.MyRateLimit).Bind(myOptions);
+        services.AddRateLimiter(_ => _
+        .AddFixedWindowLimiter(policyName: AppConstant.RateLimiting.FixedPolicy, options =>
+        {
+            options.PermitLimit = myOptions.PermitLimit;
+            options.Window = TimeSpan.FromSeconds(myOptions.Window);
+            options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            options.QueueLimit = myOptions.QueueLimit;
+            options.AutoReplenishment = myOptions.AutoReplenishment;
+        }));
     }
 }
