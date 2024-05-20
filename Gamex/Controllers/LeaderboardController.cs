@@ -8,20 +8,27 @@ public class LeaderboardController(IRepositoryServiceManager repo, UserManager<A
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<IEnumerable<LeaderboardDTO>>), StatusCodes.Status200OK)]
-    public IActionResult GetLeaderboard([FromQuery] string tournamentId = "")
+    public async Task<IActionResult> GetLeaderboard([FromQuery] string tournamentId = "")
     {
         if (string.IsNullOrWhiteSpace(tournamentId))
         {
-            var leaderboard = _repositoryServiceManager.LeaderboardService.GetLeaderboard();
-            return Ok(new ApiResponse<IEnumerable<LeaderboardDTO>>(leaderboard));
+            var cachedLeaderboard = await _repositoryServiceManager.CacheService.GetOrCreateAsync(
+                $"{nameof(GetLeaderboard)}{tournamentId}",
+                () => Task.FromResult(_repositoryServiceManager.LeaderboardService.GetLeaderboard())
+            );
+            return Ok(new ApiResponse<IEnumerable<LeaderboardDTO>>(cachedLeaderboard));
         }
 
         if (Guid.TryParse(tournamentId, out Guid tournamentGuid))
         {
-            var leaderboardWithTournamentFilter = _repositoryServiceManager.LeaderboardService.GetLeaderboardWithTournamentFilter(tournamentGuid);
-            return Ok(new ApiResponse<IEnumerable<LeaderboardDTO>>(leaderboardWithTournamentFilter));
+            var cachedLeaderboardWithTournamentFilter = await _repositoryServiceManager.CacheService.GetOrCreateAsync(
+               $"{nameof(GetLeaderboard)}{tournamentId}",
+               () => Task.FromResult(_repositoryServiceManager.LeaderboardService.GetLeaderboardWithTournamentFilter(tournamentGuid)),
+               TimeSpan.FromMinutes(20)
+           );
+            return Ok(new ApiResponse<IEnumerable<LeaderboardDTO>>(cachedLeaderboardWithTournamentFilter));
         }
 
-        return BadRequest("Invalid tournamentId");
+        return BadRequest(new ApiResponse<IEnumerable<LeaderboardDTO>>(StatusCodes.Status400BadRequest, "Invalid tournament ID"));
     }
 }

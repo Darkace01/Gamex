@@ -75,22 +75,21 @@ public class CommentServiceTest : TestBase
     }
 
     [Fact]
-    public void GetAllComments_ShouldReturnComments()
+    public async Task GetAllComments_ShouldReturnComments()
     {
         // Arrange
         var dbContext = GetSampleData(nameof(GetAllComments_ShouldReturnComments));
         var commentService = MockCommentService(dbContext);
 
         // Act
-        var comments = commentService.GetAllComments().ToList();
-        var comment2 = commentService.GetAllComments();
+        var comments = await commentService.GetAllComments();
         // Assert
         Assert.NotNull(comments);
-        Assert.Equal(2, comments.Count());
+        Assert.Equal(2, comments.TotalCount);
     }
 
     [Fact]
-    public void GetCommentsByPostId_ShouldReturnComments()
+    public async Task GetCommentsByPostId_ShouldReturnComments()
     {
         // Arrange
         var dbContext = GetSampleData(nameof(GetCommentsByPostId_ShouldReturnComments));
@@ -98,11 +97,11 @@ public class CommentServiceTest : TestBase
         var postToGet = dbContext.Posts.AsNoTracking().FirstOrDefault(x => x.Comments.Any());
 
         // Act
-        var comments = commentService.GetAllCommentByPostId(postToGet.Id);
+        var comments = await commentService.GetAllCommentByPostId(postToGet.Id);
 
         // Assert
         Assert.NotNull(comments);
-        Assert.Equal(2, comments.Count());
+        Assert.Equal(2, comments.TotalCount);
     }
 
     [Fact]

@@ -18,5 +18,6 @@
         IMatchService RoundMatchService { get; }
         IMatchUserService MatchUserService { get; }
         IDashboardService DashboardService { get; }
+        ICacheService CacheService { get; }
     }
 }

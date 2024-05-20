@@ -1,4 +1,6 @@
 ﻿using Gamex.Models;
+using Gamex.Service.Contract;
+using System.Threading;
 
 namespace Gamex.Service.Implementation;
 
@@ -18,46 +20,56 @@ public class CommentService(GamexDbContext context) : ICommentService
     /// <returns>The comment with the specified ID, or null if not found.</returns>
     public async Task<CommentDTO?> GetCommentById(Guid id, CancellationToken cancellationToken = default)
     {
-        return await GetAllComments().FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+        return await GetAllCommentsQuery().FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 
     /// <summary>
-    /// Gets all comments.
+    /// Gets all comments, paginated.
     /// </summary>
-    /// <returns>The queryable collection of comments.</returns>
-    public IQueryable<CommentDTO> GetAllComments()
+    /// <param name="take">The number of comments to take per page.</param>
+    /// <param name="skip">The number of comments to skip.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A pagination object containing the comments.</returns>
+    public async Task<PaginationDTO<CommentDTO>> GetAllComments(int take = 10, int skip = 0, CancellationToken cancellationToken = default)
     {
-        var comments = _context.Comments
-            .AsNoTracking()
-            .Include(c => c.User)
-            .Join(_context.Users.AsNoTracking(),
-                comment => comment.UserId,
-                user => user.Id,
-                (comment, user) => new { Comment = comment, User = user })
-            .GroupJoin(_context.Pictures.AsNoTracking(),
-                cu => cu.User.PictureId,
-                picture => picture.Id,
-                (cu, pictures) => new { CommentUser = cu, Pictures = pictures })
-            .SelectMany(cup => cup.Pictures.DefaultIfEmpty(),
-                (cup, picture) => new CommentDTO
-                {
-                    Id = cup.CommentUser.Comment.Id,
-                    Content = cup.CommentUser.Comment.Content,
-                    Title = cup.CommentUser.Comment.Title,
-                    PostId = cup.CommentUser.Comment.PostId,
-                    User = new UserProfileDTO
-                    {
-                        FirstName = cup.CommentUser.User.FirstName,
-                        LastName = cup.CommentUser.User.LastName,
-                        DisplayName = cup.CommentUser.User.DisplayName,
-                        Email = cup.CommentUser.User.Email,
-                        PhoneNumber = cup.CommentUser.User.PhoneNumber,
-                        ProfilePicturePublicId = picture == null ? "" : picture.PublicId,
-                        ProfilePictureUrl = picture == null ? "" : picture.FileUrl
-                    },
-                    DateCreated = cup.CommentUser.Comment.DateCreated
-                });
-        return comments;
+        IQueryable<CommentDTO> comments = GetAllCommentsQuery();
+        var totalNumber = await comments.CountAsync(cancellationToken);
+        var commentList = await comments.Skip(skip).Take(take).OrderByDescending(x => x.DateCreated).ToListAsync(cancellationToken);
+        return new PaginationDTO<CommentDTO>(commentList, Math.Ceiling((decimal)totalNumber / take), skip, take, totalNumber);
+    }
+
+    private IQueryable<CommentDTO> GetAllCommentsQuery()
+    {
+        return _context.Comments
+                    .AsNoTracking()
+                    .Include(c => c.User)
+                    .Join(_context.Users.AsNoTracking(),
+                        comment => comment.UserId,
+                        user => user.Id,
+                        (comment, user) => new { Comment = comment, User = user })
+                    .GroupJoin(_context.Pictures.AsNoTracking(),
+                        cu => cu.User.PictureId,
+                        picture => picture.Id,
+                        (cu, pictures) => new { CommentUser = cu, Pictures = pictures })
+                    .SelectMany(cup => cup.Pictures.DefaultIfEmpty(),
+                        (cup, picture) => new CommentDTO
+                        {
+                            Id = cup.CommentUser.Comment.Id,
+                            Content = cup.CommentUser.Comment.Content,
+                            Title = cup.CommentUser.Comment.Title,
+                            PostId = cup.CommentUser.Comment.PostId,
+                            User = new UserProfileDTO
+                            {
+                                FirstName = cup.CommentUser.User.FirstName,
+                                LastName = cup.CommentUser.User.LastName,
+                                DisplayName = cup.CommentUser.User.DisplayName,
+                                Email = cup.CommentUser.User.Email,
+                                PhoneNumber = cup.CommentUser.User.PhoneNumber,
+                                ProfilePicturePublicId = picture == null ? "" : picture.PublicId,
+                                ProfilePictureUrl = picture == null ? "" : picture.FileUrl
+                            },
+                            DateCreated = cup.CommentUser.Comment.DateCreated
+                        });
     }
 
     /// <summary>
@@ -137,12 +149,18 @@ public class CommentService(GamexDbContext context) : ICommentService
     }
 
     /// <summary>
-    /// Gets all comments associated with a post.
+    /// Gets all comments associated with a post, paginated.
     /// </summary>
     /// <param name="postId">The ID of the post.</param>
-    /// <returns>The queryable collection of comments associated with the post.</returns>
-    public IQueryable<CommentDTO> GetAllCommentByPostId(Guid postId)
+    /// <param name="take">The number of comments to take per page.</param>
+    /// <param name="skip">The number of comments to skip.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A pagination object containing the comments.</returns>
+    public async Task<PaginationDTO<CommentDTO>> GetAllCommentByPostId(Guid postId, int take = 10, int skip = 0, CancellationToken cancellationToken = default)
     {
-        return GetAllComments().Where(c => c.PostId == postId);
+        var comments = GetAllCommentsQuery().Where(c => c.PostId == postId);
+        var totalNumber = await comments.CountAsync(cancellationToken);
+        var commentList = await comments.Skip(skip).Take(take).OrderByDescending(x => x.DateCreated).ToListAsync(cancellationToken);
+        return new PaginationDTO<CommentDTO>(commentList, Math.Ceiling((decimal)totalNumber / take), skip, take, totalNumber);
     }
 }

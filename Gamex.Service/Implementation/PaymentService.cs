@@ -16,7 +16,7 @@ public class PaymentService(GamexDbContext context) : IPaymentService
             UserId = paymentTransactionDTO.UserId,
             TournamentId = paymentTransactionDTO.TournamentId,
             Amount = paymentTransactionDTO.Amount,
-            Status = (TransactionStatus)paymentTransactionDTO.Status,
+            Status = (Models.TransactionStatus)paymentTransactionDTO.Status,
             TransactionReference = paymentTransactionDTO.TransactionReference
         };
 
@@ -35,7 +35,7 @@ public class PaymentService(GamexDbContext context) : IPaymentService
         var paymentTransaction = await _context.PaymentTransactions.FirstOrDefaultAsync(x => x.Id == transactionId);
         if (paymentTransaction != null)
         {
-            paymentTransaction.Status = (TransactionStatus)status;
+            paymentTransaction.Status = (Models.TransactionStatus)status;
             paymentTransaction.DateModified = DateTime.Now;
             await _context.SaveChangesAsync(cancellationToken);
         }
@@ -52,7 +52,7 @@ public class PaymentService(GamexDbContext context) : IPaymentService
         var paymentTransaction = await _context.PaymentTransactions.FirstOrDefaultAsync(x => x.TransactionReference == transactionReference, cancellationToken);
         if (paymentTransaction != null)
         {
-            paymentTransaction.Status = (TransactionStatus)status;
+            paymentTransaction.Status = (Models.TransactionStatus)status;
             paymentTransaction.DateModified = DateTime.Now;
             await _context.SaveChangesAsync(cancellationToken);
         }
