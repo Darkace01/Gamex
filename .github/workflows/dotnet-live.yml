@@ -31,8 +31,9 @@ jobs:
           Cloudinary.Url: ${{ secrets.CLOUDINARY_URL }}
           Authentication.Google.ClientId: ${{ secrets.GOOGLE_CLIENTID }}
           Authentication.Google.ClientSecret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          Authentication.Google.MobileClientId: ${{ secrets.GOOGLE_CLIENTID }}
+          Authentication.Google.MobileClientId: ${{ secrets.GOOGLE_MOBILE_CLIENTID }}
           ConnectionStrings.DefaultConnection: ${{ secrets.DB_CONNECTION_LIVE }}
+          ConnectionStrings.RedisConnection: ${{ secrets.REDIS_DB_CONNECTION_LIVE }}
           JWT.Secret: ${{ secrets.JWT_SECRET_LIVE }}
           Paystack.SecretKey: ${{ secrets.PAYSTACK_SECRET_KEY }}
           Paystack.PublicKey: ${{ secrets.PAYSTACK_PUBLIC_KEY }}

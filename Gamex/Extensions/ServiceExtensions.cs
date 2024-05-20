@@ -186,4 +186,15 @@ public static class ServiceExtensions
     {
         builderContext.UseSentry();
     }
+
+    public static void ConfigureCaching(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddResponseCaching();
+        var config = configuration.GetConnectionString("RedisConnection");
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = configuration.GetConnectionString("RedisConnection");
+            options.InstanceName = "Gamex_";
+        });
+    }
 }

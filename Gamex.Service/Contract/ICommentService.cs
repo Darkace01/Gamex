@@ -31,17 +31,23 @@
         Task<bool> DeleteCommentByPostId(Guid postId, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Retrieves all comments associated with a post.
+        /// Gets all comments associated with a post, paginated.
         /// </summary>
         /// <param name="postId">The ID of the post.</param>
-        /// <returns>An <see cref="IQueryable{T}"/> of <see cref="CommentDTO"/> representing the comments.</returns>
-        IQueryable<CommentDTO> GetAllCommentByPostId(Guid postId);
+        /// <param name="take">The number of comments to take per page.</param>
+        /// <param name="skip">The number of comments to skip.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A pagination object containing the comments.</returns>
+        Task<PaginationDTO<CommentDTO>> GetAllCommentByPostId(Guid postId, int take = 10, int skip = 0, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Retrieves all comments.
+        /// Gets all comments, paginated.
         /// </summary>
-        /// <returns>An <see cref="IQueryable{T}"/> of <see cref="CommentDTO"/> representing the comments.</returns>
-        IQueryable<CommentDTO> GetAllComments();
+        /// <param name="take">The number of comments to take per page.</param>
+        /// <param name="skip">The number of comments to skip.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A pagination object containing the comments.</returns>
+        Task<PaginationDTO<CommentDTO>> GetAllComments(int take = 10, int skip = 0, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Retrieves a comment by its ID.

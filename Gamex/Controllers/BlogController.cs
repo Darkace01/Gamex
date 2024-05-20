@@ -12,18 +12,24 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(typeof(ApiResponse<PaginationDTO<PostDTO>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPosts([FromQuery] IEnumerable<string> TagIds, [FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "", CancellationToken cancellationToken = default)
     {
-        var postList = await _repositoryServiceManager.PostService.GetAllPosts(TagIds, take, skip, s, cancellationToken);
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<PostDTO>>(postList));
+        var cachedPostList = await _repositoryServiceManager.CacheService.GetOrCreateAsync(
+                        $"{nameof(GetPosts)}{TagIds}{take}{skip}{s}",
+                                  async () => await _repositoryServiceManager.PostService.GetAllPosts(TagIds, take, skip, s, cancellationToken)
+                                                    );
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<PostDTO>>(cachedPostList));
     }
 
     [HttpGet("posts/user/{userId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<PaginationDTO<PostDTO>>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetPosts([FromRoute] string userId, [FromQuery] IEnumerable<string> TagIds, [FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "", CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetPostsByUserId([FromRoute] string userId, [FromQuery] IEnumerable<string> TagIds, [FromQuery] int take = 10, [FromQuery] int skip = 0, [FromQuery] string s = "", CancellationToken cancellationToken = default)
     {
-        var postList = await _repositoryServiceManager.PostService.GetAllUsersPosts(userId, TagIds, take, skip, s, cancellationToken);
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<PostDTO>>(postList));
+        var cachedPostList = await _repositoryServiceManager.CacheService.GetOrCreateAsync(
+             $"{nameof(GetPostsByUserId)}{userId}{TagIds}{take}{skip}{s}",
+                                     async () => await _repositoryServiceManager.PostService.GetAllUsersPosts(userId, TagIds, take, skip, s, cancellationToken)
+                                                     );
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<PostDTO>>(cachedPostList));
     }
 
     [HttpGet("posts/{id}")]
@@ -32,11 +38,14 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(typeof(ApiResponse<PostDTO>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPost(Guid id, CancellationToken cancellationToken = default)
     {
-        var post = await _repositoryServiceManager.PostService.GetPost(id, cancellationToken);
-        if (post == null)
+        var cachedPost = await _repositoryServiceManager.CacheService.GetOrCreateAsync(
+            $"{nameof(GetPost)}{id}",
+                                    async () => await _repositoryServiceManager.PostService.GetPost(id, cancellationToken)
+                                                    );
+        if (cachedPost == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<PostDTO>(404, "Post not found"));
 
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PostDTO>(post));
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PostDTO>(cachedPost));
     }
 
     [HttpPost("posts")]
@@ -147,12 +156,11 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(typeof(ApiResponse<PaginationDTO<CommentDTO>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPostComments(Guid id, [FromQuery] int take = 10, [FromQuery] int skip = 0, CancellationToken cancellationToken = default)
     {
-        var comments = _repositoryServiceManager.CommentService.GetAllCommentByPostId(id);
-        var totalNumber = await comments.CountAsync(cancellationToken);
-
-        var commentList = await comments.Skip(skip).Take(take).OrderByDescending(x => x.DateCreated).ToListAsync(cancellationToken);
-        PaginationDTO<CommentDTO> pagination = new(commentList, Math.Ceiling((decimal)totalNumber / take), skip, take, totalNumber);
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<CommentDTO>>(pagination));
+        var cachedCommentsList = await _repositoryServiceManager.CacheService.GetOrCreateAsync(
+            $"{nameof(GetPostComments)}{id}{take}{skip}",
+                                    async () => await _repositoryServiceManager.CommentService.GetAllCommentByPostId(id, take, skip, cancellationToken)
+                                                    );
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<CommentDTO>>(cachedCommentsList));
     }
 
     [HttpGet("comments")]
@@ -161,12 +169,11 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(typeof(ApiResponse<PaginationDTO<CommentDTO>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetComments([FromQuery] int take = 10, [FromQuery] int skip = 0, CancellationToken cancellationToken = default)
     {
-        var comments = _repositoryServiceManager.CommentService.GetAllComments();
-        var totalNumber = await comments.CountAsync(cancellationToken);
-
-        var commentList = await comments.Skip(skip).Take(take).OrderByDescending(x => x.DateCreated).ToListAsync(cancellationToken);
-        PaginationDTO<CommentDTO> pagination = new(commentList, Math.Ceiling((decimal)totalNumber / take), skip, take, totalNumber);
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<CommentDTO>>(pagination));
+        var cachedCommentsList = await _repositoryServiceManager.CacheService.GetOrCreateAsync(
+            $"{nameof(GetComments)}{take}{skip}",
+                                    async () => await _repositoryServiceManager.CommentService.GetAllComments(take, skip, cancellationToken)
+                                                    );
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<PaginationDTO<CommentDTO>>(cachedCommentsList));
     }
 
     [HttpGet("comments/{id}")]
@@ -175,11 +182,14 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(typeof(ApiResponse<CommentDTO>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetComment(Guid id, CancellationToken cancellationToken = default)
     {
-        var comment = await _repositoryServiceManager.CommentService.GetCommentById(id, cancellationToken);
-        if (comment == null)
+        var cachedComment = await _repositoryServiceManager.CacheService.GetOrCreateAsync(
+            $"{nameof(GetComment)}{id}",
+                                    async () => await _repositoryServiceManager.CommentService.GetCommentById(id, cancellationToken)
+                                                    );
+        if (cachedComment == null)
             return StatusCode(StatusCodes.Status404NotFound, new ApiResponse<CommentDTO>(404, "Comment not found"));
 
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<CommentDTO>(comment));
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<CommentDTO>(cachedComment));
     }
 
     [HttpPost("comments")]
@@ -254,10 +264,13 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(typeof(ApiResponse<IEnumerable<TagDTO>>), StatusCodes.Status200OK)]
-    public IActionResult GetTags()
+    public async Task<IActionResult> GetTags()
     {
-        var tags = _repositoryServiceManager.TagService.GetAllTags();
-        return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<TagDTO>>(tags));
+        var cachedTags = await _repositoryServiceManager.CacheService.GetOrCreateAsync(
+            $"{nameof(GetTags)}",
+                                    () => Task.FromResult(_repositoryServiceManager.TagService.GetAllTags())
+                                                    );
+        return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<TagDTO>>(cachedTags));
     }
 
     [HttpGet("tags/{id}")]
