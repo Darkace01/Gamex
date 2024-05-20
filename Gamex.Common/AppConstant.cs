@@ -17,4 +17,10 @@ public static class AppConstant
 
     // Cache Config Key
     public const string CacheDurationKey = "DefaultCacheDuration";
+
+    public static class RateLimiting
+    {
+        public const string FixedPolicy = "FixedPolicy";
+        public const string SlidingPolicy = "SlidingPolicy";
+    }
 }

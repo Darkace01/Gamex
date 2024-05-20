@@ -1,7 +1,7 @@
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddRateLimiting(builder.Configuration);
 builder.Services.AddAuthorization();
 // Add services to the container.
 builder.Services.ConfigureInterceptors();
