@@ -14,4 +14,7 @@ public static class AppConstant
 
     //Files
     public const long MaxFileSize = 5 * 1024 * 1024; // 5MB
+
+    // Cache Config Key
+    public const string CacheDurationKey = "DefaultCacheDuration";
 }

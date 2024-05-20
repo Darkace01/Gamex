@@ -5,29 +5,32 @@ public class RepositoryServiceManager : IRepositoryServiceManager
     private readonly GamexDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly Cloudinary _cloudinary;
+    private readonly IDistributedCache _distributedCache;
 
-    private ITournamentService _tournamentService;
-    private IJWTHelper _jwtHelper;
-    private IPictureService _pictureService;
-    private IFileStorageService _fileStorageService;
-    private IPostService _postService;
-    private ICommentService _commentService;
-    private IExtendedUserService _extendedUserService;
-    private ITournamentCategoryService _tournamentCategoryService;
-    private ITagService _tagService;
-    private ILeaderboardService _leaderboardService;
-    private IPaymentService _paymentService;
-    private IPaystackPayment _paystackPayment;
-    private IRoundService _tournamentRoundService;
-    private IMatchService _roundMatchService;
-    private IMatchUserService _matchUserService;
-    private IDashboardService _dashboardService;
+    private ITournamentService? _tournamentService;
+    private IJWTHelper? _jwtHelper;
+    private IPictureService? _pictureService;
+    private IFileStorageService? _fileStorageService;
+    private IPostService? _postService;
+    private ICommentService? _commentService;
+    private IExtendedUserService? _extendedUserService;
+    private ITournamentCategoryService? _tournamentCategoryService;
+    private ITagService? _tagService;
+    private ILeaderboardService? _leaderboardService;
+    private IPaymentService? _paymentService;
+    private IPaystackPayment? _paystackPayment;
+    private IRoundService? _tournamentRoundService;
+    private IMatchService? _roundMatchService;
+    private IMatchUserService? _matchUserService;
+    private IDashboardService? _dashboardService;
+    private ICacheService? _cacheService;
 
-    public RepositoryServiceManager(GamexDbContext context, IConfiguration config)
+    public RepositoryServiceManager(GamexDbContext context, IConfiguration config, IDistributedCache distributedCache)
     {
         _context = context;
         _configuration = config;
         _cloudinary = new Cloudinary(_configuration["Cloudinary:Url"]);
+        _distributedCache = distributedCache;
     }
 
     public ITournamentService TournamentService
@@ -170,6 +173,15 @@ public class RepositoryServiceManager : IRepositoryServiceManager
         {
             _dashboardService ??= new DashboardService(_context);
             return _dashboardService;
+        }
+    }
+
+    public ICacheService CacheService
+    {
+        get
+        {
+            _cacheService ??= new GamexDistributedCacheService(_distributedCache, _configuration);
+            return _cacheService;
         }
     }
 }

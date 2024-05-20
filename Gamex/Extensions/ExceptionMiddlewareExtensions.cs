@@ -2,6 +2,7 @@
 
 public static class ExceptionMiddlewareExtensions
 {
+    public static CacheSignal? CacheSignal { get; set; }
     /// <summary>
     /// Configure exception handler
     /// </summary>
@@ -14,6 +15,7 @@ public static class ExceptionMiddlewareExtensions
         {
             appError.Run(async context =>
             {
+                CacheSignal?.Release();
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 context.Response.ContentType = """application/json""";
                 var contextFeature = context.Features.Get<IExceptionHandlerFeature>();

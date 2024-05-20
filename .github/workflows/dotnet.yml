@@ -33,6 +33,7 @@ jobs:
           Authentication.Google.ClientSecret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           Authentication.Google.MobileClientId: ${{ secrets.GOOGLE_MOBILE_CLIENTID }}
           ConnectionStrings.DefaultConnection: ${{ secrets.DB_CONNECTION }}
+          ConnectionStrings.RedisConnection: ${{ secrets.REDIS_DB_CONNECTION }}
           JWT.Secret: ${{ secrets.JWT_SECRET }}
           Paystack.SecretKey: ${{ secrets.PAYSTACK_SECRET_KEY }}
           Paystack.PublicKey: ${{ secrets.PAYSTACK_PUBLIC_KEY }}

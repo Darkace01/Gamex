@@ -16,6 +16,9 @@ builder.Services.ConfigureCors(builder.Configuration);
 builder.Services.AddScoped<UserManager<ApplicationUser>, UserManager<ApplicationUser>>();
 builder.Services.ConfigureIdentity();
 
+// Caching setup
+builder.Services.ConfigureCaching(builder.Configuration);
+
 // Dependency Injection for repositories
 builder.Services.ConfigureRepository();
 
@@ -35,6 +38,8 @@ builder.WebHost.ConfigureSentry();
 var app = builder.Build();
 app.UseSerilogRequestLogging();
 // Configure the HTTP request pipeline.
+
+app.UseResponseCaching();
 
 app.UseSwagger();
 app.UseSwaggerUI();
