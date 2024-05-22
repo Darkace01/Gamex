@@ -268,7 +268,7 @@ public class BlogController(IRepositoryServiceManager repo, UserManager<Applicat
     {
         var cachedTags = await _repositoryServiceManager.CacheService.GetOrCreateAsync(
             $"{nameof(GetTags)}",
-                                    () => Task.FromResult(_repositoryServiceManager.TagService.GetAllTags())
+                                    () => Task.FromResult(_repositoryServiceManager.TagService.GetAllTags().ToList())
                                                     );
         return StatusCode(StatusCodes.Status200OK, new ApiResponse<IEnumerable<TagDTO>>(cachedTags));
     }
