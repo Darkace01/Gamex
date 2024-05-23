@@ -35,8 +35,8 @@ jobs:
           ConnectionStrings.DefaultConnection: ${{ secrets.DB_CONNECTION_LIVE }}
           ConnectionStrings.RedisConnection: ${{ secrets.REDIS_DB_CONNECTION_LIVE }}
           JWT.Secret: ${{ secrets.JWT_SECRET_LIVE }}
-          Paystack.SecretKey: ${{ secrets.PAYSTACK_SECRET_KEY }}
-          Paystack.PublicKey: ${{ secrets.PAYSTACK_PUBLIC_KEY }}
+          Paystack.SecretKey: ${{ secrets.PAYSTACK_SECRET_KEY_LIVE }}
+          Paystack.PublicKey: ${{ secrets.PAYSTACK_PUBLIC_KEY_LIVE }}
           SMTP.Host: ${{ secrets.SMTP_HOST }}
           SMTP.Port: ${{ secrets.SMTP_PORT }}
           SMTP.Username: ${{ secrets.SMTP_USERNAME }}
