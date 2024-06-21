@@ -104,20 +104,23 @@ public class GamexDbContext(DbContextOptions<GamexDbContext> options) : Identity
             .HasOne(ut => ut.User)
             .WithMany(u => u.UserTournaments)
             .HasForeignKey(ut => ut.UserId)
-            .OnDelete(DeleteBehavior.Cascade); // Changed from NoAction to Cascade
+            .OnDelete(DeleteBehavior.ClientNoAction); // Changed from NoAction to Cascade
 
         builder.Entity<UserTournament>()
             .HasOne(ut => ut.Tournament)
             .WithMany(t => t.UserTournaments)
             .HasForeignKey(ut => ut.TournamentId)
-            .OnDelete(DeleteBehavior.Cascade); // Changed from NoAction to Cascade
+            .OnDelete(DeleteBehavior.ClientNoAction); // Changed from NoAction to Cascade
 
         builder.Entity<UserTournament>()
             .Property(ut => ut.Amount)
             .HasColumnType("decimal(18,2)");
 
         builder.Entity<Tournament>()
-            .HasOne(t => t.Picture);
+            .HasOne(t => t.Picture)
+            .WithMany()
+            .HasForeignKey(t => t.PictureId)
+            .OnDelete(DeleteBehavior.ClientNoAction);
 
         builder.Entity<Tournament>()
             .Property(t => t.EntryFee)
@@ -135,13 +138,13 @@ public class GamexDbContext(DbContextOptions<GamexDbContext> options) : Identity
             .HasOne(c => c.Post)
             .WithMany(p => p.Comments)
             .HasForeignKey(c => c.PostId)
-            .OnDelete(DeleteBehavior.Cascade); // Added new foreign key constraint
+            .OnDelete(DeleteBehavior.ClientNoAction); // Added new foreign key constraint
 
         builder.Entity<Post>()
             .HasOne(p => p.User)
             .WithMany(u => u.Posts)
             .HasForeignKey(p => p.UserId)
-            .OnDelete(DeleteBehavior.NoAction); // Added new foreign key constraint
+            .OnDelete(DeleteBehavior.ClientNoAction); // Added new foreign key constraint
 
         builder.Entity<ApplicationUser>()
             .HasOne(u => u.Picture);
@@ -150,13 +153,13 @@ public class GamexDbContext(DbContextOptions<GamexDbContext> options) : Identity
             .HasOne(pt => pt.User)
             .WithMany(u => u.PaymentTransactions)
             .HasForeignKey(pt => pt.UserId)
-            .OnDelete(DeleteBehavior.Cascade); // Added new foreign key constraint
+            .OnDelete(DeleteBehavior.ClientNoAction); // Added new foreign key constraint
 
         builder.Entity<PaymentTransaction>()
             .HasOne(pt => pt.Tournament)
             .WithMany(t => t.PaymentTransactions)
             .HasForeignKey(pt => pt.TournamentId)
-            .OnDelete(DeleteBehavior.NoAction); // Added new foreign key constraint
+            .OnDelete(DeleteBehavior.ClientNoAction); // Added new foreign key constraint
 
         builder.Entity<PaymentTransaction>()
             .Property(pt => pt.Amount)
@@ -173,48 +176,48 @@ public class GamexDbContext(DbContextOptions<GamexDbContext> options) : Identity
             .HasMany(t => t.PostTags)
             .WithOne(pt => pt.Tag)
             .HasForeignKey(pt => pt.TagId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.ClientNoAction);
 
         builder.Entity<Post>()
             .HasMany(p => p.PostTags)
             .WithOne(pt => pt.Post)
             .HasForeignKey(pt => pt.PostId)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.ClientNoAction);
 
         builder.Entity<PostTag>()
             .HasOne(pt => pt.Post)
             .WithMany(p => p.PostTags)
             .HasForeignKey(pt => pt.PostId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.ClientNoAction);
 
         builder.Entity<PostTag>()
             .HasOne(pt => pt.Tag)
             .WithMany(t => t.PostTags)
             .HasForeignKey(pt => pt.TagId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.ClientNoAction);
 
         builder.Entity<TournamentRound>()
             .HasOne(tr => tr.Tournament)
             .WithMany(t => t.TournamentRounds)
             .HasForeignKey(tr => tr.TournamentId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.ClientNoAction);
 
         builder.Entity<Tournament>()
             .HasMany(t => t.TournamentRounds)
             .WithOne(tr => tr.Tournament)
             .HasForeignKey(tr => tr.TournamentId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.ClientNoAction);
 
         builder.Entity<RoundMatch>()
             .HasOne(rm => rm.TournamentRound)
             .WithMany(tr => tr.RoundMatches)
             .HasForeignKey(rm => rm.TournamentRoundId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.ClientNoAction);
 
         builder.Entity<TournamentRound>()
             .HasMany(tr => tr.RoundMatches)
             .WithOne(rm => rm.TournamentRound)
             .HasForeignKey(rm => rm.TournamentRoundId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.ClientNoAction);
     }
 }
