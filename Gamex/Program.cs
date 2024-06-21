@@ -1,3 +1,7 @@
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +10,29 @@ builder.Services.AddAuthorization();
 // Add services to the container.
 builder.Services.ConfigureInterceptors();
 builder.Services.ConfigureDatabase(builder.Configuration);
+
+// Add Opentelementry
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resouce => resouce.AddService("GamexAPI"))
+    .WithMetrics(metrics =>
+    {
+        metrics
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation();
+        metrics
+            .AddOtlpExporter(options => options.Endpoint = new Uri("http://aspire-dashboard:18889"));
+    })
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddEntityFrameworkCoreInstrumentation();
+
+        tracing
+            .AddOtlpExporter();
+    });
+builder.Logging.AddOpenTelemetry(logging => logging.AddOtlpExporter());
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
