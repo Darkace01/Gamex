@@ -1,4 +1,6 @@
-﻿namespace Gamex.Controllers;
+﻿using Gamex.Common;
+
+namespace Gamex.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{v:apiversion}/auth")]
 [ApiController]
@@ -81,6 +83,10 @@ public class AuthController(IRepositoryServiceManager repo, UserManager<Applicat
         userExists ??= await _userManager.FindByEmailAsync(model.Email);
 
         if (userExists != null) return BadRequest(new ApiResponse<string>(400, "User already exists!"));
+
+        if (!model.DisplayName.Trim().HasNoSpecialCharacters()) return BadRequest(new ApiResponse<string>(400, "Invalid display name!, display name should not contain special characters."));
+        if (!model.Username.Trim().HasNoSpecialCharacters()) return BadRequest(new ApiResponse<string>(400, "Invalid username!, username should not contain special characters."));
+
 
         ApplicationUser user = new()
         {

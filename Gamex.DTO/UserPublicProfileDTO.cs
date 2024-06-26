@@ -10,7 +10,7 @@ public class UserPublicProfileDTO
     {
         get
         {
-            return string.IsNullOrWhiteSpace(_displayName) ? $"{FirstName} {LastName}" : _displayName;
+            return string.IsNullOrWhiteSpace(_displayName) ? $"{FirstName}{LastName}" : _displayName;
         }
         set => _displayName = value;
     }
@@ -23,6 +23,7 @@ public class UserPublicProfileDTO
     public int Comments { get; set; }
     public bool ConfirmedEmail { get; set; }
     public int TotalPoints { get; set; }
+    public int TotalTrophy { get; set; }
 
     public UserPublicProfileDTO()
     {
@@ -55,7 +56,7 @@ public class UserPublicProfileDTO
         ConfirmedEmail = confirmedEmail;
     }
 
-    public UserPublicProfileDTO(string firstName, string lastName, string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId, int activeTournaments, int post, int comments, bool confirmedEmail, int totalPoints)
+    public UserPublicProfileDTO(string firstName, string lastName, string displayName, string email, string phoneNumber, string profilePictureUrl, string profilePicturePublicId, int activeTournaments, int post, int comments, bool confirmedEmail, int totalPoints, int totalTrophy)
     {
         FirstName = firstName;
         LastName = lastName;
@@ -69,5 +70,6 @@ public class UserPublicProfileDTO
         Comments = comments;
         ConfirmedEmail = confirmedEmail;
         TotalPoints = totalPoints;
+        TotalTrophy = totalTrophy;
     }
 }
