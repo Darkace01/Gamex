@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Http;
+using System.Reflection;
 
 namespace Gamex.Common;
 
@@ -118,5 +119,11 @@ public static class CommonHelpers
         int maxValue = (int)Math.Pow(10, length) - 1;
         int randomNumber = random.Next(minValue, maxValue);
         return randomNumber;
+    }
+
+    public static bool HasNoSpecialCharacters(this string input)
+    {
+        if(input.Contains(' ') || !input.All(char.IsLetterOrDigit)) return false;
+        return true;
     }
 }

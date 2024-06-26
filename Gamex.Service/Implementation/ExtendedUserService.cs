@@ -95,6 +95,12 @@ public class ExtendedUserService : IExtendedUserService
 
     public UserPublicProfileDTO? GetPublicUserByIdForProfile(string id)
     {
+        var userTrophies = _context.RoundMatches
+            .Select(rm => rm.MatchUser.Where(mu => mu.UserId == id)
+            .Select(mu => mu.Win))
+            .SelectMany(x => x)
+            .Count(x => x == true);
+
         var user = _context.Users
             .AsNoTracking()
             .Where(u => u.Id == id)
@@ -115,7 +121,8 @@ public class ExtendedUserService : IExtendedUserService
                 _context.Posts.Count(post => post.UserId == u.User.Id),
                 _context.Comments.Count(comment => comment.UserId == u.User.Id),
                 u.User.EmailConfirmed,
-                _context.UserTournaments.Where(ut => ut.UserId == u.User.Id).Sum(ut => ut.Point ?? 0)
+                _context.UserTournaments.Where(ut => ut.UserId == u.User.Id).Sum(ut => ut.Point ?? 0),
+                0
             ))
             .FirstOrDefault();
 

@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /GamexAdmin/GamexAdmin/appsettings.Production.json
+/.idea/.idea.Gamex/.idea
